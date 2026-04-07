@@ -1,0 +1,26 @@
+{
+  "name": "enterprise-level-software",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:all": "nx run-many -t test",
+    "install:all": "nx run-many -t install",
+    "lint:all": "nx run-many -t lint",
+    "format:all": "nx run-many -t format",
+    "lt": "nx run-many -t lint, test",
+    "tl": "nx run-many -t test, lint",
+    "all": "nx run-many -t format, lint, test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stavyos/enterprise-level-software.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "devDependencies": {
+    "nx": "21.4.1"
+  },
+  "nx": {}
+}

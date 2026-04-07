@@ -1,0 +1,109 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": [
+          "build",
+          "test",
+          "lint",
+          "format"
+        ]
+      }
+    }
+  },
+  "targetDefaults": {
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv sync --extra dev",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run pytest",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "install"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd ../.. && uv run --directory tools/linter python -m linter.run_linters ../../{projectRoot}",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        {
+          "target": "install",
+          "projects": "linter"
+        }
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd ../.. && uv run --directory tools/linter python -m linter.run_linters ../../{projectRoot} --fix",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        {
+          "target": "install",
+          "projects": "linter"
+        }
+      ]
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv build-native-tls-index-strategy unsafe-best-match",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "install",
+        "^build"
+      ]
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "install"
+      ]
+    }
+  },
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec/test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
+    ],
+    "sharedGlobals": []
+  },
+  "workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "libs"
+  },
+  "defaultBase": "master",
+  "generators": {
+    "@nx/python:application": {
+      "unitTestRunner": "pytest",
+      "linter": "flake8"
+    },
+    "@nx/python:library": {
+      "unitTestRunner": "pytest",
+      "linter": "flake8"
+    }
+  }
+}
