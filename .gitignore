@@ -13,5 +13,6 @@ node_modules
 __pycache__/
 *.pyc
 GEMINI.md
+.worktrees/
 .nx/
 .env
