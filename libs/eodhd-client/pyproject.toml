@@ -1,11 +1,16 @@
 [project]
-name = "etl-service"
+name = "eodhd-client"
 version = "0.1.0"
-description = "An ETL service application"
+description = "EODHD Client"
 authors = [{ name = "Stav Yosef" }]
 requires-python = "==3.13.1"
 dependencies = [
-    "linter"
+    "linter",
+    "db-client",
+    "loguru>=0.7.3",
+    "requests>=2.32.5",
+    "pandas>=2.3.3",
+    "pyarrow>=22.0.0"
 ]
 
 [project.optional-dependencies]
@@ -19,7 +24,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/etl_service"]
+packages = ["src/eodhd_client"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -27,3 +32,4 @@ pythonpath = ["src"]
 
 [tool.uv.sources]
 linter = {path = "../../tools/linter", editable = true}
+db-client = {path = "../../libs/db-client", editable = true}

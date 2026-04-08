@@ -1,0 +1,13 @@
+{
+  "name": "eodhd-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/eodhd-client/src",
+  "projectType": "library",
+  "targets": {
+    "install": {},
+    "test": {},
+    "lint": {},
+    "format": {},
+    "build": {}
+  }
+}
