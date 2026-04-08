@@ -4,10 +4,9 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 
-def run_command(cmd: List[str], cwd: Path) -> Tuple[int, str, str]:
+def run_command(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
     """Run a command and return exit code, stdout, and stderr."""
     result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
     stdout = result.stdout if result.stdout is not None else ""
@@ -15,7 +14,7 @@ def run_command(cmd: List[str], cwd: Path) -> Tuple[int, str, str]:
     return result.returncode, stdout, stderr
 
 
-def run_flake8(project_path: Path, check_only: bool = True) -> Tuple[int, str]:
+def run_flake8(project_path: Path, check_only: bool = True) -> tuple[int, str]:
     """Run flake8 on the project."""
     print(f"Running flake8 on {project_path}...")
     cmd = ["flake8", "src"]
@@ -33,7 +32,7 @@ def run_flake8(project_path: Path, check_only: bool = True) -> Tuple[int, str]:
     return exit_code, output
 
 
-def run_black(project_path: Path, check_only: bool = True) -> Tuple[int, str]:
+def run_black(project_path: Path, check_only: bool = True) -> tuple[int, str]:
     """Run black on the project."""
     print(f"Running black on {project_path}...")
     cmd = ["black", "src"]
@@ -57,7 +56,7 @@ def run_black(project_path: Path, check_only: bool = True) -> Tuple[int, str]:
     return exit_code, output
 
 
-def run_isort(project_path: Path, check_only: bool = True) -> Tuple[int, str]:
+def run_isort(project_path: Path, check_only: bool = True) -> tuple[int, str]:
     """Runs isort on the project"""
     print(f"Running isort on {project_path}...")
     cmd = ["isort", "."]

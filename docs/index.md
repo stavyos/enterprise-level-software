@@ -1,0 +1,32 @@
+# Tech Learning Center
+
+Welcome to the technical documentation for this monorepo. This center is designed to help you understand the technologies, tools, and patterns used throughout our software stack.
+
+## Documentation Structure
+
+### [Python Ecosystem](./python/overview.md)
+Learn about the Python version we use, our modern type hinting standards, and the monorepo management tools like **Nx** and **UV**.
+
+### [Popular Packages](./python/packages/overview.md)
+Detailed guides on the core libraries powering our services:
+- **SQLAlchemy**: Database ORM.
+- **Loguru**: Structured logging.
+- **Requests**: HTTP interactions.
+- **Pandas & PyArrow**: Data analysis and high-performance storage.
+
+### [Database Architecture](./database/timescaledb.md)
+Information about **TimescaleDB**, our time-series database choice, how we manage schemas, and the use of Hypertables for financial data.
+- [SQL vs. NoSQL](./database/sql-vs-nosql.md): Understand the fundamental differences and a reference for **Popular SQL Queries**.
+
+### [Infrastructure & DevOps](./infrastructure/docker.md)
+Learn about **Docker**, why we use containerization, and a quick reference for **Popular Docker Commands**.
+
+### [Source Control & Workflow](./source-control/git.md)
+Understand **Git**, our version control standard, and a quick reference for **Popular Git Commands**.
+- [GitHub Overview](./source-control/github.md): Learn about our collaboration platform and the importance of Pull Requests.
+
+### [API & Authentication](./api/overview.md)
+An introduction to APIs, what an API Key is, and how to safely manage credentials in this project.
+
+---
+*Last updated: April 8, 2026*
