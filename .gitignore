@@ -14,3 +14,4 @@ __pycache__/
 *.pyc
 GEMINI.md
 .worktrees/.nx/
+todos/
