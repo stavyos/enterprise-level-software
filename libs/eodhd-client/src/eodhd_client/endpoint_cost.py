@@ -5,6 +5,7 @@ class EndpointCost(Enum):
     """
     Enumeration of EODHD API endpoints and their associated call costs.
     """
+
     FUNDAMENTALS = ("fundamentals", 10)
     EOD = ("eod", 1)
     REAL_TIME = ("real-time", 1)

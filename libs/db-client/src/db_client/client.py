@@ -1,4 +1,4 @@
-﻿from datetime import date
+from datetime import date
 
 from loguru import logger
 from sqlalchemy import create_engine
@@ -233,7 +233,7 @@ class DBClient:
             limit (int, optional): Maximum number of rows to return. Defaults to 2.
 
         Returns:
-            list[StockDividends] | None: A list of StockDividends objects or None if an error occurs.
+            list[StockDividends] | None: A list of StockDividends objects or None if an error occurs.  # noqa: E501
         """
         with self._session() as session:
             try:

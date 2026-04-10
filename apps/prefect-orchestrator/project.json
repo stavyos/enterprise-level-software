@@ -1,7 +1,7 @@
 {
-  "name": "etl-service",
+  "name": "prefect-orchestrator",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/etl-service/src",
+  "sourceRoot": "apps/prefect-orchestrator/src",
   "projectType": "application",
   "targets": {
     "install": {},
@@ -9,20 +9,21 @@
     "lint": {},
     "format": {},
     "build": {},
-    "deploy": {
+    "run": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run python -m etl_service.etl.deploy_etls",
+        "command": "uv run prefect server start --host 0.0.0.0",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
     },
-    "docker-build": {
+    "worker": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker build -t etl-service:local -f Dockerfile.etl .",
-        "cwd": "{workspaceRoot}"
-      }
+        "command": "uv run prefect worker start --pool my-k8s-pool",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["install"]
     }
   }
 }

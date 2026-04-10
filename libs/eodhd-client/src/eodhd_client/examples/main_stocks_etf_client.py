@@ -41,13 +41,7 @@ def run_stocks_etf_examples():
         logger.error("DB_PASSWORD environment variable is not set.")
         return
 
-    db_client = DBClient(
-        dbname=db_name,
-        user=db_user,
-        password=db_pass,
-        host=db_host,
-        port=db_port
-    )
+    db_client = DBClient(dbname=db_name, user=db_user, password=db_pass, host=db_host, port=db_port)
 
     if api_key == "YOUR_API_KEY_HERE":
         logger.warning(

@@ -8,6 +8,7 @@ class StockEOD(Base):
     """
     Model representing End-Of-Day (EOD) historical stock data.
     """
+
     __tablename__ = "stock_eod"
 
     bus_date = Column(Date, primary_key=True)
@@ -24,6 +25,7 @@ class StockAdjusted(Base):
     """
     Model representing adjusted historical stock data.
     """
+
     __tablename__ = "stock_adjusted"
 
     bus_date = Column(Date, primary_key=True)
@@ -40,6 +42,7 @@ class StockDividends(Base):
     """
     Model representing stock dividend history.
     """
+
     __tablename__ = "stock_dividends"
 
     bus_date = Column(Date, primary_key=True)
@@ -57,6 +60,7 @@ class StockIntraday(Base):
     """
     Model representing intraday historical stock data.
     """
+
     __tablename__ = "stock_intraday"
 
     timestamp = Column(Integer, primary_key=True)
@@ -74,6 +78,7 @@ class StockSplits(Base):
     """
     Model representing stock split history.
     """
+
     __tablename__ = "stock_splits"
 
     bus_date = Column(Date, primary_key=True)
