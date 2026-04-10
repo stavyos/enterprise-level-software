@@ -1,0 +1,33 @@
+FROM python:3.13-slim
+
+# Install uv for fast dependency resolution
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Set working directory
+WORKDIR /app
+
+# Set environment variables for Python and uv
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_SYSTEM_PYTHON=1
+
+# Copy shared tools (linter) first to leverage layer caching
+COPY tools/linter /app/tools/linter
+
+# Copy the ETL service requirements
+COPY apps/etl-service/pyproject.toml apps/etl-service/uv.lock /app/apps/etl-service/
+
+# Install dependencies using uv (frozen lockfile to ensure reproducible builds)
+WORKDIR /app/apps/etl-service
+RUN uv sync --frozen --no-dev
+
+# Copy the actual application code
+COPY apps/etl-service/src /app/apps/etl-service/src
+
+# Set the PYTHONPATH so the container can find the etl_service module
+ENV PYTHONPATH="/app/apps/etl-service/src"
+
+# Update PATH to include the virtual environment's bin directory
+ENV PATH="/app/apps/etl-service/.venv/bin:$PATH"
+
+# Prefect worker will provide the entrypoint (e.g., `python -m ...`)

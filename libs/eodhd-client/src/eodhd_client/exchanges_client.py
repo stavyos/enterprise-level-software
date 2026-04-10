@@ -1,4 +1,4 @@
-﻿__all__ = ["ExchangesClient"]
+__all__ = ["ExchangesClient"]
 
 
 from eodhd_client import EODHDClientBase
@@ -27,7 +27,7 @@ class ExchangesClient(EODHDClientBase):
         """
         Collects all tickers from all supported exchanges by iterating through the exchange list.
 
-        Note: This can be a very expensive and time-consuming operation depending on the number of exchanges.
+        Note: This can be a very expensive and time-consuming operation depending on the number of exchanges.  # noqa: E501
 
         Returns:
             list: A consolidated list of ticker dictionaries from all exchanges.
