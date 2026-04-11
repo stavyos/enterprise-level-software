@@ -14,7 +14,7 @@ This pattern allows for horizontal scaling across Kubernetes nodes.
 - `eod_saver_dispatcher`: Daily EOD data collection.
 - `intraday_saver_dispatcher`: High-frequency data collection.
 - `market_news_saver_dispatcher`: Financial news ingestion.
-- `technical_indicator_saver_dispatcher`: Technical indicator calculation and storage.
+- `technical_indicators_saver_dispatcher`: Technical indicator calculation and storage.
 - `bulk_data_saver_dispatcher`: National bulk data updates (EOD, Splits, Dividends).
 
 ## Deployment
