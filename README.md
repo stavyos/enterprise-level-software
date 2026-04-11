@@ -6,21 +6,21 @@ A robust, enterprise-grade financial data acquisition and processing system buil
 
 This workspace is managed using [Nx](https://nx.dev) and is organized into applications and libraries.
 
-### Applications (`apps/`)
-- **`etl-service`**: Core ETL logic and Prefect flows for financial data acquisition.
-- **`prefect-orchestrator`**: Management of the Prefect control plane (server and workers).
+### Applications (``apps/``)
+- **``etl-service``**: Core ETL logic and Prefect flows for financial data acquisition.
+- **``prefect-orchestrator``**: Management of the Prefect control plane (server and workers).
 
-### Libraries (`libs/`)
-- **`eodhd-client`**: A high-performance, rate-limited Python client for the [EODHD API](https://eodhd.com).
-- **`db-client`**: Database persistence layer using SQLAlchemy and TimescaleDB optimization (Hypertables).
+### Libraries (``libs/``)
+- **``eodhd-client``**: A high-performance, rate-limited Python client for the [EODHD API](https://eodhd.com).    
+- **``db-client``**: Database persistence layer using SQLAlchemy and TimescaleDB optimization (Hypertables).      
 
-### Tools (`tools/`)
-- **`linter`**: Custom linting and formatting tools for the workspace.
+### Tools (``tools/``)
+- **``linter``**: Custom linting and formatting tools for the workspace.
 
 ## Core Capabilities
 
 ### EODHD Integration
-The `eodhd-client` provides 100% coverage for essential API endpoints verified under production production keys:
+The ``eodhd-client`` provides 100% coverage for essential API endpoints verified under production production keys:
 - **Stocks/ETFs**: EOD historical data, Intraday (up to 1-minute), Dividends, and Splits.
 - **Exchanges**: List of supported exchanges and ticker symbols.
 - **Bulk Data**: Daily bulk EOD, splits, and dividends for entire countries.
@@ -32,13 +32,13 @@ The `eodhd-client` provides 100% coverage for essential API endpoints verified u
 ### ETL Flows
 Automated data pipelines managed by Prefect 3.x:
 - **Dispatcher/Saver Pattern**: Ensures high scalability by splitting large data requests into parallel worker jobs.
-- **Standardized Flows**: Dedicated flows for EOD, Intraday, News, Technical Indicators, and Bulk updates.
+- **Standardized Flows**: Dedicated flows for EOD, Intraday, News, Technical Indicators, and Bulk updates.      
 - **Kubernetes Ready**: All flows are configured for containerized execution with fine-grained resource management.
 
 ### Persistence Layer
 - **TimescaleDB**: Optimized for time-series data using Hypertables.
 - **SQLAlchemy Models**: Structured models for EOD, Intraday, News, and Technical Indicators.
-- **Upsert Logic**: Robust `session.merge()` implementation to handle data updates and avoid duplicates.
+- **Upsert Logic**: Robust ``session.merge()`` implementation to handle data updates and avoid duplicates.        
 
 ## Getting Started
 
@@ -49,15 +49,17 @@ Automated data pipelines managed by Prefect 3.x:
 - [uv](https://github.com/astral-sh/uv) for Python dependency management.
 
 ### Configuration
-1. Copy `.env.example` to `.env`.
-2. Provide your `EODHD_API_KEY`.
+1. Copy ``.env.example`` to ``.env``.
+2. Provide your ``EODHD_API_KEY``.
 3. Configure your database connection details.
 
 ### Development Commands
-- **Run all tests**: `npx nx run-many -t test`
-- **Lint the project**: `npx nx run-many -t lint`
-- **Build Docker images**: `npx nx run etl-service:docker-build`
-- **Register Flows**: `npx nx run etl-service:deploy`
+- **Run all tests**: ``npx nx run-many -t test``
+- **Lint the project**: ``npx nx run-many -t lint``
+- **Build Docker images**: ``npx nx run etl-service:docker-build``
+- **Register Flows**: ``npx nx run etl-service:deploy``
+- **Start Prefect Server**: ``npx nx run prefect-orchestrator:run`` (Ensure ``my-k8s-pool`` worker is running)
+- **Start Prefect Worker**: ``npx nx run prefect-orchestrator:worker``
 
 ## Documentation
 For detailed architecture, setup guides, and API references, please visit the [Tech Learning Center](docs/index.md).

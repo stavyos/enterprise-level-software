@@ -3,6 +3,7 @@
 from typing import Any
 
 from etl_service.etl.deployments_settings.enums import PrefectDeployment, PrefectDeploymentType
+from etl_service.etl.deployments_settings.settings import settings
 
 
 class ResourceLimits:
@@ -275,6 +276,13 @@ class JobVariables:
             "app_label": self.app_label,
             "job_resources": self.job_resources.to_dict(),
             "env": {
-                "PREFECT_API_URL": "http://host.docker.internal:4200/api",
+                "PREFECT_API_URL": settings.prefect_api_url,
+                "PYTHONPATH": settings.job_pythonpath,
+                "EODHD_API_KEY": settings.eodhd_api_key,
+                "DB_HOST": "host.docker.internal" if settings.db_host == "localhost" else settings.db_host,
+                "DB_PORT": str(settings.db_port),
+                "DB_USER": settings.db_user,
+                "DB_PASSWORD": settings.db_password,
+                "DB_NAME": settings.db_name,
             },
         }

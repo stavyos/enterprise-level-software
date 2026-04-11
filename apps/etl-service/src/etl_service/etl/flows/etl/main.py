@@ -22,15 +22,15 @@ TIERS: list[list[AbstractDeploymentSettings]] = [
 
 @flow(**DEPLOYMENT_MAIN.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
-async def main_saver_dispatcher(bus_date: datetime.date) -> None:
+async def main_saver_dispatcher(bus_date: datetime.date | None = None) -> None:
     """Orchestrates the main ETL pipeline by running tiers of sub-flows sequentially.
 
     Args:
-        bus_date (datetime.date): The business date for which the ETL is running.
-
-    Raises:
-        RuntimeError: If any sub-flow fails or does not reach a COMPLETED state.
+        bus_date (datetime.date | None, optional): The business date for which the ETL is running.
     """
+    if not bus_date:
+        bus_date = datetime.date.today()
+
     for i, tier in enumerate(TIERS):
         logger.info(f"Started running tear number {i} :: {tier=}")
 

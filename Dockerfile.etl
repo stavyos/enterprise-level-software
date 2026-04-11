@@ -28,6 +28,9 @@ COPY apps/etl-service/src /app/apps/etl-service/src
 COPY libs/db-client/src /app/libs/db-client/src
 COPY libs/eodhd-client/src /app/libs/eodhd-client/src
 
+# Install the current project so etl_service is available in site-packages
+RUN uv pip install --system -e /app/apps/etl-service
+
 # Set the PYTHONPATH so the container can find all modules
 ENV PYTHONPATH="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/apps/etl-service/src"
 

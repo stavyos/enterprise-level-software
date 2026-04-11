@@ -24,11 +24,17 @@ def exchanges_saver(bus_date: datetime.date) -> None:
 
 @flow(**DEPLOYMENT_EXCHANGES.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
-async def exchanges_saver_dispatcher(bus_date: datetime.date) -> None:
+async def exchanges_saver_dispatcher(bus_date: datetime.date | None = None) -> None:
     """Dispatcher flow for exchanges data.
 
     Args:
-        bus_date (datetime.date): The business date.
+        bus_date (datetime.date | None, optional): The business date. Defaults to None.
     """
+    if not bus_date:
+        bus_date = datetime.date.today()
+
     logger.info(f"Starting exchanges_dispatcher_saver for {bus_date=}")
-    pass
+
+    params_list = [{"bus_date": bus_date}]
+
+    await DEPLOYMENT_EXCHANGES.dispatch_sub_flows(params=params_list)

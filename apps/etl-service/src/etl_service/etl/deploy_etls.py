@@ -50,10 +50,11 @@ def deploy_flow(
         )[-1]
         entrypoint = f"etl_service.etl.flows.etl.{module_path}:{flow_function_name}"
 
-        # We use RunnerDeployment.from_entrypoint to tell Prefect EXACTLY where to find the code.
-        d = RunnerDeployment.from_entrypoint(
+        # Use RunnerDeployment constructor directly to avoid auto-detecting absolute host paths.
+        d = RunnerDeployment(
             entrypoint=entrypoint,
             name=dep_name,
+            flow_name=deployment_settings.get_flow_name(deployment_type=dep_type),
             tags=tags,
             concurrency_limit=concurrency_limit,
             job_variables=job_variables.to_dict(),

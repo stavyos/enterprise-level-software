@@ -36,7 +36,7 @@ def technical_indicators_saver(save_request: TechnicalIndicatorSaveRequest) -> N
 @flow(**DEPLOYMENT_TECHNICAL.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def technical_indicators_saver_dispatcher(
-    tickers: list[dict], function: str, period: int | None = None
+    tickers: list[dict], function: str = "rsi", period: int | None = None
 ) -> None:
     """Orchestrates technical indicators saving."""
     if not tickers:

@@ -5,6 +5,7 @@ import os
 
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
+from etl_service.etl.deployments_settings.settings import settings
 from loguru import logger
 
 
@@ -16,17 +17,17 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
         tickers (list[str]): List of stock tickers (e.g. ['AAPL.US', 'MSFT.US']).
         run_id (str): Unique identifier for the run.
     """
-    api_key = os.getenv("EODHD_API_KEY")
-    client = EODHDClientBase(api_key).stocks_etf
+    client = EODHDClientBase(settings.eodhd_api_key).stocks_etf
 
     db_client = DBClient(
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        host=os.getenv("DB_HOST"),
-        port=int(os.getenv("DB_PORT", 5432)),
+        dbname=settings.db_name,
+        user=settings.db_user,
+        password=settings.db_password,
+        host=settings.db_host,
+        port=settings.db_port,
     )
 
+    rows_inserted = 0
     for ticker_symbol in tickers:
         try:
             # Tickers are expected in 'SYMBOL.EXCHANGE' format
@@ -43,7 +44,7 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
 
             if data and isinstance(data, list) and len(data) > 0:
                 item = data[0]
-                db_client.insert_stock_data(
+                success = db_client.insert_stock_data(
                     bus_date=bus_date,
                     symbol=ticker_symbol,
                     open_price=item["open"],
@@ -53,9 +54,13 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
                     adjusted_close_price=item["adjusted_close"],
                     volume=item["volume"],
                 )
+                if success:
+                    rows_inserted += 1
                 logger.info(f"Saved EOD data for {ticker_symbol} at {bus_date}")
             else:
                 logger.warning(f"No EOD data found for {ticker_symbol} at {bus_date}")
 
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
+
+    logger.info(f"Successfully inserted {rows_inserted} rows into the database.")

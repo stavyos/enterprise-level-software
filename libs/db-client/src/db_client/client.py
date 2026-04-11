@@ -56,7 +56,7 @@ class DBClient:
         close_price: float,
         adjusted_close_price: float,
         volume: int,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates End-Of-Day (EOD) stock data.
 
@@ -85,9 +85,11 @@ class DBClient:
                 session.merge(stock_eod)  # Use merge for ON CONFLICT (upsert) behavior
                 session.commit()
                 logger.info(f"Inserted/Updated data for {symbol} at {bus_date}.")
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting stock data for {symbol} at {bus_date}: {e}")
+                return False
 
     def insert_stock_adjusted_data(
         self,
