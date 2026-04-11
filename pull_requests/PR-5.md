@@ -1,4 +1,4 @@
-# PR-8: Add Combined Prefect Start Command
+# PR-5: Add Combined Prefect Start Command
 
 ## Purpose
 This PR introduces a new `start` target to the `prefect-orchestrator` application, allowing developers to start both the Prefect server and the worker (activating the work pool) with a single command.
