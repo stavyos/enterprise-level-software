@@ -24,3 +24,11 @@ db = DBClient(dbname="postgres", user="user", password="pwd", host="localhost", 
 # Insert data
 db.insert_stock_data(bus_date=date.today(), symbol="AAPL.US", ...)
 ```
+
+## Development
+
+This project follows the monorepo's unified linting and formatting standards using **Ruff**.
+
+- **Lint**: `npx nx run db-client:lint`
+- **Format**: `npx nx run db-client:format`
+- **Test**: `npx nx run db-client:test`

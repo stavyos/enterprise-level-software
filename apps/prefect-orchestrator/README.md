@@ -12,3 +12,11 @@ Management layer for the Prefect 3.x control plane and Kubernetes execution envi
 - **Start Local Server**: `npx nx run prefect-orchestrator:run`
 - **Start Local Worker**: `npx nx run prefect-orchestrator:worker`
 - **View Dashboard**: Access the Prefect UI (defaults to `http://localhost:4200`) to monitor flow runs and worker status.
+
+## Development
+
+This project follows the monorepo's unified linting and formatting standards using **Ruff**.
+
+- **Lint**: `npx nx run prefect-orchestrator:lint`
+- **Format**: `npx nx run prefect-orchestrator:format`
+- **Test**: `npx nx run prefect-orchestrator:test`
