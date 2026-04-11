@@ -34,6 +34,10 @@ This PR achieves 100% coverage of the EODHD API endpoints by expanding the `eodh
 - **Endpoint Correction**: Fixed critical path and parameter errors for `Bulk EOD`, `Technical Indicators`, and `Search` APIs identified during manual verification.
 - **Verification Script**: Validated all implemented endpoints against the live EODHD API using a production token.
 
+### 5. Root Workspace Cleanup
+- **`.gitignore`**: Added patterns for `.gemini`, `.nx`, `.env`, and `todos/` to prevent accidental commits of local configuration and temporary files.
+- **`package-lock.json`**: Synchronized the package lock file for the workspace.
+
 ## Architecture Visualization
 
 ```mermaid
