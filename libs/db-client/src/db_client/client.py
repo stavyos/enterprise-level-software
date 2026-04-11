@@ -429,4 +429,6 @@ class DBClient:
                 session.commit()
             except Exception as e:
                 session.rollback()
-                logger.error(f"Error inserting technical indicator {indicator_name} for {symbol}: {e}")
+                logger.error(
+                    f"Error inserting technical indicator {indicator_name} for {symbol}: {e}"
+                )

@@ -65,6 +65,7 @@ class EODHDClientBase:
     @property
     def stocks_etf(self):
         from .stocks_etf_client import StocksETFClient
+
         if self._stocks_etf is None:
             self._stocks_etf = StocksETFClient(self.api_key)
         return self._stocks_etf
@@ -72,6 +73,7 @@ class EODHDClientBase:
     @property
     def exchanges(self):
         from .exchanges_client import ExchangesClient
+
         if self._exchanges is None:
             self._exchanges = ExchangesClient(self.api_key)
         return self._exchanges
@@ -79,6 +81,7 @@ class EODHDClientBase:
     @property
     def bulk(self):
         from .bulk_client import BulkClient
+
         if self._bulk is None:
             self._bulk = BulkClient(self.api_key)
         return self._bulk
@@ -86,6 +89,7 @@ class EODHDClientBase:
     @property
     def technical(self):
         from .technical_indicator_client import TechnicalIndicatorClient
+
         if self._technical is None:
             self._technical = TechnicalIndicatorClient(self.api_key)
         return self._technical
@@ -93,6 +97,7 @@ class EODHDClientBase:
     @property
     def real_time(self):
         from .real_time_client import RealTimeClient
+
         if self._real_time is None:
             self._real_time = RealTimeClient(self.api_key)
         return self._real_time
@@ -100,6 +105,7 @@ class EODHDClientBase:
     @property
     def news(self):
         from .news_client import NewsClient
+
         if self._news is None:
             self._news = NewsClient(self.api_key)
         return self._news
@@ -107,6 +113,7 @@ class EODHDClientBase:
     @property
     def search_client(self):
         from .search_client import SearchClient
+
         if self._search is None:
             self._search = SearchClient(self.api_key)
         return self._search

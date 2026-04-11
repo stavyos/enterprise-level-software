@@ -1,14 +1,10 @@
 """Module for deploying Prefect flows for the ETL service."""
 
-from pathlib import Path
-
 from etl_service.etl.deployments_settings.deployments.base import AbstractDeploymentSettings
 from etl_service.etl.deployments_settings.enums import PrefectDeployment, PrefectDeploymentType
 from etl_service.etl.deployments_settings.mapper import map_deployment_to_settings
-from loguru import logger
-
-
-from prefect.deployments.runner import RunnerDeployment, deploy as prefect_deploy
+from prefect.deployments.runner import RunnerDeployment
+from prefect.deployments.runner import deploy as prefect_deploy
 
 
 def deploy_flow(
@@ -45,15 +41,16 @@ def deploy_flow(
         tags = [version_tag] if version_tag else []
         tags += ["etl", deployment_settings.deployment.value]
 
-        concurrency_limit = deployment_settings.get_concurrency_limit(
-            deployment_type=dep_type
-        )
+        concurrency_limit = deployment_settings.get_concurrency_limit(deployment_type=dep_type)
 
         # Entrypoint relative to the container's PYTHONPATH (/app/apps/etl-service/src)
         module_path = deployment_settings.flows_module.replace(".py", "")
-        entrypoint = f"etl_service.etl.flows.etl.{module_path}:{deployment_settings.get_entry_point(deployment_type=dep_type).split(':')[-1]}"
+        flow_function_name = deployment_settings.get_entry_point(deployment_type=dep_type).split(
+            ":"
+        )[-1]
+        entrypoint = f"etl_service.etl.flows.etl.{module_path}:{flow_function_name}"
 
-        # We use RunnerDeployment.from_entrypoint to tell Prefect EXACTLY where to find the code in the image.
+        # We use RunnerDeployment.from_entrypoint to tell Prefect EXACTLY where to find the code.
         d = RunnerDeployment.from_entrypoint(
             entrypoint=entrypoint,
             name=dep_name,
@@ -86,7 +83,7 @@ def deploy(image: str | None = None, version_tag: str | None = None) -> None:
         *all_deployments,
         work_pool_name=AbstractDeploymentSettings.WORK_POOL,
         image=image,
-        build=False
+        build=False,
     )
 
 

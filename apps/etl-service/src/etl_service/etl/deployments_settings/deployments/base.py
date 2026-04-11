@@ -4,7 +4,6 @@ import random
 import string
 from abc import ABC, abstractmethod
 from importlib.util import module_from_spec, spec_from_file_location
-from pathlib import Path
 from typing import Any, Callable
 
 from etl_service.etl.deployments_settings.deps_utils import (
@@ -103,9 +102,9 @@ class AbstractDeploymentSettings(ABC):
     @property
     def source_directory(self) -> str:
         """Source directory for the deployment."""
-        # Use absolute path for Docker/K8s development to ensure Prefect finds the source in the container
+        # Use absolute path for Docker/K8s development
+        # to ensure Prefect finds the source in the container
         return "/app/apps/etl-service/src/etl_service/etl/flows/etl"
-
 
     @property
     @abstractmethod
@@ -219,9 +218,9 @@ class AbstractDeploymentSettings(ABC):
         # For loading locally during registration, use the current working directory
         # which is apps/etl-service when running via nx
         from prefect.flows import load_flow_from_entrypoint
+
         entrypoint = f"src/etl_service/etl/flows/etl/{self.flows_module}:{function_name}"
         return load_flow_from_entrypoint(entrypoint)
-
 
     @property
     def saver_flow_function(self) -> Flow | None:

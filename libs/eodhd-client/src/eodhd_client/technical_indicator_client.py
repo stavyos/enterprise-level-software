@@ -12,7 +12,12 @@ class TechnicalIndicatorClient(EODHDClientBase):
         super().__init__(api_key)
 
     def get_technical_indicator(
-        self, symbol: str, exchange: str, function: str, period: int = None, **kwargs
+        self,
+        symbol: str,
+        exchange: str,
+        function: str,
+        period: int = None,
+        **kwargs,
     ) -> list:
         """
         Retrieves technical indicator data for a specific ticker.
@@ -22,7 +27,7 @@ class TechnicalIndicatorClient(EODHDClientBase):
             exchange (str): The exchange code.
             function (str): The technical indicator function (e.g., 'rsi', 'sma', 'ema').
             period (int, optional): The period for the indicator calculation. Defaults to None.
-            **kwargs: Additional parameters for specific indicators (e.g., 'from', 'to', 'interval').
+            **kwargs: Additional parameters for specific indicators (e.g., 'from', 'to').
 
         Returns:
             list: A list of technical indicator data points.

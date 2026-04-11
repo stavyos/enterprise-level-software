@@ -1,7 +1,5 @@
 ﻿from typing import Any
 
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 from db_client.models.news import MarketNews
 from db_client.models.stocks import (
     Base,
@@ -12,6 +10,8 @@ from db_client.models.stocks import (
     StockSplits,
     TechnicalIndicator,
 )
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 
 
 def generate_all_tables_sql(base: Any) -> str:

@@ -1,9 +1,10 @@
 """Script for saving market news data."""
 
-from datetime import datetime, date
 import os
-from eodhd_client.client import EODHDClientBase
+from datetime import date, datetime
+
 from db_client.client import DBClient
+from eodhd_client.client import EODHDClientBase
 from loguru import logger
 
 
@@ -18,7 +19,7 @@ def news_saver(
     """Core logic for saving market news data."""
     api_key = os.getenv("EODHD_API_KEY")
     client = EODHDClientBase(api_key).news
-    
+
     db_client = DBClient(
         dbname=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
@@ -33,7 +34,7 @@ def news_saver(
             tags=tags,
             from_date=from_date.isoformat() if from_date else None,
             to_date=to_date.isoformat() if to_date else None,
-            limit=limit
+            limit=limit,
         )
         for article in articles:
             db_client.insert_market_news(
@@ -42,7 +43,7 @@ def news_saver(
                 content=article["content"],
                 link=article["link"],
                 symbols=article.get("symbols", []),
-                tags=article.get("tags", [])
+                tags=article.get("tags", []),
             )
         logger.info(f"Saved {len(articles)} news articles.")
     except Exception as e:

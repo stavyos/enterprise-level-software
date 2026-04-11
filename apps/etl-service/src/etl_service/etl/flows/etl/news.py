@@ -2,6 +2,7 @@
 
 import datetime
 import uuid
+
 from etl_service.etl.deployments_settings.deployments.stocks.news import DeploymentNews
 from etl_service.etl.flows.models.news import NewsSaveRequest
 from etl_service.etl.flows.utils import enable_loguru_support
@@ -23,7 +24,7 @@ def market_news_saver(save_request: NewsSaveRequest) -> None:
         from_date=save_request.from_date,
         to_date=save_request.to_date,
         limit=save_request.limit,
-        run_id=save_request.run_id
+        run_id=save_request.run_id,
     )
 
 
@@ -34,11 +35,11 @@ async def market_news_saver_dispatcher(
     tags: str | None = None,
     from_date: datetime.date | None = None,
     to_date: datetime.date | None = None,
-    limit: int = 50
+    limit: int = 50,
 ) -> None:
     """Orchestrates market news saving."""
     run_id = str(uuid.uuid4())
-    
+
     # Simple dispatch for now
     params_list = [
         {
@@ -48,7 +49,7 @@ async def market_news_saver_dispatcher(
                 from_date=from_date,
                 to_date=to_date,
                 limit=limit,
-                run_id=run_id
+                run_id=run_id,
             )
         }
     ]

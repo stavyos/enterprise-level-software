@@ -1,9 +1,10 @@
 """Script for saving technical indicator data."""
 
-from datetime import date
 import os
-from eodhd_client.client import EODHDClientBase
+from datetime import date
+
 from db_client.client import DBClient
+from eodhd_client.client import EODHDClientBase
 from loguru import logger
 
 
@@ -13,7 +14,7 @@ def technical_indicator_saver(
     """Core logic for saving technical indicator data."""
     api_key = os.getenv("EODHD_API_KEY")
     client = EODHDClientBase(api_key).technical
-    
+
     db_client = DBClient(
         dbname=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
@@ -31,7 +32,7 @@ def technical_indicator_saver(
                 bus_date=date.fromisoformat(item["date"]),
                 symbol=symbol,
                 indicator_name=f"{function}_{period}" if period else function,
-                value=float(item[function]) if item.get(function) is not None else None
+                value=float(item[function]) if item.get(function) is not None else None,
             )
         logger.info(f"Saved {len(indicators)} technical indicators for {symbol}.")
     except Exception as e:

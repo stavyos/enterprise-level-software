@@ -11,7 +11,9 @@ class RealTimeClient(EODHDClientBase):
     def __init__(self, api_key: str):
         super().__init__(api_key)
 
-    def get_real_time_data(self, symbol: str, exchange: str, additional_symbols: list[str] = None) -> dict | list:
+    def get_real_time_data(
+        self, symbol: str, exchange: str, additional_symbols: list[str] = None
+    ) -> dict | list:
         """
         Retrieves real-time (delayed) data for one or more tickers.
 
