@@ -13,7 +13,10 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "uv run python -m etl_service.etl.deploy_etls",
-        "cwd": "{projectRoot}"
+        "cwd": "{projectRoot}",
+        "env": {
+          "PYTHONPATH": "../../libs/db-client/src;../../libs/eodhd-client/src;src"
+        }
       },
       "dependsOn": ["install"]
     },

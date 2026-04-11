@@ -18,7 +18,7 @@ DEPLOYMENT_TECHNICAL = DeploymentTechnical()
 
 @flow(**DEPLOYMENT_TECHNICAL.saver_flow_decorator_args)
 @enable_loguru_support
-def technical_indicator_saver(save_request: TechnicalIndicatorSaveRequest) -> None:
+def technical_indicators_saver(save_request: TechnicalIndicatorSaveRequest) -> None:
     """Flow task to save technical indicators."""
     logger.info(
         f"Running technical indicator saver for {save_request.symbol} "
@@ -35,10 +35,13 @@ def technical_indicator_saver(save_request: TechnicalIndicatorSaveRequest) -> No
 
 @flow(**DEPLOYMENT_TECHNICAL.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
-async def technical_indicator_saver_dispatcher(
+async def technical_indicators_saver_dispatcher(
     tickers: list[dict], function: str, period: int | None = None
 ) -> None:
     """Orchestrates technical indicators saving."""
+    if not tickers:
+        raise ValueError("Tickers must be supplied for technical_indicators_saver_dispatcher.")
+
     run_id = str(uuid.uuid4())
 
     params_list = [

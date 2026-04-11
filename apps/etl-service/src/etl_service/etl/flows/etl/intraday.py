@@ -38,10 +38,10 @@ async def intraday_saver_dispatcher(
     logger.info(f"Starting intraday_dispatcher_saver for {bus_date=}")
 
     if not tickers:
-        # Default testing tickers
-        tickers = ["AAPL.US", "MSFT.US"]
+        raise ValueError("Tickers must be supplied for intraday_saver_dispatcher.")
 
     # Dispatch one saver per ticker for intraday (heavy data)
+
     params_list = [{"bus_date": bus_date, "tickers": [ticker]} for ticker in tickers]
 
     await DEPLOYMENT_INTRADAY.dispatch_sub_flows(params=params_list)

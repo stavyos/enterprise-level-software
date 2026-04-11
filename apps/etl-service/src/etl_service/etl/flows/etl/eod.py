@@ -67,32 +67,22 @@ def eod_saver(save_request: EODSaveRequest) -> None:
 
 @flow(**DEPLOYMENT_EOD.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
-async def eod_saver_dispatcher(bus_date: datetime.date, exchanges: list[str] | None = None) -> None:
+async def eod_saver_dispatcher(bus_date: datetime.date, tickers: list[str] | None = None) -> None:
     """Orchestrates EOD data saving by dispatching multiple parallel saver flows.
 
     Args:
         bus_date (datetime.date): The business date.
-        exchanges (list[str] | None, optional): List of exchanges to process. Defaults to None.
+        tickers (list[str] | None, optional): List of tickers to process. Defaults to None.
     """
     logger.info(f"Running EOD dispatcher saver for bus_date={bus_date}")
 
+    if not tickers:
+        raise ValueError("Tickers must be supplied for eod_saver_dispatcher.")
+
     run_id = str(uuid.uuid4())
 
-    # TODO (syosef): Get all tickers from exchanges, if None provided, get from all exchanges
-
-    # Testing with hardcoded params
     chunks = _get_tickers_chunks(
-        tickers=[
-            "AAPL.US",
-            "MSFT.US",
-            "GOOGL.US",
-            "AMZN.US",
-            "META.US",
-            "TSLA.US",
-            "NVDA.US",
-            "JPM.US",
-            "JNJ.US",
-        ],
+        tickers=tickers,
         chunk_size=2,
         bus_date=bus_date,
         run_id=run_id,
