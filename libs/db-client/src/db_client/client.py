@@ -6,13 +6,10 @@ from sqlalchemy.engine import URL as PG_URL
 from sqlalchemy.orm import sessionmaker
 
 from .models import (
-    EconomicEvent,
-    MacroIndicator,
     MarketNews,
     StockAdjusted,
     StockDividends,
     StockEOD,
-    StockFundamentals,
     StockIntraday,
     StockSplits,
     TechnicalIndicator,
@@ -389,95 +386,6 @@ class DBClient:
                 session.rollback()
                 logger.error(f"Error querying splits stock data for {symbol}: {e}")
                 return None
-
-    def insert_fundamentals_data(
-        self,
-        symbol: str,
-        exchange: str,
-        updated_at: date,
-        general: dict,
-        highlights: dict,
-        valuation: dict,
-        shares_stats: dict,
-        technicals: dict,
-        splits_dividends: dict,
-        analyst_ratings: dict,
-        holders: dict,
-        insider_transactions: dict,
-        earnings: dict,
-        financials: dict,
-    ) -> None:
-        """Inserts or updates fundamental data."""
-        with self._session() as session:
-            try:
-                fundamentals = StockFundamentals(
-                    symbol=symbol,
-                    exchange=exchange,
-                    updated_at=updated_at,
-                    general=general,
-                    highlights=highlights,
-                    valuation=valuation,
-                    shares_stats=shares_stats,
-                    technicals=technicals,
-                    splits_dividends=splits_dividends,
-                    analyst_ratings=analyst_ratings,
-                    holders=holders,
-                    insider_transactions=insider_transactions,
-                    earnings=earnings,
-                    financials=financials,
-                )
-                session.merge(fundamentals)
-                session.commit()
-                logger.info(f"Inserted/Updated fundamentals for {symbol}.{exchange}")
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Error inserting fundamentals for {symbol}: {e}")
-
-    def insert_economic_event(
-        self,
-        event_date: date,
-        country: str,
-        event_type: str,
-        value: float,
-        previous_value: float,
-        unit: str,
-        comparison: str = None,
-    ) -> None:
-        """Inserts or updates an economic event."""
-        with self._session() as session:
-            try:
-                event = EconomicEvent(
-                    event_date=event_date,
-                    country=country,
-                    event_type=event_type,
-                    value=value,
-                    previous_value=previous_value,
-                    unit=unit,
-                    comparison=comparison,
-                )
-                session.merge(event)
-                session.commit()
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Error inserting economic event {event_type} for {country}: {e}")
-
-    def insert_macro_indicator(
-        self, country: str, indicator_code: str, bus_date: date, value: float
-    ) -> None:
-        """Inserts or updates a macro indicator."""
-        with self._session() as session:
-            try:
-                indicator = MacroIndicator(
-                    country=country,
-                    indicator_code=indicator_code,
-                    bus_date=bus_date,
-                    value=value,
-                )
-                session.merge(indicator)
-                session.commit()
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Error inserting macro indicator {indicator_code} for {country}: {e}")
 
     def insert_market_news(
         self,

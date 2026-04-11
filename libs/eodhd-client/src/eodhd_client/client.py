@@ -56,10 +56,8 @@ class EODHDClientBase:
 
         self._stocks_etf = None
         self._exchanges = None
-        self._fundamentals = None
         self._bulk = None
         self._technical = None
-        self._economic = None
         self._real_time = None
         self._news = None
         self._search = None
@@ -79,13 +77,6 @@ class EODHDClientBase:
         return self._exchanges
 
     @property
-    def fundamentals(self):
-        from .fundamentals_client import FundamentalsClient
-        if self._fundamentals is None:
-            self._fundamentals = FundamentalsClient(self.api_key)
-        return self._fundamentals
-
-    @property
     def bulk(self):
         from .bulk_client import BulkClient
         if self._bulk is None:
@@ -98,13 +89,6 @@ class EODHDClientBase:
         if self._technical is None:
             self._technical = TechnicalIndicatorClient(self.api_key)
         return self._technical
-
-    @property
-    def economic(self):
-        from .economic_client import EconomicClient
-        if self._economic is None:
-            self._economic = EconomicClient(self.api_key)
-        return self._economic
 
     @property
     def real_time(self):

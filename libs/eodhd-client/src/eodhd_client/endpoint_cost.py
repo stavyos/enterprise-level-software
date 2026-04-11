@@ -6,15 +6,12 @@ class EndpointCost(Enum):
     Enumeration of EODHD API endpoints and their associated call costs.
     """
 
-    FUNDAMENTALS = ("fundamentals", 10)
     EOD = ("eod", 1)
     REAL_TIME = ("real-time", 1)
     HISTORICAL_MARKET_CAP = ("historical-market-cap", 10)
     EARNINGS_TRENDS = ("earnings-trends", 10)
     SCREENER = ("screener", 5)
     INTRADAY = ("intraday", 5)
-    ECONOMIC_EVENTS = ("economic-events", 1)
-    MACRO_INDICATORS = ("macro-indicators", 10)
     TECHNICAL_INDICATOR = ("technical", 5)
     EXCHANGE_DETAILS = ("exchange-details", 5)
     UPCOMING_SPLITS = ("upcoming-splits", 10)
@@ -26,7 +23,6 @@ class EndpointCost(Enum):
     NEWS_SENTIMENT = ("news-sentiment", 5)
     EXCHANGE_SYMBOLS = ("exchange-symbols", 1)
     BULK_EOD = ("eod-bulk-last-day", 100)
-    BULK_FUNDAMENTALS = ("bulk-fundamentals", 100)
     INSIDER_TRANSACTIONS = ("insider-transactions", 10)
     SEARCH = ("search", 5)
     OPTIONS = ("options", 5)

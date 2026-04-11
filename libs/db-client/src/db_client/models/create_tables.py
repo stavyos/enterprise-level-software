@@ -2,9 +2,6 @@
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
-from db_client.models.economic import EconomicEvent
-from db_client.models.fundamentals import StockFundamentals
-from db_client.models.macro import MacroIndicator
 from db_client.models.news import MarketNews
 from db_client.models.stocks import (
     Base,
@@ -54,8 +51,6 @@ def generate_all_tables_sql(base: Any) -> str:
             StockDividends.__tablename__,
             StockSplits.__tablename__,
             TechnicalIndicator.__tablename__,
-            MacroIndicator.__tablename__,
-            EconomicEvent.__tablename__,
         ]:
             tables_sql.append(
                 f"SELECT create_hypertable('{table.name}', 'bus_date', if_not_exists => TRUE);"
@@ -67,10 +62,6 @@ def generate_all_tables_sql(base: Any) -> str:
         elif table.name == MarketNews.__tablename__:
             tables_sql.append(
                 f"SELECT create_hypertable('{table.name}', 'date', if_not_exists => TRUE);"
-            )
-        elif table.name == StockFundamentals.__tablename__:
-            tables_sql.append(
-                f"SELECT create_hypertable('{table.name}', 'updated_at', if_not_exists => TRUE);"
             )
 
         # Iterate over all indexes of the table

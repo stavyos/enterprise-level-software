@@ -1,25 +1,4 @@
 CREATE EXTENSION IF NOT EXISTS timescaledb;
-DROP TABLE IF EXISTS economic_events;
-CREATE TABLE economic_events (
-	event_date DATE NOT NULL, 
-	country TEXT NOT NULL, 
-	event_type TEXT NOT NULL, 
-	value FLOAT, 
-	previous_value FLOAT, 
-	unit TEXT, 
-	comparison TEXT, 
-	PRIMARY KEY (event_date, country, event_type)
-);
-SELECT create_hypertable('economic_events', 'bus_date', if_not_exists => TRUE);
-DROP TABLE IF EXISTS macro_indicators;
-CREATE TABLE macro_indicators (
-	country TEXT NOT NULL, 
-	indicator_code TEXT NOT NULL, 
-	bus_date DATE NOT NULL, 
-	value FLOAT, 
-	PRIMARY KEY (country, indicator_code, bus_date)
-);
-SELECT create_hypertable('macro_indicators', 'bus_date', if_not_exists => TRUE);
 DROP TABLE IF EXISTS market_news;
 CREATE TABLE market_news (
 	date TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
@@ -71,25 +50,6 @@ CREATE TABLE stock_eod (
 	PRIMARY KEY (bus_date, symbol)
 );
 SELECT create_hypertable('stock_eod', 'bus_date', if_not_exists => TRUE);
-DROP TABLE IF EXISTS stock_fundamentals;
-CREATE TABLE stock_fundamentals (
-	symbol TEXT NOT NULL, 
-	exchange TEXT NOT NULL, 
-	updated_at DATE NOT NULL, 
-	general JSON, 
-	highlights JSON, 
-	valuation JSON, 
-	shares_stats JSON, 
-	technicals JSON, 
-	splits_dividends JSON, 
-	analyst_ratings JSON, 
-	holders JSON, 
-	insider_transactions JSON, 
-	earnings JSON, 
-	financials JSON, 
-	PRIMARY KEY (symbol, exchange, updated_at)
-);
-SELECT create_hypertable('stock_fundamentals', 'updated_at', if_not_exists => TRUE);
 DROP TABLE IF EXISTS stock_intraday;
 CREATE TABLE stock_intraday (
 	timestamp INTEGER NOT NULL, 
