@@ -23,8 +23,8 @@ class SearchClient(EODHDClientBase):
         Returns:
             list: A list of search results.
         """
-        endpoint = "search"
-        params = {"q": query, "limit": limit}
+        endpoint = f"search/{query}"
+        params = {"limit": limit}
         if type:
             params["type"] = type
         return self._make_request(endpoint, params)

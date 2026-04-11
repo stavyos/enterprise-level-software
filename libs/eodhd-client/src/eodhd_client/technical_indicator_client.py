@@ -27,7 +27,7 @@ class TechnicalIndicatorClient(EODHDClientBase):
         Returns:
             list: A list of technical indicator data points.
         """
-        endpoint = f"technical-indicator/{symbol}.{exchange}"
+        endpoint = f"technical/{symbol}.{exchange}"
         params = {"function": function}
         if period:
             params["period"] = period

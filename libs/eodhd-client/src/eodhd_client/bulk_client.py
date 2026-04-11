@@ -23,7 +23,7 @@ class BulkClient(EODHDClientBase):
         Returns:
             list: A list of EOD data for multiple symbols.
         """
-        endpoint = f"bulk-eod/{country}"
+        endpoint = f"eod-bulk-last-day/{country}"
         params = {}
         if date:
             params["date"] = date
@@ -43,7 +43,7 @@ class BulkClient(EODHDClientBase):
         Returns:
             list: A list of splits data for multiple symbols.
         """
-        endpoint = f"bulk-eod/{country}"
+        endpoint = f"eod-bulk-last-day/{country}"
         params = {"type": "splits"}
         if date:
             params["date"] = date
@@ -63,7 +63,7 @@ class BulkClient(EODHDClientBase):
         Returns:
             list: A list of dividends data for multiple symbols.
         """
-        endpoint = f"bulk-eod/{country}"
+        endpoint = f"eod-bulk-last-day/{country}"
         params = {"type": "dividends"}
         if date:
             params["date"] = date
