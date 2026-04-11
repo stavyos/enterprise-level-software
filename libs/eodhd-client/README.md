@@ -25,3 +25,11 @@ rsi = client.technical.get_technical_indicator("AAPL", "US", function="rsi", per
 # Bulk Download
 bulk_eod = client.bulk.get_bulk_eod(country="US")
 ```
+
+## Development
+
+This project follows the monorepo's unified linting and formatting standards using **Ruff**.
+
+- **Lint**: `npx nx run eodhd-client:lint`
+- **Format**: `npx nx run eodhd-client:format`
+- **Test**: `npx nx run eodhd-client:test`

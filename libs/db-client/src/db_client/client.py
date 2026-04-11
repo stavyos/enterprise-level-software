@@ -87,7 +87,9 @@ class DBClient:
                 logger.info(f"Inserted/Updated data for {symbol} at {bus_date}.")
             except Exception as e:
                 session.rollback()
-                logger.error(f"Error inserting stock data for {symbol} at {bus_date}: {e}")
+                logger.error(
+                    f"Error inserting stock data for {symbol} at {bus_date}: {e}"
+                )
 
     def insert_stock_adjusted_data(
         self,
@@ -127,10 +129,14 @@ class DBClient:
                 )
                 session.merge(stock_adjusted)
                 session.commit()
-                logger.info(f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}.")
+                logger.info(
+                    f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}."
+                )
             except Exception as e:
                 session.rollback()
-                logger.error(f"Error inserting adjusted stock data for {symbol} at {bus_date}: {e}")
+                logger.error(
+                    f"Error inserting adjusted stock data for {symbol} at {bus_date}: {e}"
+                )
 
     def get_stock_data(self, symbol: str, limit: int = 2) -> list[StockEOD] | None:
         """
@@ -159,7 +165,9 @@ class DBClient:
                 logger.error(f"Error querying stock data for {symbol}: {e}")
                 return None
 
-    def get_stock_adjusted_data(self, symbol: str, limit: int = 2) -> list[StockAdjusted] | None:
+    def get_stock_adjusted_data(
+        self, symbol: str, limit: int = 2
+    ) -> list[StockAdjusted] | None:
         """
         Retrieves adjusted stock data for a specific symbol.
 
@@ -227,12 +235,18 @@ class DBClient:
                 )
                 session.merge(stock_dividends)
                 session.commit()
-                logger.info(f"Inserted/Updated dividends data for {symbol} at {bus_date}.")
+                logger.info(
+                    f"Inserted/Updated dividends data for {symbol} at {bus_date}."
+                )
             except Exception as e:
                 session.rollback()
-                logger.error(f"Error inserting dividends data for {symbol} at {bus_date}: {e}")
+                logger.error(
+                    f"Error inserting dividends data for {symbol} at {bus_date}: {e}"
+                )
 
-    def get_stock_dividends_data(self, symbol: str, limit: int = 2) -> list[StockDividends] | None:
+    def get_stock_dividends_data(
+        self, symbol: str, limit: int = 2
+    ) -> list[StockDividends] | None:
         """
         Retrieves dividend data for a specific symbol.
 
@@ -300,12 +314,18 @@ class DBClient:
                 )
                 session.merge(stock_intraday)
                 session.commit()
-                logger.info(f"Inserted/Updated intraday data for {symbol} at {bus_date}.")
+                logger.info(
+                    f"Inserted/Updated intraday data for {symbol} at {bus_date}."
+                )
             except Exception as e:
                 session.rollback()
-                logger.error(f"Error inserting intraday stock data for {symbol} at {bus_date}: {e}")
+                logger.error(
+                    f"Error inserting intraday stock data for {symbol} at {bus_date}: {e}"
+                )
 
-    def get_stock_intraday_data(self, symbol: str, limit: int = 2) -> list[StockIntraday] | None:
+    def get_stock_intraday_data(
+        self, symbol: str, limit: int = 2
+    ) -> list[StockIntraday] | None:
         """
         Retrieves intraday stock data for a specific symbol.
 
@@ -358,9 +378,13 @@ class DBClient:
                 logger.info(f"Inserted/Updated splits data for {symbol} at {bus_date}.")
             except Exception as e:
                 session.rollback()
-                logger.error(f"Error inserting splits stock data for {symbol} at {bus_date}: {e}")
+                logger.error(
+                    f"Error inserting splits stock data for {symbol} at {bus_date}: {e}"
+                )
 
-    def get_stock_splits_data(self, symbol: str, limit: int = 2) -> list[StockSplits] | None:
+    def get_stock_splits_data(
+        self, symbol: str, limit: int = 2
+    ) -> list[StockSplits] | None:
         """
         Retrieves stock split data for a specific symbol.
 

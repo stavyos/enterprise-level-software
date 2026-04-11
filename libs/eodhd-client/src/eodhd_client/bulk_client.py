@@ -31,7 +31,9 @@ class BulkClient(EODHDClientBase):
             params["symbols"] = symbols
         return self._make_request(endpoint, params)
 
-    def get_bulk_splits(self, country: str, date: str = None, symbols: str = None) -> list:
+    def get_bulk_splits(
+        self, country: str, date: str = None, symbols: str = None
+    ) -> list:
         """
         Retrieves bulk stock splits data for a specific country.
 
@@ -51,7 +53,9 @@ class BulkClient(EODHDClientBase):
             params["symbols"] = symbols
         return self._make_request(endpoint, params)
 
-    def get_bulk_dividends(self, country: str, date: str = None, symbols: str = None) -> list:
+    def get_bulk_dividends(
+        self, country: str, date: str = None, symbols: str = None
+    ) -> list:
         """
         Retrieves bulk dividends data for a specific country.
 

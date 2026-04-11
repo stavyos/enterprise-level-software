@@ -1,5 +1,5 @@
-﻿import time
 from datetime import datetime, timedelta
+import time
 
 
 class RateLimiter:
@@ -55,11 +55,13 @@ class RateLimiter:
 
             # Find the earliest point in time where enough cost would have expired
             # to allow the new request.
-            for i, (ts, c) in enumerate(self.request_costs):
+            for _, (ts, c) in enumerate(self.request_costs):
                 if (temp_cost_sum + cost) <= self.limit:
                     break
                 temp_cost_sum -= c
-                time_to_wait = (ts + timedelta(seconds=self.period_seconds)) - datetime.now()
+                time_to_wait = (
+                    ts + timedelta(seconds=self.period_seconds)
+                ) - datetime.now()
                 if time_to_wait.total_seconds() > wait_seconds:
                     wait_seconds = time_to_wait.total_seconds()
 

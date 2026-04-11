@@ -1,10 +1,10 @@
-﻿__all__ = ["EODHDClientBase"]
+__all__ = ["EODHDClientBase"]
 
 import time
 from urllib.parse import urljoin
 
-import requests
 from loguru import logger
+import requests
 
 from .endpoint_cost import EndpointCost
 from .eod_exceptions import (
@@ -51,7 +51,9 @@ class EODHDClientBase:
         self.session = requests.Session()
 
         daily_limiter = RateLimiter(self.DAILY_REQUEST_LIMIT, self.DAILY_PERIOD_SECONDS)
-        minute_limiter = RateLimiter(self.MINUTE_REQUEST_LIMIT, self.MINUTE_PERIOD_SECONDS)
+        minute_limiter = RateLimiter(
+            self.MINUTE_REQUEST_LIMIT, self.MINUTE_PERIOD_SECONDS
+        )
         self.rate_limiter = CompositeRateLimiter([daily_limiter, minute_limiter])
 
         self._stocks_etf = None
@@ -163,7 +165,7 @@ class EODHDClientBase:
 
         request_cost = self._get_endpoint_cost(endpoint=endpoint)
 
-        for attempt in range(self.MAX_RETRIES):
+        for _ in range(self.MAX_RETRIES):
             self.rate_limiter.wait_for_next_request(cost=request_cost)
 
             try:
@@ -197,7 +199,9 @@ class EODHDClientBase:
                 status_code = http_err.response.status_code
                 response_data = {}
                 if http_err.response.content:
-                    if "application/json" in http_err.response.headers.get("Content-Type", ""):
+                    if "application/json" in http_err.response.headers.get(
+                        "Content-Type", ""
+                    ):
                         try:
                             response_data = http_err.response.json()
                         except ValueError:
@@ -206,21 +210,29 @@ class EODHDClientBase:
                         response_data = {"raw_response": http_err.response.text}
 
                 if status_code == 401:
-                    raise EODHDUnauthorizedError(response_data=response_data)
+                    raise EODHDUnauthorizedError(
+                        response_data=response_data
+                    ) from http_err
                 elif status_code == 400:
-                    raise EODHDInvalidRequestError(response_data=response_data)
+                    raise EODHDInvalidRequestError(
+                        response_data=response_data
+                    ) from http_err
                 elif status_code == 404:
-                    raise EODHDNotFoundError(response_data=response_data)
+                    raise EODHDNotFoundError(response_data=response_data) from http_err
                 elif status_code == 429:
-                    raise EODHDRateLimitExceededError(response_data=response_data)
+                    raise EODHDRateLimitExceededError(
+                        response_data=response_data
+                    ) from http_err
                 elif 500 <= status_code < 600:
-                    raise EODHDServerError(status_code=status_code, response_data=response_data)
+                    raise EODHDServerError(
+                        status_code=status_code, response_data=response_data
+                    ) from http_err
                 else:
                     raise EODHDAPIError(
                         f"An unexpected HTTP error occurred: {http_err}",
                         status_code=status_code,
                         response_data=response_data,
-                    )
+                    ) from http_err
             except requests.exceptions.ConnectionError as conn_err:
                 logger.warning(
                     f"Connection error: {conn_err}. Retrying in {self.RETRY_DELAY_SECONDS}s..."
@@ -232,7 +244,9 @@ class EODHDClientBase:
                 )
                 time.sleep(self.RETRY_DELAY_SECONDS)
             except requests.exceptions.RequestException as req_err:
-                raise EODHDAPIError(f"An unexpected request error occurred: {req_err}")
+                raise EODHDAPIError(
+                    f"An unexpected request error occurred: {req_err}"
+                ) from req_err
 
         raise EODHDAPIError(
             f"Failed to make request to {full_url} after {self.MAX_RETRIES} attempts."

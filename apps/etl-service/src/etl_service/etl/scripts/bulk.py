@@ -1,11 +1,12 @@
 """Script for saving bulk historical data."""
 
-import os
 from datetime import date
+import os
+
+from loguru import logger
 
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
-from loguru import logger
 
 
 def bulk_data_saver(country: str, bus_date: date, data_type: str, run_id: str) -> None:
@@ -39,7 +40,9 @@ def bulk_data_saver(country: str, bus_date: date, data_type: str, run_id: str) -
             data = client.get_bulk_splits(country=country, date=bus_date.isoformat())
             for item in data:
                 db_client.insert_stock_splits_data(
-                    bus_date=bus_date, symbol=f"{item['code']}.{country}", split=item["split"]
+                    bus_date=bus_date,
+                    symbol=f"{item['code']}.{country}",
+                    split=item["split"],
                 )
         elif data_type == "dividends":
             data = client.get_bulk_dividends(country=country, date=bus_date.isoformat())

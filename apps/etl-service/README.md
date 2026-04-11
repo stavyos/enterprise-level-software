@@ -23,4 +23,10 @@ Flows are automatically registered with Prefect using:
 npx nx run etl-service:deploy
 ```
 
-All flows are Kubernetes-ready with pre-configured resource requests and limits defined in `deployments_settings/`.
+## Development
+
+This project follows the monorepo's unified linting and formatting standards using **Ruff**.
+
+- **Lint**: `npx nx run etl-service:lint`
+- **Format**: `npx nx run etl-service:format`
+- **Test**: `npx nx run etl-service:test`

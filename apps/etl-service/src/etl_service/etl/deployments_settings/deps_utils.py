@@ -1,6 +1,9 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from etl_service.etl.deployments_settings.enums import PrefectDeployment, PrefectDeploymentType
+from etl_service.etl.deployments_settings.enums import (
+    PrefectDeployment,
+    PrefectDeploymentType,
+)
 
 
 def get_deployment_flow_name(

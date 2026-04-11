@@ -1,8 +1,9 @@
 """Utility functions for Prefect flows."""
 
-import inspect
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+import inspect
+from typing import Any
 
 from prefect import get_run_logger
 
@@ -49,7 +50,8 @@ def _enable_loguru_support() -> Any:
 
     logger.add(
         run_logger.info,
-        filter=lambda record: record["level"].name not in ["DEBUG", "WARNING", "ERROR", "CRITICAL"],
+        filter=lambda record: record["level"].name
+        not in ["DEBUG", "WARNING", "ERROR", "CRITICAL"],
         level="TRACE",
         format=log_format,
     )

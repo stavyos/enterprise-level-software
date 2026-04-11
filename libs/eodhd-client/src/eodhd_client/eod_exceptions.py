@@ -1,4 +1,4 @@
-﻿__all__ = [
+__all__ = [
     "EODHDAPIError",
     "EODHDUnauthorizedError",
     "EODHDInvalidRequestError",
@@ -11,7 +11,9 @@
 class EODHDAPIError(Exception):
     """Base exception for all EODHD API-related errors."""
 
-    def __init__(self, message: str, status_code: int = None, response_data: dict = None):
+    def __init__(
+        self, message: str, status_code: int = None, response_data: dict = None
+    ):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
@@ -19,7 +21,6 @@ class EODHDAPIError(Exception):
 
     def __str__(self):
         if self.status_code and self.response_data:
-
             return (
                 f"EODHDAPIError: Status {self.status_code} - "
                 f"{self.message} - "
@@ -34,7 +35,9 @@ class EODHDUnauthorizedError(EODHDAPIError):
     """Raised when the API key is invalid or missing (HTTP 401)."""
 
     def __init__(
-        self, message: str = "Unauthorized: Invalid or missing API key.", response_data: dict = None
+        self,
+        message: str = "Unauthorized: Invalid or missing API key.",
+        response_data: dict = None,
     ):
         super().__init__(message, 401, response_data)
 
@@ -43,7 +46,9 @@ class EODHDInvalidRequestError(EODHDAPIError):
     """Raised for bad requests (HTTP 400)."""
 
     def __init__(
-        self, message: str = "Bad Request: The request was invalid.", response_data: dict = None
+        self,
+        message: str = "Bad Request: The request was invalid.",
+        response_data: dict = None,
     ):
         super().__init__(message, 400, response_data)
 
@@ -63,7 +68,9 @@ class EODHDRateLimitExceededError(EODHDAPIError):
     """Raised when the API rate limit is exceeded (HTTP 429)."""
 
     def __init__(
-        self, message: str = "Rate Limit Exceeded: Too many requests.", response_data: dict = None
+        self,
+        message: str = "Rate Limit Exceeded: Too many requests.",
+        response_data: dict = None,
     ):
         super().__init__(message, 429, response_data)
 

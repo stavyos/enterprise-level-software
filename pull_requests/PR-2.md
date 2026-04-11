@@ -109,7 +109,7 @@ graph TD
     subgraph tools
         linter[linter]
     end
-    
+
     etl-service --> eodhd-client
     etl-service --> db-client
     eodhd-client --> db-client
