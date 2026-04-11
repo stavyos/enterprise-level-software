@@ -4,15 +4,32 @@
 This PR achieves 100% coverage of the EODHD API endpoints by expanding the `eodhd-client` library, updating the `db-client` persistence layer with new models, and implementing corresponding ETL flows in `etl-service`.
 
 ## Reviewer Reading Guide
-1.  **Libraries**:
-    - `libs/eodhd-client`: New specialized clients (`Bulk`, `Technical`, `News`, `RealTime`, `Search`).
-    - `libs/db-client`: New SQLAlchemy models and `DBClient` methods for data persistence (News, Technical).
-2.  **ETL Flows**:
-    - `apps/etl-service/src/etl_service/etl/flows/etl/`: Implementation of new Prefect flows (News, Technical, Bulk).
-    - `apps/etl-service/src/etl_service/etl/scripts/`: Saver logic for each data category.
-3.  **Infrastructure**:
-    - `libs/db-client/src/db_client/models/create_tables.py`: Updated to include new tables and TimescaleDB hypertables.
-    - `libs/db-client/src/stocks.sql`: Regenerated schema.
+
+To understand these changes effectively, please review the files in the following order:
+
+### 1. Foundational Libraries (The "How")
+Start here to see how we interact with external systems.
+- **`libs/eodhd-client`**: Implementation of specialized clients (`Bulk`, `Technical`, `News`, `RealTime`, `Search`) and the lazy-loading property pattern in `client.py`.
+- **`libs/db-client`**: New SQLAlchemy models for `MarketNews` and `TechnicalIndicator`, and their corresponding upsert methods in `DBClient`.
+
+### 2. Functional Logic (The "What")
+These scripts contain the core business logic, bridging the clients and the database.
+- **`apps/etl-service/src/etl_service/etl/scripts/`**: Implementation of saver logic for `eod`, `intraday`, `news`, `technical`, and `bulk` data.
+
+### 3. Workflow Orchestration (The "Orchestrator")
+Review how the functional logic is wrapped into scalable pipelines.
+- **`apps/etl-service/src/etl_service/etl/flows/etl/`**: Implementation of the **Dispatcher/Saver pattern** for each data category.
+
+### 4. Infrastructure & Configuration
+Configuration for running the system at scale.
+- **`apps/etl-service/src/etl_service/etl/deployments_settings/`**: Kubernetes job variables, resource limits, and flow-to-settings mapping.
+- **`libs/db-client/src/db_client/models/create_tables.py`**: Updated hypertable generation logic and the resulting `stocks.sql`.
+
+### 5. Documentation & Metadata
+Final verification of project documentation and workspace settings.
+- **Root `README.md`** and **Sub-project READMEs**: Updated to reflect the new capabilities.
+- **`docs/`**: New technical guides in the "Tech Learning Center".
+- **`.gitignore`**: Added workspace protection rules.
 
 ## Key Changes
 ### 1. EODHD Client Expansion
