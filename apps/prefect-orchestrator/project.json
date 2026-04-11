@@ -24,6 +24,16 @@
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run prefect-orchestrator:run",
+          "nx run prefect-orchestrator:worker"
+        ],
+        "parallel": true
+      }
     }
   }
 }

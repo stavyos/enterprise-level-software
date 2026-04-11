@@ -8,5 +8,7 @@ Management layer for the Prefect 3.x control plane and Kubernetes execution envi
 - **Workers**: Deployment and scaling of Prefect workers within the cluster.
 
 ## Key Commands
+- **Start All**: `npx nx run prefect-orchestrator:start` (Starts both server and worker).
+- **Start Local Server**: `npx nx run prefect-orchestrator:run`
 - **Start Local Worker**: `npx nx run prefect-orchestrator:worker`
 - **View Dashboard**: Access the Prefect UI (defaults to `http://localhost:4200`) to monitor flow runs and worker status.
