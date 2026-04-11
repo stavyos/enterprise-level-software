@@ -28,6 +28,9 @@ class EndpointCost(Enum):
     BULK_EOD = ("bulk-eod", 100)
     BULK_FUNDAMENTALS = ("bulk-fundamentals", 100)
     INSIDER_TRANSACTIONS = ("insider-transactions", 10)
+    SEARCH = ("search", 5)
+    OPTIONS = ("options", 5)
+    BONDS = ("bonds", 5)
     DEFAULT = ("default", 1)
 
     def __init__(self, endpoint_name: str, cost: int):

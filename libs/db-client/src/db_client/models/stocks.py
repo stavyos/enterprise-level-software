@@ -84,3 +84,17 @@ class StockSplits(Base):
     bus_date = Column(Date, primary_key=True)
     symbol = Column(Text, primary_key=True)
     split = Column(Text)
+
+
+class TechnicalIndicator(Base):
+    """
+    Model representing calculated technical indicators for a symbol.
+    """
+
+    __tablename__ = "technical_indicators"
+
+    bus_date = Column(Date, primary_key=True)
+    symbol = Column(Text, primary_key=True)
+    indicator_name = Column(Text, primary_key=True)
+
+    value = Column(Float)

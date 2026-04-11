@@ -2,7 +2,19 @@
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
-from stocks import Base, StockAdjusted, StockDividends, StockEOD, StockIntraday, StockSplits
+from db_client.models.economic import EconomicEvent
+from db_client.models.fundamentals import StockFundamentals
+from db_client.models.macro import MacroIndicator
+from db_client.models.news import MarketNews
+from db_client.models.stocks import (
+    Base,
+    StockAdjusted,
+    StockDividends,
+    StockEOD,
+    StockIntraday,
+    StockSplits,
+    TechnicalIndicator,
+)
 
 
 def generate_all_tables_sql(base: Any) -> str:
@@ -36,15 +48,15 @@ def generate_all_tables_sql(base: Any) -> str:
         tables_sql.append(create_table_sql)
 
         # Generate CREATE HYPERTABLE statement for TimescaleDB
-        if table.name == StockEOD.__tablename__:
-            tables_sql.append(
-                f"SELECT create_hypertable('{table.name}', 'bus_date', if_not_exists => TRUE);"
-            )
-        elif table.name == StockAdjusted.__tablename__:
-            tables_sql.append(
-                f"SELECT create_hypertable('{table.name}', 'bus_date', if_not_exists => TRUE);"
-            )
-        elif table.name == StockDividends.__tablename__:
+        if table.name in [
+            StockEOD.__tablename__,
+            StockAdjusted.__tablename__,
+            StockDividends.__tablename__,
+            StockSplits.__tablename__,
+            TechnicalIndicator.__tablename__,
+            MacroIndicator.__tablename__,
+            EconomicEvent.__tablename__,
+        ]:
             tables_sql.append(
                 f"SELECT create_hypertable('{table.name}', 'bus_date', if_not_exists => TRUE);"
             )
@@ -52,9 +64,13 @@ def generate_all_tables_sql(base: Any) -> str:
             tables_sql.append(
                 f"SELECT create_hypertable('{table.name}', 'timestamp', if_not_exists => TRUE);"
             )
-        elif table.name == StockSplits.__tablename__:
+        elif table.name == MarketNews.__tablename__:
             tables_sql.append(
-                f"SELECT create_hypertable('{table.name}', 'bus_date', if_not_exists => TRUE);"
+                f"SELECT create_hypertable('{table.name}', 'date', if_not_exists => TRUE);"
+            )
+        elif table.name == StockFundamentals.__tablename__:
+            tables_sql.append(
+                f"SELECT create_hypertable('{table.name}', 'updated_at', if_not_exists => TRUE);"
             )
 
         # Iterate over all indexes of the table
