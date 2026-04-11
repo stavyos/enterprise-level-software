@@ -16,3 +16,6 @@ class PrefectDeployment(StrEnum):
     EOD = "EOD"
     INTRADAY = "Intraday"
     EXCHANGES = "Exchanges"
+    MARKET_NEWS = "Market News"
+    TECHNICAL_INDICATORS = "Technical Indicators"
+    BULK_DATA = "Bulk Data"

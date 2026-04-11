@@ -1,11 +1,19 @@
-from datetime import date
+from datetime import date, datetime
 
 from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL as PG_URL
 from sqlalchemy.orm import sessionmaker
 
-from .models import StockAdjusted, StockDividends, StockEOD, StockIntraday, StockSplits
+from .models import (
+    MarketNews,
+    StockAdjusted,
+    StockDividends,
+    StockEOD,
+    StockIntraday,
+    StockSplits,
+    TechnicalIndicator,
+)
 
 
 class DBClient:
@@ -378,3 +386,49 @@ class DBClient:
                 session.rollback()
                 logger.error(f"Error querying splits stock data for {symbol}: {e}")
                 return None
+
+    def insert_market_news(
+        self,
+        date: datetime,
+        title: str,
+        content: str,
+        link: str,
+        symbols: list[str],
+        tags: list[str],
+    ) -> None:
+        """Inserts or updates market news."""
+        with self._session() as session:
+            try:
+                news = MarketNews(
+                    date=date,
+                    title=title,
+                    content=content,
+                    link=link,
+                    symbols=symbols,
+                    tags=tags,
+                )
+                session.merge(news)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                logger.error(f"Error inserting news: {title}: {e}")
+
+    def insert_technical_indicator(
+        self, bus_date: date, symbol: str, indicator_name: str, value: float
+    ) -> None:
+        """Inserts or updates a technical indicator."""
+        with self._session() as session:
+            try:
+                ti = TechnicalIndicator(
+                    bus_date=bus_date,
+                    symbol=symbol,
+                    indicator_name=indicator_name,
+                    value=value,
+                )
+                session.merge(ti)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                logger.error(
+                    f"Error inserting technical indicator {indicator_name} for {symbol}: {e}"
+                )

@@ -28,3 +28,10 @@ We maintain several core tables:
 2. `stock_intraday`: High-frequency data partitioned by timestamp.
 3. `stock_dividends` & `stock_splits`: Corporate actions.
 4. `stock_adjusted`: Pre-calculated adjusted pricing for research.
+5. `market_news`: Financial articles, tags, and sentiment data (Hypertable).
+6. `technical_indicators`: Persisted calculations like RSI and SMA (Hypertable).
+
+### Why use Hypertables for News?
+While news articles are text-heavy, they are inherently time-series data. Storing them in a Hypertable allows us to:
+- Efficiently fetch "latest news" using time-based partitioning.
+- Use TimescaleDB's **Retention Policies** to automatically drop news older than X years, keeping the database lean.

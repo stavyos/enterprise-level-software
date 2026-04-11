@@ -54,6 +54,70 @@ class EODHDClientBase:
         minute_limiter = RateLimiter(self.MINUTE_REQUEST_LIMIT, self.MINUTE_PERIOD_SECONDS)
         self.rate_limiter = CompositeRateLimiter([daily_limiter, minute_limiter])
 
+        self._stocks_etf = None
+        self._exchanges = None
+        self._bulk = None
+        self._technical = None
+        self._real_time = None
+        self._news = None
+        self._search = None
+
+    @property
+    def stocks_etf(self):
+        from .stocks_etf_client import StocksETFClient
+
+        if self._stocks_etf is None:
+            self._stocks_etf = StocksETFClient(self.api_key)
+        return self._stocks_etf
+
+    @property
+    def exchanges(self):
+        from .exchanges_client import ExchangesClient
+
+        if self._exchanges is None:
+            self._exchanges = ExchangesClient(self.api_key)
+        return self._exchanges
+
+    @property
+    def bulk(self):
+        from .bulk_client import BulkClient
+
+        if self._bulk is None:
+            self._bulk = BulkClient(self.api_key)
+        return self._bulk
+
+    @property
+    def technical(self):
+        from .technical_indicator_client import TechnicalIndicatorClient
+
+        if self._technical is None:
+            self._technical = TechnicalIndicatorClient(self.api_key)
+        return self._technical
+
+    @property
+    def real_time(self):
+        from .real_time_client import RealTimeClient
+
+        if self._real_time is None:
+            self._real_time = RealTimeClient(self.api_key)
+        return self._real_time
+
+    @property
+    def news(self):
+        from .news_client import NewsClient
+
+        if self._news is None:
+            self._news = NewsClient(self.api_key)
+        return self._news
+
+    @property
+    def search_client(self):
+        from .search_client import SearchClient
+
+        if self._search is None:
+            self._search = SearchClient(self.api_key)
+        return self._search
+
     @staticmethod
     def _get_endpoint_cost(endpoint: str) -> int:
         """

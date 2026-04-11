@@ -1,4 +1,5 @@
 """Module for managing Kubernetes job variables for Prefect deployments."""
+
 from typing import Any
 
 from etl_service.etl.deployments_settings.enums import PrefectDeployment, PrefectDeploymentType

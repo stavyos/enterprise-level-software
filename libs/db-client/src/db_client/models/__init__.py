@@ -1,4 +1,22 @@
-﻿__all__ = ["StockIntraday", "StockSplits", "StockDividends", "StockAdjusted", "StockEOD", "Base"]
+__all__ = [
+    "StockIntraday",
+    "StockSplits",
+    "StockDividends",
+    "StockAdjusted",
+    "StockEOD",
+    "Base",
+    "MarketNews",
+    "TechnicalIndicator",
+]
 
 
-from .stocks import Base, StockAdjusted, StockDividends, StockEOD, StockIntraday, StockSplits
+from .news import MarketNews
+from .stocks import (
+    Base,
+    StockAdjusted,
+    StockDividends,
+    StockEOD,
+    StockIntraday,
+    StockSplits,
+    TechnicalIndicator,
+)

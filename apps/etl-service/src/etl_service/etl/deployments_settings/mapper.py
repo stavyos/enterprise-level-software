@@ -1,9 +1,12 @@
 ﻿from etl_service.etl.deployments_settings.deployments.base import AbstractDeploymentSettings
+from etl_service.etl.deployments_settings.deployments.stocks.bulk import DeploymentBulk
 from etl_service.etl.deployments_settings.deployments.stocks.date_range import DeploymentDateRange
 from etl_service.etl.deployments_settings.deployments.stocks.eod import DeploymentEOD
 from etl_service.etl.deployments_settings.deployments.stocks.exchanges import DeploymentExchanges
 from etl_service.etl.deployments_settings.deployments.stocks.intraday import DeploymentIntraday
 from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
+from etl_service.etl.deployments_settings.deployments.stocks.news import DeploymentNews
+from etl_service.etl.deployments_settings.deployments.stocks.technical import DeploymentTechnical
 from etl_service.etl.deployments_settings.enums import PrefectDeployment
 
 
@@ -19,5 +22,11 @@ def map_deployment_to_settings(deployment: PrefectDeployment) -> AbstractDeploym
             return DeploymentIntraday()
         case PrefectDeployment.EXCHANGES:
             return DeploymentExchanges()
+        case PrefectDeployment.MARKET_NEWS:
+            return DeploymentNews()
+        case PrefectDeployment.TECHNICAL_INDICATORS:
+            return DeploymentTechnical()
+        case PrefectDeployment.BULK_DATA:
+            return DeploymentBulk()
         case _:
             raise NotImplementedError(f"Mapping for deployment {deployment} is not implemented.")

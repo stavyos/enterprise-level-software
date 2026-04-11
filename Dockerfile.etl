@@ -11,23 +11,25 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     UV_SYSTEM_PYTHON=1
 
-# Copy shared tools (linter) first to leverage layer caching
+# Copy shared tools and library definitions first for dependency resolution
 COPY tools/linter /app/tools/linter
+COPY libs/db-client/pyproject.toml /app/libs/db-client/
+COPY libs/eodhd-client/pyproject.toml /app/libs/eodhd-client/
 
 # Copy the ETL service requirements
 COPY apps/etl-service/pyproject.toml apps/etl-service/uv.lock /app/apps/etl-service/
 
-# Install dependencies using uv (frozen lockfile to ensure reproducible builds)
+# Install dependencies using uv
 WORKDIR /app/apps/etl-service
 RUN uv sync --frozen --no-dev
 
-# Copy the actual application code
+# Copy the actual application and library code
 COPY apps/etl-service/src /app/apps/etl-service/src
+COPY libs/db-client/src /app/libs/db-client/src
+COPY libs/eodhd-client/src /app/libs/eodhd-client/src
 
-# Set the PYTHONPATH so the container can find the etl_service module
-ENV PYTHONPATH="/app/apps/etl-service/src"
+# Set the PYTHONPATH so the container can find all modules
+ENV PYTHONPATH="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/apps/etl-service/src"
 
 # Update PATH to include the virtual environment's bin directory
 ENV PATH="/app/apps/etl-service/.venv/bin:$PATH"
-
-# Prefect worker will provide the entrypoint (e.g., `python -m ...`)
