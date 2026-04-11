@@ -1,0 +1,26 @@
+# Database Client
+
+Persistence layer for the enterprise stock system using SQLAlchemy and TimescaleDB.
+
+## Features
+- **SQLAlchemy Models**: Typed models for EOD, Adjusted EOD, Intraday, Dividends, Splits, News, and Technical Indicators.
+- **TimescaleDB Optimization**: Automated creation of Hypertables for all time-series data to ensure high-performance querying and storage.
+- **Upsert Support**: Uses `session.merge()` to gracefully handle data updates and avoid primary key conflicts.
+- **Connection Management**: Robust session handling and engine configuration for PostgreSQL.
+
+## Core Models
+- `StockEOD`: End-Of-Day historical data.
+- `StockIntraday`: High-frequency intraday data.
+- `MarketNews`: Financial news articles and metadata.
+- `TechnicalIndicator`: Calculated technical functions (RSI, SMA, etc.).
+
+## Usage
+
+```python
+from db_client.client import DBClient
+
+db = DBClient(dbname="postgres", user="user", password="pwd", host="localhost", port=5432)
+
+# Insert data
+db.insert_stock_data(bus_date=date.today(), symbol="AAPL.US", ...)
+```
