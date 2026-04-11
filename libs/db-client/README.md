@@ -17,6 +17,7 @@ Persistence layer for the enterprise stock system using SQLAlchemy and Timescale
 ## Usage
 
 ```python
+from datetime import date
 from db_client.client import DBClient
 
 db = DBClient(dbname="postgres", user="user", password="pwd", host="localhost", port=5432)
