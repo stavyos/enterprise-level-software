@@ -3,7 +3,7 @@
 In the world of data persistence, there are two primary architectures: **SQL (Relational)** and **NoSQL (Non-Relational)**. Understanding the strengths of each is critical for choosing the right tool for the job.
 
 ## 1. What is SQL?
-**SQL (Structured Query Language)** is the standard language used to interact with **Relational Database Management Systems (RDBMS)**. 
+**SQL (Structured Query Language)** is the standard language used to interact with **Relational Database Management Systems (RDBMS)**.
 
 Relational databases organize data into tables with predefined rows and columns. Relationships between these tables are established using "keys" (Primary and Foreign keys).
 
@@ -46,10 +46,10 @@ SQL uses a standard set of commands to interact with data. Here are the ones you
 ### Common Analysis Queries
 - **Counting rows**: `SELECT COUNT(*) FROM stock_eod;`
 - **Filtering and Sorting**: `SELECT * FROM stock_eod WHERE bus_date > '2025-01-01' ORDER BY bus_date DESC;`
-- **Joins (Combining Tables)**: 
+- **Joins (Combining Tables)**:
   ```sql
-  SELECT e.symbol, e.close, d.value as dividend 
-  FROM stock_eod e 
+  SELECT e.symbol, e.close, d.value as dividend
+  FROM stock_eod e
   JOIN stock_dividends d ON e.symbol = d.symbol AND e.bus_date = d.bus_date;
   ```
 

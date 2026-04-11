@@ -3,12 +3,15 @@
 import datetime
 import os
 
-from db_client.client import DBClient
-from eodhd_client.client import EODHDClientBase
 from loguru import logger
 
+from db_client.client import DBClient
+from eodhd_client.client import EODHDClientBase
 
-def intraday_saver(bus_date: datetime.date, tickers: list[str], interval: str = "1m") -> None:
+
+def intraday_saver(
+    bus_date: datetime.date, tickers: list[str], interval: str = "1m"
+) -> None:
     """Core logic for saving Intraday data.
 
     Args:
@@ -61,9 +64,13 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str], interval: str = 
                         close_price=item["close"],
                         volume=item["volume"],
                     )
-                logger.info(f"Saved {len(data)} intraday records for {ticker_symbol} at {bus_date}")
+                logger.info(
+                    f"Saved {len(data)} intraday records for {ticker_symbol} at {bus_date}"
+                )
             else:
-                logger.warning(f"No intraday data found for {ticker_symbol} at {bus_date}")
+                logger.warning(
+                    f"No intraday data found for {ticker_symbol} at {bus_date}"
+                )
 
         except Exception as e:
             logger.error(f"Error processing Intraday for {ticker_symbol}: {e}")

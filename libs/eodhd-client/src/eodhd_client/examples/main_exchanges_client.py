@@ -1,12 +1,13 @@
-﻿"""
+"""
 Example script demonstrating the usage of all ExchangesClient methods.
 """
 
 import os
 
+from loguru import logger
+
 from eodhd_client.eod_exceptions import EODHDAPIError
 from eodhd_client.exchanges_client import ExchangesClient
-from loguru import logger
 
 
 def run_exchanges_examples():
@@ -35,16 +36,22 @@ def run_exchanges_examples():
 
         # 2. get_traded_tickers(exchange_code)
         logger.info(f"\nFetching all traded tickers for exchange '{exchange_code}'...")
-        traded_tickers = exchanges_client.get_traded_tickers(exchange_code=exchange_code)
+        traded_tickers = exchanges_client.get_traded_tickers(
+            exchange_code=exchange_code
+        )
         logger.info(f"First 5 traded tickers for {exchange_code}: {traded_tickers[:5]}")
 
         # 3. get_exchange_trading_hours(exchange_code)
         logger.info(f"\nFetching trading hours for exchange '{exchange_code}'...")
-        trading_hours = exchanges_client.get_exchange_trading_hours(exchange_code=exchange_code)
+        trading_hours = exchanges_client.get_exchange_trading_hours(
+            exchange_code=exchange_code
+        )
         logger.info(f"Trading hours for {exchange_code}: {trading_hours}")
 
         # 4. get_all_tickers_from_all_exchanges()
-        logger.info("\nFetching all tickers from all exchanges (this may take a while)...")
+        logger.info(
+            "\nFetching all tickers from all exchanges (this may take a while)..."
+        )
         all_tickers = exchanges_client.get_all_tickers_from_all_exchanges()
         logger.info(f"First 5 tickers from all exchanges: {all_tickers[:5]}")
 

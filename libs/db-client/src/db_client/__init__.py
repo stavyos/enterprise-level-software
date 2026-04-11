@@ -1,3 +1,3 @@
-﻿__all__ = ["DBClient"]
+__all__ = ["DBClient"]
 
 from .client import DBClient

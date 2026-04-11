@@ -2,11 +2,14 @@
 
 import datetime
 
-from etl_service.etl.deployments_settings.deployments.stocks.intraday import DeploymentIntraday
-from etl_service.etl.flows.utils import enable_loguru_support
-from etl_service.etl.scripts.intraday import intraday_saver as _intraday_saver
 from loguru import logger
 from prefect import flow
+
+from etl_service.etl.deployments_settings.deployments.stocks.intraday import (
+    DeploymentIntraday,
+)
+from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.scripts.intraday import intraday_saver as _intraday_saver
 
 DEPLOYMENT_INTRADAY = DeploymentIntraday()
 
@@ -20,7 +23,9 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
         bus_date (datetime.date): The business date.
         tickers (list[str]): List of stock tickers.
     """
-    logger.info(f"Running Intraday saver for bus_date={bus_date}, tickers count={len(tickers)}")
+    logger.info(
+        f"Running Intraday saver for bus_date={bus_date}, tickers count={len(tickers)}"
+    )
     _intraday_saver(bus_date=bus_date, tickers=tickers)
 
 

@@ -29,4 +29,3 @@ GitHub is the world's largest development platform:
 - **Users**: Over 100 million developers.
 - **Repositories**: Hosting over 330 million repositories.
 - **Enterprise**: Used by over 90% of Fortune 100 companies.
-

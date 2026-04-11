@@ -1,11 +1,12 @@
 """Script for saving market news data."""
 
-import os
 from datetime import date, datetime
+import os
+
+from loguru import logger
 
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
-from loguru import logger
 
 
 def news_saver(

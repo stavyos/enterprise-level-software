@@ -1,2 +1,2 @@
-﻿def test_eodhd_client():
+def test_eodhd_client():
     pass

@@ -34,28 +34,16 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd ../.. && uv run --directory tools/linter python -m linter.run_linters ../../{projectRoot}",
+        "command": "uvx ruff check .",
         "cwd": "{projectRoot}"
-      },
-      "dependsOn": [
-        {
-          "target": "install",
-          "projects": "linter"
-        }
-      ]
+      }
     },
     "format": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd ../.. && uv run --directory tools/linter python -m linter.run_linters ../../{projectRoot} --fix",
+        "command": "uvx ruff format .",
         "cwd": "{projectRoot}"
-      },
-      "dependsOn": [
-        {
-          "target": "install",
-          "projects": "linter"
-        }
-      ]
+      }
     },
     "build": {
       "executor": "nx:run-commands",
@@ -99,11 +87,11 @@
   "generators": {
     "@nx/python:application": {
       "unitTestRunner": "pytest",
-      "linter": "flake8"
+      "linter": "ruff"
     },
     "@nx/python:library": {
       "unitTestRunner": "pytest",
-      "linter": "flake8"
+      "linter": "ruff"
     }
   }
 }

@@ -1,11 +1,14 @@
-﻿"""Date range ETL flow module."""
+"""Date range ETL flow module."""
 
 import datetime
 
-from etl_service.etl.deployments_settings.deployments.stocks.date_range import DeploymentDateRange
-from etl_service.etl.flows.utils import enable_loguru_support
 from loguru import logger
 from prefect import flow
+
+from etl_service.etl.deployments_settings.deployments.stocks.date_range import (
+    DeploymentDateRange,
+)
+from etl_service.etl.flows.utils import enable_loguru_support
 
 DEPLOYMENT_DATE_RANGE = DeploymentDateRange()
 

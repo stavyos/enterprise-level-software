@@ -1,11 +1,12 @@
 """Script for saving technical indicator data."""
 
-import os
 from datetime import date
+import os
+
+from loguru import logger
 
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
-from loguru import logger
 
 
 def technical_indicator_saver(

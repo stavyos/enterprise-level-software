@@ -3,12 +3,13 @@
 import datetime
 import uuid
 
+from loguru import logger
+from prefect import flow
+
 from etl_service.etl.deployments_settings.deployments.stocks.bulk import DeploymentBulk
 from etl_service.etl.flows.models.bulk import BulkDataSaveRequest
 from etl_service.etl.flows.utils import enable_loguru_support
 from etl_service.etl.scripts.bulk import bulk_data_saver as _bulk_data_saver
-from loguru import logger
-from prefect import flow
 
 DEPLOYMENT_BULK = DeploymentBulk()
 
@@ -17,7 +18,9 @@ DEPLOYMENT_BULK = DeploymentBulk()
 @enable_loguru_support
 def bulk_data_saver(save_request: BulkDataSaveRequest) -> None:
     """Flow task to save bulk data."""
-    logger.info(f"Running bulk data saver for {save_request.country} type={save_request.type}")
+    logger.info(
+        f"Running bulk data saver for {save_request.country} type={save_request.type}"
+    )
     _bulk_data_saver(
         country=save_request.country,
         bus_date=save_request.bus_date,

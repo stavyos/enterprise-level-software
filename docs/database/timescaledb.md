@@ -18,7 +18,7 @@ docker run -d --name timescaledb -p 5430:5432 -e POSTGRES_PASSWORD=postgres time
 ```
 
 ### Schema Generation
-Instead of writing SQL by hand, we use SQLAlchemy models to generate our schema. 
+Instead of writing SQL by hand, we use SQLAlchemy models to generate our schema.
 - **Script**: `libs/db-client/src/db_client/models/create_tables.py`
 - **Output**: Generates a `stocks.sql` file that includes both table definitions and the commands to transform them into Hypertables.
 

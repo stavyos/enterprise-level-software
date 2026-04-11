@@ -1,2 +1,2 @@
-﻿def test_db_client():
+def test_db_client():
     pass

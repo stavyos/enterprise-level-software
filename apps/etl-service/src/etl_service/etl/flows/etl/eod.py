@@ -3,12 +3,13 @@
 import datetime
 import uuid
 
+from loguru import logger
+from prefect import flow
+
 from etl_service.etl.deployments_settings.deployments.stocks.eod import DeploymentEOD
 from etl_service.etl.flows.models.eod import EOD, EODSaveRequest
 from etl_service.etl.flows.utils import enable_loguru_support
 from etl_service.etl.scripts.eod import eod_saver as _eod_saver
-from loguru import logger
-from prefect import flow
 
 DEPLOYMENT_EOD = DeploymentEOD()
 
@@ -32,7 +33,9 @@ def _get_tickers_chunks(
         chunk = tickers[i : i + chunk_size]
         chunks.append(
             EODSaveRequest(
-                bus_date=bus_date, tickers=[EOD(ticker=ticker) for ticker in chunk], run_id=run_id
+                bus_date=bus_date,
+                tickers=[EOD(ticker=ticker) for ticker in chunk],
+                run_id=run_id,
             )
         )
     return chunks
@@ -67,7 +70,9 @@ def eod_saver(save_request: EODSaveRequest) -> None:
 
 @flow(**DEPLOYMENT_EOD.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
-async def eod_saver_dispatcher(bus_date: datetime.date, tickers: list[str] | None = None) -> None:
+async def eod_saver_dispatcher(
+    bus_date: datetime.date, tickers: list[str] | None = None
+) -> None:
     """Orchestrates EOD data saving by dispatching multiple parallel saver flows.
 
     Args:
@@ -101,4 +106,6 @@ async def eod_saver_dispatcher(bus_date: datetime.date, tickers: list[str] | Non
 
     # TODO (syosef): Add new function update_latest_run
 
-    logger.info(f"EOD dispatcher saver completed for bus_date={bus_date} for run_id={run_id}")
+    logger.info(
+        f"EOD dispatcher saver completed for bus_date={bus_date} for run_id={run_id}"
+    )
