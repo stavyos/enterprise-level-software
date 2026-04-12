@@ -28,7 +28,8 @@ def technical_indicator_saver(
         indicators = client.get_technical_indicator(
             symbol=symbol, exchange=exchange, function=function, period=period
         )
-        for item in indicators:
+        total_indicators = len(indicators)
+        for i, item in enumerate(indicators):
             success = db_client.insert_technical_indicator(
                 bus_date=date.fromisoformat(item.get("date")) if item.get("date") else None,
                 symbol=symbol,
@@ -37,8 +38,12 @@ def technical_indicator_saver(
             )
             if success:
                 inserted_count += 1
+
+            if (i + 1) % 500 == 0:
+                logger.info(f"Progress: {i + 1}/{total_indicators} technical indicators processed for {symbol}...")
+
         logger.info(
-            f"Successfully inserted {inserted_count}/{len(indicators)} technical indicators for {symbol}."
+            f"Successfully inserted {inserted_count}/{total_indicators} technical indicators for {symbol}."
         )
     except Exception as e:
         logger.error(f"Error saving technical indicators for {symbol}: {e}")

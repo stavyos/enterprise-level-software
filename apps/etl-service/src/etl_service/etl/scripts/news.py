@@ -37,7 +37,8 @@ def news_saver(
             to_date=to_date.isoformat() if to_date else None,
             limit=limit,
         )
-        for article in articles:
+        total_articles = len(articles)
+        for i, article in enumerate(articles):
             success = db_client.insert_market_news(
                 date=datetime.fromisoformat(article.get("date").replace("Z", "+00:00"))
                 if article.get("date")
@@ -50,6 +51,10 @@ def news_saver(
             )
             if success:
                 inserted_count += 1
-        logger.info(f"Successfully inserted {inserted_count}/{len(articles)} news articles.")
+            
+            if (i + 1) % 10 == 0:
+                logger.info(f"Progress: {i + 1}/{total_articles} news articles processed...")
+        
+        logger.info(f"Successfully inserted {inserted_count}/{total_articles} news articles.")
     except Exception as e:
         logger.error(f"Error saving news: {e}")

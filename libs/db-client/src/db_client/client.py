@@ -84,7 +84,7 @@ class DBClient:
                 )
                 session.merge(stock_eod)  # Use merge for ON CONFLICT (upsert) behavior
                 session.commit()
-                logger.info(f"Inserted/Updated data for {symbol} at {bus_date}.")
+                logger.debug(f"Inserted/Updated data for {symbol} at {bus_date}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -129,7 +129,7 @@ class DBClient:
                 )
                 session.merge(stock_adjusted)
                 session.commit()
-                logger.info(f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}.")
+                logger.debug(f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -231,7 +231,7 @@ class DBClient:
                 )
                 session.merge(stock_dividends)
                 session.commit()
-                logger.info(f"Inserted/Updated dividends data for {symbol} at {bus_date}.")
+                logger.debug(f"Inserted/Updated dividends data for {symbol} at {bus_date}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -306,7 +306,7 @@ class DBClient:
                 )
                 session.merge(stock_intraday)
                 session.commit()
-                logger.info(f"Inserted/Updated intraday data for {symbol} at {bus_date}.")
+                logger.debug(f"Inserted/Updated intraday data for {symbol} at {bus_date}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -363,7 +363,7 @@ class DBClient:
                 )
                 session.merge(stock_splits)
                 session.commit()
-                logger.info(f"Inserted/Updated splits data for {symbol} at {bus_date}.")
+                logger.debug(f"Inserted/Updated splits data for {symbol} at {bus_date}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -419,6 +419,7 @@ class DBClient:
                 )
                 session.merge(news)
                 session.commit()
+                logger.debug(f"Inserted/Updated news: {title}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -439,6 +440,7 @@ class DBClient:
                 )
                 session.merge(ti)
                 session.commit()
+                logger.debug(f"Inserted/Updated technical indicator {indicator_name} for {symbol}.")
                 return True
             except Exception as e:
                 session.rollback()

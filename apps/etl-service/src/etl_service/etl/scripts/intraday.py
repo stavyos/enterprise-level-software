@@ -51,7 +51,8 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str], interval: str = 
 
             if data and isinstance(data, list):
                 ticker_inserted_count = 0
-                for item in data:
+                total_ticker_records = len(data)
+                for i, item in enumerate(data):
                     success = db_client.insert_stock_intraday_data(
                         timestamp=item.get("timestamp"),
                         symbol=ticker_symbol,
@@ -65,9 +66,13 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str], interval: str = 
                     )
                     if success:
                         ticker_inserted_count += 1
+
+                    if (i + 1) % 100 == 0:
+                        logger.info(f"Progress: {i + 1}/{total_ticker_records} intraday records processed for {ticker_symbol}...")
+
                 total_inserted_count += ticker_inserted_count
                 logger.info(
-                    f"Saved {ticker_inserted_count}/{len(data)} intraday records for {ticker_symbol} at {bus_date}"
+                    f"Saved {ticker_inserted_count}/{total_ticker_records} intraday records for {ticker_symbol} at {bus_date}"
                 )
             else:
                 logger.warning(f"No intraday data found for {ticker_symbol} at {bus_date}")

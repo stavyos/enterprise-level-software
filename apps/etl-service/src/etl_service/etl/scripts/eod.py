@@ -28,7 +28,8 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
     )
 
     rows_inserted = 0
-    for ticker_symbol in tickers:
+    total_tickers = len(tickers)
+    for i, ticker_symbol in enumerate(tickers):
         try:
             # Tickers are expected in 'SYMBOL.EXCHANGE' format
             parts = ticker_symbol.split(".")
@@ -56,11 +57,14 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
                 )
                 if success:
                     rows_inserted += 1
-                logger.info(f"Saved EOD data for {ticker_symbol} at {bus_date}")
+                logger.debug(f"Saved EOD data for {ticker_symbol} at {bus_date}")
             else:
                 logger.warning(f"No EOD data found for {ticker_symbol} at {bus_date}")
+
+            if (i + 1) % 10 == 0:
+                logger.info(f"Progress: {i + 1}/{total_tickers} tickers processed for eod...")
 
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
 
-    logger.info(f"Successfully inserted {rows_inserted} rows into the database.")
+    logger.info(f"Successfully inserted {rows_inserted}/{total_tickers} rows into the database.")
