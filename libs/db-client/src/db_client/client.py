@@ -101,7 +101,7 @@ class DBClient:
         close_price: float,
         adjusted_close_price: float,
         volume: int,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates adjusted stock data.
 
@@ -130,9 +130,11 @@ class DBClient:
                 session.merge(stock_adjusted)
                 session.commit()
                 logger.info(f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}.")
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting adjusted stock data for {symbol} at {bus_date}: {e}")
+                return False
 
     def get_stock_data(self, symbol: str, limit: int = 2) -> list[StockEOD] | None:
         """
@@ -199,7 +201,7 @@ class DBClient:
         value: float,
         unadjusted_value: float,
         currency: str,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates stock dividend data.
 
@@ -230,9 +232,11 @@ class DBClient:
                 session.merge(stock_dividends)
                 session.commit()
                 logger.info(f"Inserted/Updated dividends data for {symbol} at {bus_date}.")
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting dividends data for {symbol} at {bus_date}: {e}")
+                return False
 
     def get_stock_dividends_data(self, symbol: str, limit: int = 2) -> list[StockDividends] | None:
         """
@@ -243,7 +247,7 @@ class DBClient:
             limit (int, optional): Maximum number of rows to return. Defaults to 2.
 
         Returns:
-            list[StockDividends] | None: A list of StockDividends objects or None if an error occurs.  # noqa: E501
+            list[StockDividends] | None: A list of StockDividends objects or None if an error occurs.
         """
         with self._session() as session:
             try:
@@ -272,7 +276,7 @@ class DBClient:
         low_price: float,
         close_price: float,
         volume: int,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates intraday stock data.
 
@@ -303,9 +307,11 @@ class DBClient:
                 session.merge(stock_intraday)
                 session.commit()
                 logger.info(f"Inserted/Updated intraday data for {symbol} at {bus_date}.")
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting intraday stock data for {symbol} at {bus_date}: {e}")
+                return False
 
     def get_stock_intraday_data(self, symbol: str, limit: int = 2) -> list[StockIntraday] | None:
         """
@@ -339,7 +345,7 @@ class DBClient:
         bus_date: date,
         symbol: str,
         split: str,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates stock split data.
 
@@ -358,9 +364,11 @@ class DBClient:
                 session.merge(stock_splits)
                 session.commit()
                 logger.info(f"Inserted/Updated splits data for {symbol} at {bus_date}.")
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting splits stock data for {symbol} at {bus_date}: {e}")
+                return False
 
     def get_stock_splits_data(self, symbol: str, limit: int = 2) -> list[StockSplits] | None:
         """
@@ -397,7 +405,7 @@ class DBClient:
         link: str,
         symbols: list[str],
         tags: list[str],
-    ) -> None:
+    ) -> bool:
         """Inserts or updates market news."""
         with self._session() as session:
             try:
@@ -411,13 +419,15 @@ class DBClient:
                 )
                 session.merge(news)
                 session.commit()
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting news: {title}: {e}")
+                return False
 
     def insert_technical_indicator(
         self, bus_date: date, symbol: str, indicator_name: str, value: float
-    ) -> None:
+    ) -> bool:
         """Inserts or updates a technical indicator."""
         with self._session() as session:
             try:
@@ -429,8 +439,10 @@ class DBClient:
                 )
                 session.merge(ti)
                 session.commit()
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting technical indicator {indicator_name} for {symbol}: {e}"
                 )
+                return False

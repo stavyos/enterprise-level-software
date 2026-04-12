@@ -19,7 +19,7 @@ def exchanges_saver(bus_date: datetime.date) -> None:
         bus_date (datetime.date): The business date.
     """
     logger.info(f"Running Exchanges saver for bus_date={bus_date}")
-    pass
+    logger.info("Successfully inserted 0 rows into the database (no-op until models are defined).")
 
 
 @flow(**DEPLOYMENT_EXCHANGES.saver_dispatcher_flow_decorator_args)

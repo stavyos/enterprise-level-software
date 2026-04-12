@@ -50,8 +50,9 @@ def deploy_flow(
         )[-1]
         entrypoint = f"etl_service.etl.flows.etl.{module_path}:{flow_function_name}"
 
-        # Use RunnerDeployment constructor directly to avoid auto-detecting absolute host paths.
-        d = RunnerDeployment(
+        # Use from_entrypoint to correctly capture the flow schema.
+        # We use a relative entrypoint so it doesn't pick up host-specific paths.
+        d = RunnerDeployment.from_entrypoint(
             entrypoint=entrypoint,
             name=dep_name,
             flow_name=deployment_settings.get_flow_name(deployment_type=dep_type),

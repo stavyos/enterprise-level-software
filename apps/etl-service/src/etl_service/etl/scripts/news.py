@@ -5,6 +5,7 @@ from datetime import date, datetime
 
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
+from etl_service.etl.deployments_settings.settings import settings
 from loguru import logger
 
 
@@ -17,17 +18,17 @@ def news_saver(
     run_id: str,
 ) -> None:
     """Core logic for saving market news data."""
-    api_key = os.getenv("EODHD_API_KEY")
-    client = EODHDClientBase(api_key).news
+    client = EODHDClientBase(settings.eodhd_api_key).news
 
     db_client = DBClient(
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        host=os.getenv("DB_HOST"),
-        port=int(os.getenv("DB_PORT", 5432)),
+        dbname=settings.db_name,
+        user=settings.db_user,
+        password=settings.db_password,
+        host=settings.db_host,
+        port=settings.db_port,
     )
 
+    inserted_count = 0
     try:
         articles = client.get_news(
             symbols=symbols,
@@ -37,14 +38,18 @@ def news_saver(
             limit=limit,
         )
         for article in articles:
-            db_client.insert_market_news(
-                date=datetime.fromisoformat(article["date"].replace("Z", "+00:00")),
-                title=article["title"],
-                content=article["content"],
-                link=article["link"],
+            success = db_client.insert_market_news(
+                date=datetime.fromisoformat(article.get("date").replace("Z", "+00:00"))
+                if article.get("date")
+                else None,
+                title=article.get("title"),
+                content=article.get("content"),
+                link=article.get("link"),
                 symbols=article.get("symbols", []),
                 tags=article.get("tags", []),
             )
-        logger.info(f"Saved {len(articles)} news articles.")
+            if success:
+                inserted_count += 1
+        logger.info(f"Successfully inserted {inserted_count}/{len(articles)} news articles.")
     except Exception as e:
         logger.error(f"Error saving news: {e}")
