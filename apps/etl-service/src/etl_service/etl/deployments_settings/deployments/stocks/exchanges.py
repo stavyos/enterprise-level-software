@@ -1,5 +1,10 @@
-﻿from etl_service.etl.deployments_settings.deployments.base import AbstractDeploymentSettings
-from etl_service.etl.deployments_settings.enums import PrefectDeployment, PrefectDeploymentType
+from etl_service.etl.deployments_settings.deployments.base import (
+    AbstractDeploymentSettings,
+)
+from etl_service.etl.deployments_settings.enums import (
+    PrefectDeployment,
+    PrefectDeploymentType,
+)
 from etl_service.etl.deployments_settings.job_variables import JobVariables
 
 
@@ -36,5 +41,7 @@ class DeploymentExchanges(AbstractDeploymentSettings):
     def saver_dispatcher_job_variables(self) -> JobVariables | None:
         """Kubernetes job variables for the saver dispatcher."""
         return self._get_job_variables_gigabytes(
-            deployment_type=PrefectDeploymentType.DISPATCHER, cpu_request=1, mem_request=2
+            deployment_type=PrefectDeploymentType.DISPATCHER,
+            cpu_request=1,
+            mem_request=2,
         )

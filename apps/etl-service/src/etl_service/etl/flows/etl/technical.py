@@ -2,6 +2,9 @@
 
 import uuid
 
+from loguru import logger
+from prefect import flow
+
 from etl_service.etl.deployments_settings.deployments.stocks.technical import (
     DeploymentTechnical,
 )
@@ -10,8 +13,6 @@ from etl_service.etl.flows.utils import enable_loguru_support
 from etl_service.etl.scripts.technical import (
     technical_indicator_saver as _technical_indicator_saver,
 )
-from loguru import logger
-from prefect import flow
 
 DEPLOYMENT_TECHNICAL = DeploymentTechnical()
 
@@ -40,7 +41,9 @@ async def technical_indicators_saver_dispatcher(
 ) -> None:
     """Orchestrates technical indicators saving."""
     if not tickers:
-        raise ValueError("Tickers must be supplied for technical_indicators_saver_dispatcher.")
+        raise ValueError(
+            "Tickers must be supplied for technical_indicators_saver_dispatcher."
+        )
 
     run_id = str(uuid.uuid4())
 

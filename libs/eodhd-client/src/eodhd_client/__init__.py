@@ -1,3 +1,3 @@
-﻿from .client import EODHDClientBase
+from .client import EODHDClientBase
 
 __all__ = ["EODHDClientBase"]

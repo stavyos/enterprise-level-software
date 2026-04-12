@@ -30,10 +30,35 @@ We use [uv](https://github.com/astral-sh/uv) for all Python-related tasks. It is
 - **Venv Management**: `uv` handles virtual environment creation and syncing automatically.
 
 ### Workspace Usage
-- **Root `pyproject.toml`**: Manages workspace-wide settings and tools like `black` and `isort`.
+- **Root `pyproject.toml`**: Manages workspace-wide settings and tools like **Ruff**.
 - **Project `pyproject.toml`**: Each app and lib defines its specific dependencies.
 
 **Common Commands:**
 - **Add a dependency**: `uv add <package>` (run within the project folder).
 - **Run a script**: `uv run python <script.py>`.
 - **Sync environments**: `uv sync`.
+
+## Ruff: Fast & Unified Linting
+
+We use [Ruff](https://github.com/astral-sh/ruff) as our single tool for both linting and formatting — it replaces Flake8, isort, and Black.
+
+### Why Ruff?
+- **Speed**: It is written in Rust and is orders of magnitude faster than traditional Python linters.
+- **Unified**: Replaces multiple tools with a single configuration in the root `pyproject.toml`.
+- **Pre-commit integration**: Ensures code quality before it even reaches a Pull Request.
+
+## Pre-commit Hooks
+
+To ensure consistency across the monorepo, we use [pre-commit](https://pre-commit.com/) to run Ruff and other checks automatically during `git commit`.
+
+### Setup
+Run the following command once to install the hooks in your local Git repository:
+```bash
+uvx pre-commit install
+```
+
+### Manual Execution
+You can run the hooks on all files at any time:
+```bash
+uvx pre-commit run --all-files
+```

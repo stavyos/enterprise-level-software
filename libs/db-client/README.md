@@ -17,6 +17,7 @@ Persistence layer for the enterprise stock system using SQLAlchemy and Timescale
 ## Usage
 
 ```python
+from datetime import date
 from db_client.client import DBClient
 
 db = DBClient(dbname="postgres", user="user", password="pwd", host="localhost", port=5432)
@@ -24,3 +25,11 @@ db = DBClient(dbname="postgres", user="user", password="pwd", host="localhost", 
 # Insert data
 db.insert_stock_data(bus_date=date.today(), symbol="AAPL.US", ...)
 ```
+
+## Development
+
+This project follows the monorepo's unified linting and formatting standards using **Ruff**.
+
+- **Lint**: `npx nx run db-client:lint`
+- **Format**: `npx nx run db-client:format`
+- **Test**: `npx nx run db-client:test`

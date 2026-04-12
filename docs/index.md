@@ -29,7 +29,7 @@ Information about **TimescaleDB**, our time-series database choice, how we manag
 Learn about our testing strategy, including unit tests, integration tests, and linting standards.
 
 ### [Infrastructure & DevOps](./infrastructure/docker.md)
-Learn about **Docker**, why we use containerization, and a quick reference for **Popular Docker Commands**.     
+Learn about **Docker**, why we use containerization, and a quick reference for **Popular Docker Commands**.
 
 ### [Source Control & Workflow](./source-control/git.md)
 Understand **Git**, our version control standard, and a quick reference for **Popular Git Commands**.

@@ -3,10 +3,11 @@
 import datetime
 import os
 
+from loguru import logger
+
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
-from loguru import logger
 
 
 def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
@@ -67,4 +68,6 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
 
-    logger.info(f"Successfully inserted {rows_inserted}/{total_tickers} rows into the database.")
+    logger.info(
+        f"Successfully inserted {rows_inserted}/{total_tickers} rows into the database."
+    )

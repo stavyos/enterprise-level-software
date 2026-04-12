@@ -1,16 +1,26 @@
+from abc import ABC, abstractmethod
 import asyncio
+from collections.abc import Callable
+from importlib.util import module_from_spec, spec_from_file_location
 import os
 import random
 import string
-from abc import ABC, abstractmethod
-from importlib.util import module_from_spec, spec_from_file_location
-from typing import Any, Callable
+from typing import Any
+
+from loguru import logger
+from prefect.client.schemas import FlowRun
+from prefect.deployments import run_deployment
+from prefect.flows import Flow
+from prefect.schedules import Schedule
 
 from etl_service.etl.deployments_settings.deps_utils import (
     get_deployment_flow_name,
     get_deployment_name,
 )
-from etl_service.etl.deployments_settings.enums import PrefectDeployment, PrefectDeploymentType
+from etl_service.etl.deployments_settings.enums import (
+    PrefectDeployment,
+    PrefectDeploymentType,
+)
 from etl_service.etl.deployments_settings.job_variables import (
     JobResources,
     JobVariables,
@@ -18,11 +28,6 @@ from etl_service.etl.deployments_settings.job_variables import (
     ResourceRequests,
 )
 from etl_service.etl.flows.locator import get_path
-from loguru import logger
-from prefect.client.schemas import FlowRun
-from prefect.deployments import run_deployment
-from prefect.flows import Flow
-from prefect.schedules import Schedule
 
 
 class AbstractDeploymentSettings(ABC):
@@ -161,7 +166,9 @@ class AbstractDeploymentSettings(ABC):
         else:
             name = f"{flow_name}-{suffix}"
 
-        if len(name) > 60:  # Kubernetes Jobs also have a limit of 63 characters for names
+        if (
+            len(name) > 60
+        ):  # Kubernetes Jobs also have a limit of 63 characters for names
             raise ValueError(
                 f"Flow run name '{name}' is too long, must be less than 60 characters."
             )
@@ -177,7 +184,9 @@ class AbstractDeploymentSettings(ABC):
     @property
     def saver_dispatcher_flow_run_name(self) -> str:
         """Flow run name for the dispatcher deployment type with random number."""
-        return self._get_flow_run_name(self.saver_dispatcher_flow_name, with_chunk_size=False)
+        return self._get_flow_run_name(
+            self.saver_dispatcher_flow_name, with_chunk_size=False
+        )
 
     def get_flow_run_name(self, deployment_type: PrefectDeploymentType) -> str:
         # noinspection PyUnreachableCode
@@ -219,7 +228,9 @@ class AbstractDeploymentSettings(ABC):
         # which is apps/etl-service when running via nx
         from prefect.flows import load_flow_from_entrypoint
 
-        entrypoint = f"src/etl_service/etl/flows/etl/{self.flows_module}:{function_name}"
+        entrypoint = (
+            f"src/etl_service/etl/flows/etl/{self.flows_module}:{function_name}"
+        )
         return load_flow_from_entrypoint(entrypoint)
 
     @property
@@ -253,7 +264,9 @@ class AbstractDeploymentSettings(ABC):
     @property
     def saver_dispatcher_flow_function_name(self) -> str:
         """Get flow function name for the dispatcher deployment type."""
-        return self._flow_function_name(deployment_type=PrefectDeploymentType.DISPATCHER)
+        return self._flow_function_name(
+            deployment_type=PrefectDeploymentType.DISPATCHER
+        )
 
     # endregion
 
@@ -500,7 +513,9 @@ class AbstractDeploymentSettings(ABC):
         """Concurrency limit for the saver dispatcher deployment."""
         return 1
 
-    def get_concurrency_limit(self, deployment_type: PrefectDeploymentType) -> int | None:
+    def get_concurrency_limit(
+        self, deployment_type: PrefectDeploymentType
+    ) -> int | None:
         """Get the concurrency limit for a specific deployment type."""
         # noinspection PyUnreachableCode
         match deployment_type:
@@ -556,7 +571,9 @@ class AbstractDeploymentSettings(ABC):
     ) -> FlowRun:
         """Dispatch a deployment."""
         if dep_type == PrefectDeploymentType.SAVER:
-            return await self.dispatch_deployment_saver(parameters=parameters, timeout=timeout)
+            return await self.dispatch_deployment_saver(
+                parameters=parameters, timeout=timeout
+            )
         elif dep_type == PrefectDeploymentType.DISPATCHER:
             return await self.dispatch_deployment_saver_dispatcher(
                 parameters=parameters, timeout=timeout
@@ -581,7 +598,9 @@ class AbstractDeploymentSettings(ABC):
         """
         saver_sub_flows = []
         for i, param in enumerate(params):
-            sub_flow = self.dispatch_deployment(dep_type=deployment_type, parameters=param)
+            sub_flow = self.dispatch_deployment(
+                dep_type=deployment_type, parameters=param
+            )
             logger.info(f"Started for chunk {i + 1}/{len(params)}")
             saver_sub_flows.append(sub_flow)
 
@@ -601,7 +620,13 @@ class AbstractDeploymentSettings(ABC):
         """Get schedules for the deployment type."""
         return []
 
+<<<<<<< HEAD
     def get_schedules(self, deployment_type: PrefectDeploymentType) -> list[Schedule]:
+=======
+    def get_schedules(
+        self, deployment_type: PrefectDeploymentType
+    ) -> list[Schedule] | None:
+>>>>>>> origin/master
         # noinspection PyUnreachableCode
         match deployment_type:
             case PrefectDeploymentType.SAVER:

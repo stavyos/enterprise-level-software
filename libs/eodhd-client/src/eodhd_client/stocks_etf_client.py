@@ -1,4 +1,4 @@
-﻿__all__ = ["StocksETFClient"]
+__all__ = ["StocksETFClient"]
 
 from eodhd_client import EODHDClientBase
 
@@ -12,7 +12,9 @@ class StocksETFClient(EODHDClientBase):
     def __init__(self, api_key: str):
         super().__init__(api_key)
 
-    def get_eod_data(self, symbol: str, exchange: str, date_from: str, date_to: str) -> list:
+    def get_eod_data(
+        self, symbol: str, exchange: str, date_from: str, date_to: str
+    ) -> list:
         """
         Retrieves End-Of-Day (EOD) historical data for a specific symbol.
 
@@ -102,7 +104,9 @@ class StocksETFClient(EODHDClientBase):
             params["to"] = date_to
         return self._make_request(endpoint, params)
 
-    def get_adjusted_data(self, symbol: str, exchange: str, date_from: str, date_to: str) -> list:
+    def get_adjusted_data(
+        self, symbol: str, exchange: str, date_from: str, date_to: str
+    ) -> list:
         """
         Retrieves adjusted End-Of-Day (EOD) historical data for a specific symbol.
 

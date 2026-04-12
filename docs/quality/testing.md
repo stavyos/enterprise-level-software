@@ -30,13 +30,14 @@ npx nx run-many -t test
 ```
 
 ## 4. Code Quality & Linting
-In addition to functional tests, we enforce strict styling and linting standards:
-- **Black**: Code formatting.
-- **Isort**: Import sorting.
-- **Flake8**: Style guide enforcement.
-- **Mypy**: Static type checking (where applicable).
+In addition to functional tests, we enforce strict styling and linting standards using **Ruff**:
+- **Linting**: Comprehensive rule set (Pycodestyle, Pyflakes, Bugbear, etc.).
+- **Formatting**: Modern code formatter (replaces Black).
+- **Import Sorting**: Built-in import sorter (replaces isort).
 
-These tools are integrated into the Nx `lint` target:
+These tools are integrated into the Nx `lint` and `format` targets:
 ```bash
 npx nx run-many -t lint
+npx nx run-many -t format
 ```
+Additionally, these checks are enforced by **pre-commit** hooks.

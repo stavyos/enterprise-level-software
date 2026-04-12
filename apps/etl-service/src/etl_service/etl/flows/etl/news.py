@@ -3,12 +3,13 @@
 import datetime
 import uuid
 
+from loguru import logger
+from prefect import flow
+
 from etl_service.etl.deployments_settings.deployments.stocks.news import DeploymentNews
 from etl_service.etl.flows.models.news import NewsSaveRequest
 from etl_service.etl.flows.utils import enable_loguru_support
 from etl_service.etl.scripts.news import news_saver as _news_saver
-from loguru import logger
-from prefect import flow
 
 DEPLOYMENT_NEWS = DeploymentNews()
 
@@ -17,7 +18,9 @@ DEPLOYMENT_NEWS = DeploymentNews()
 @enable_loguru_support
 def market_news_saver(save_request: NewsSaveRequest) -> None:
     """Flow task to save market news."""
-    logger.info(f"Running news saver for symbols={save_request.symbols}, tags={save_request.tags}")
+    logger.info(
+        f"Running news saver for symbols={save_request.symbols}, tags={save_request.tags}"
+    )
     _news_saver(
         symbols=save_request.symbols,
         tags=save_request.tags,

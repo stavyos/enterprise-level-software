@@ -38,7 +38,7 @@ For a step-by-step guide to setting up your local Kubernetes and Prefect environ
 
 
 ### Concurrency Limits
-We implement individual concurrency limits for each deployment type within the AbstractDeploymentSettings: 
+We implement individual concurrency limits for each deployment type within the AbstractDeploymentSettings:
 - **Savers**: 2 concurrent runs.
 - **Dispatchers**: 1 concurrent run.
 

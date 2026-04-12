@@ -3,13 +3,16 @@
 import datetime
 import os
 
+from loguru import logger
+
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
-from loguru import logger
 
 
-def intraday_saver(bus_date: datetime.date, tickers: list[str], interval: str = "1m") -> None:
+def intraday_saver(
+    bus_date: datetime.date, tickers: list[str], interval: str = "1m"
+) -> None:
     """Core logic for saving Intraday data.
 
     Args:
@@ -68,16 +71,22 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str], interval: str = 
                         ticker_inserted_count += 1
 
                     if (i + 1) % 100 == 0:
-                        logger.info(f"Progress: {i + 1}/{total_ticker_records} intraday records processed for {ticker_symbol}...")
+                        logger.info(
+                            f"Progress: {i + 1}/{total_ticker_records} intraday records processed for {ticker_symbol}..."
+                        )
 
                 total_inserted_count += ticker_inserted_count
                 logger.info(
                     f"Saved {ticker_inserted_count}/{total_ticker_records} intraday records for {ticker_symbol} at {bus_date}"
                 )
             else:
-                logger.warning(f"No intraday data found for {ticker_symbol} at {bus_date}")
+                logger.warning(
+                    f"No intraday data found for {ticker_symbol} at {bus_date}"
+                )
 
         except Exception as e:
             logger.error(f"Error processing Intraday for {ticker_symbol}: {e}")
 
-    logger.info(f"Successfully inserted {total_inserted_count} intraday rows into the database.")
+    logger.info(
+        f"Successfully inserted {total_inserted_count} intraday rows into the database."
+    )

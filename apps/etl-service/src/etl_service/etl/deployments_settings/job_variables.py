@@ -2,7 +2,10 @@
 
 from typing import Any
 
-from etl_service.etl.deployments_settings.enums import PrefectDeployment, PrefectDeploymentType
+from etl_service.etl.deployments_settings.enums import (
+    PrefectDeployment,
+    PrefectDeploymentType,
+)
 from etl_service.etl.deployments_settings.settings import settings
 
 
@@ -58,7 +61,9 @@ class ResourceLimits:
 class ResourceRequests:
     """Class to represent Kubernetes resource requests (CPU and memory)."""
 
-    def __init__(self, cpu: str | float | int | None = None, memory: str | None = None) -> None:
+    def __init__(
+        self, cpu: str | float | int | None = None, memory: str | None = None
+    ) -> None:
         """Initializes resource requests.
 
         Args:
@@ -75,7 +80,7 @@ class ResourceRequests:
 
     @cpu.setter
     def cpu(self, value: str | float | int | None) -> None:
-        if isinstance(value, (float, int)):
+        if isinstance(value, float | int):
             value = str(value)
 
         if value is not None and not isinstance(value, str):
@@ -260,7 +265,7 @@ class JobVariables:
 
     @job_ttl_sec.setter
     def job_ttl_sec(self, value: float | int) -> None:
-        if not isinstance(value, (float, int)) or value <= 0:
+        if not isinstance(value, float | int) or value <= 0:
             raise ValueError("Job TTL must be a positive float in seconds")
         self._job_ttl_sec = value
 
@@ -279,7 +284,9 @@ class JobVariables:
                 "PREFECT_API_URL": settings.prefect_api_url,
                 "PYTHONPATH": settings.job_pythonpath,
                 "EODHD_API_KEY": settings.eodhd_api_key,
-                "DB_HOST": "host.docker.internal" if settings.db_host == "localhost" else settings.db_host,
+                "DB_HOST": "host.docker.internal"
+                if settings.db_host == "localhost"
+                else settings.db_host,
                 "DB_PORT": str(settings.db_port),
                 "DB_USER": settings.db_user,
                 "DB_PASSWORD": settings.db_password,

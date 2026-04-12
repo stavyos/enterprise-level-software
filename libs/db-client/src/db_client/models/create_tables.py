@@ -1,4 +1,7 @@
-﻿from typing import Any
+from typing import Any
+
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 
 from db_client.models.news import MarketNews
 from db_client.models.stocks import (
@@ -10,8 +13,6 @@ from db_client.models.stocks import (
     StockSplits,
     TechnicalIndicator,
 )
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 
 
 def generate_all_tables_sql(base: Any) -> str:
@@ -33,7 +34,9 @@ def generate_all_tables_sql(base: Any) -> str:
 
     # Iterate over all tables in the metadata
     # The highlighted line in the image has a condition to exclude views
-    for table in [t for t in sorted_tables if "view" not in t.name and "View" not in t.name]:
+    for table in [
+        t for t in sorted_tables if "view" not in t.name and "View" not in t.name
+    ]:
         # Generate DROP TABLE IF EXISTS statement
         drop_table_sql = (
             str(DropTable(table, if_exists=True).compile(dialect=dialect)).strip() + ";"
@@ -41,7 +44,9 @@ def generate_all_tables_sql(base: Any) -> str:
         tables_sql.append(drop_table_sql)
 
         # Generate CREATE TABLE statement
-        create_table_sql = str(CreateTable(table).compile(dialect=dialect)).strip() + ";"
+        create_table_sql = (
+            str(CreateTable(table).compile(dialect=dialect)).strip() + ";"
+        )
         tables_sql.append(create_table_sql)
 
         # Generate CREATE HYPERTABLE statement for TimescaleDB
@@ -67,12 +72,15 @@ def generate_all_tables_sql(base: Any) -> str:
         # Iterate over all indexes of the table
         for index in table.indexes:
             drop_index_sql = (
-                str(DropIndex(index, if_exists=True).compile(dialect=dialect)).strip() + ";"
+                str(DropIndex(index, if_exists=True).compile(dialect=dialect)).strip()
+                + ";"
             )
             tables_sql.append(drop_index_sql)
 
             # create_index_sql = str(index.compile(dialect=engine.dialect)).strip() + ';'
-            create_index_sql = str(CreateIndex(index).compile(dialect=dialect)).strip() + ";"
+            create_index_sql = (
+                str(CreateIndex(index).compile(dialect=dialect)).strip() + ";"
+            )
             tables_sql.append(create_index_sql)
 
     return "\n".join(tables_sql)

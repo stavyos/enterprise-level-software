@@ -3,15 +3,22 @@
 import asyncio
 import datetime
 
-from etl_service.etl.deployments_settings.deployments.base import AbstractDeploymentSettings
-from etl_service.etl.deployments_settings.deployments.stocks.eod import DeploymentEOD
-from etl_service.etl.deployments_settings.deployments.stocks.exchanges import DeploymentExchanges
-from etl_service.etl.deployments_settings.deployments.stocks.intraday import DeploymentIntraday
-from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
-from etl_service.etl.flows.utils import enable_loguru_support
 from loguru import logger
 from prefect import flow
 from prefect.client.schemas import FlowRun, StateType
+
+from etl_service.etl.deployments_settings.deployments.base import (
+    AbstractDeploymentSettings,
+)
+from etl_service.etl.deployments_settings.deployments.stocks.eod import DeploymentEOD
+from etl_service.etl.deployments_settings.deployments.stocks.exchanges import (
+    DeploymentExchanges,
+)
+from etl_service.etl.deployments_settings.deployments.stocks.intraday import (
+    DeploymentIntraday,
+)
+from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
+from etl_service.etl.flows.utils import enable_loguru_support
 
 DEPLOYMENT_MAIN = DeploymentMain()
 
@@ -36,13 +43,15 @@ async def main_saver_dispatcher(bus_date: datetime.date | None = None) -> None:
 
         results: list[FlowRun | Exception] = await asyncio.gather(
             *(
-                deployment.dispatch_deployment_saver_dispatcher(parameters={"bus_date": bus_date})
+                deployment.dispatch_deployment_saver_dispatcher(
+                    parameters={"bus_date": bus_date}
+                )
                 for deployment in tier
             ),
             return_exceptions=True,
         )
 
-        for deployment, result in zip(tier, results):
+        for deployment, result in zip(tier, results, strict=False):
             if isinstance(result, Exception):
                 raise RuntimeError(
                     f"Flow {deployment} failed with, cannot continue with ETL execution"

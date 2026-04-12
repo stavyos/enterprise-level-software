@@ -1,11 +1,14 @@
-﻿"""Exchanges ETL flow module."""
+"""Exchanges ETL flow module."""
 
 import datetime
 
-from etl_service.etl.deployments_settings.deployments.stocks.exchanges import DeploymentExchanges
-from etl_service.etl.flows.utils import enable_loguru_support
 from loguru import logger
 from prefect import flow
+
+from etl_service.etl.deployments_settings.deployments.stocks.exchanges import (
+    DeploymentExchanges,
+)
+from etl_service.etl.flows.utils import enable_loguru_support
 
 DEPLOYMENT_EXCHANGES = DeploymentExchanges()
 

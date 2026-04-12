@@ -3,10 +3,11 @@
 import os
 from datetime import date, datetime
 
+from loguru import logger
+
 from db_client.client import DBClient
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
-from loguru import logger
 
 
 def news_saver(
@@ -51,10 +52,12 @@ def news_saver(
             )
             if success:
                 inserted_count += 1
-            
+
             if (i + 1) % 10 == 0:
                 logger.info(f"Progress: {i + 1}/{total_articles} news articles processed...")
-        
-        logger.info(f"Successfully inserted {inserted_count}/{total_articles} news articles.")
+
+        logger.info(
+            f"Successfully inserted {inserted_count}/{total_articles} news articles."
+        )
     except Exception as e:
         logger.error(f"Error saving news: {e}")
