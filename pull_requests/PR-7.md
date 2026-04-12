@@ -7,8 +7,8 @@ This Pull Request resolves critical issues in the ETL pipeline orchestration wit
 1. **``apps/etl-service/src/etl_service/etl/deployments_settings/settings.py``**: Start here to see the new centralized configuration management.
 2. **``apps/etl-service/src/etl_service/etl/deployments_settings/job_variables.py``**: Review how environment variables are now injected into Kubernetes pods.
 3. **``apps/etl-service/src/etl_service/etl/deploy_etls.py``**: Examine the fixes for deployment paths and registration.
-4. **``libs/db-client/src/db_client/client.py``**: Check the modifications to support success-tracking in database operations.
-5. **``apps/etl-service/src/etl_service/etl/scripts/``**: See the enhanced logging and safer data handling in all ETL scripts.
+4. **``libs/db-client/src/db_client/client.py``**: Check the modifications to support success-tracking in database operations and reduced log noise.
+5. **``apps/etl-service/src/etl_service/etl/scripts/``**: See the enhanced logging, periodic progress updates, and safer data handling in all ETL scripts.
 6. **``apps/etl-service/src/etl_service/etl/flows/etl/``**: Review the updates to flow dispatchers ensuring mandatory parameters and resolved logic gaps.
 
 ## Key Changes
@@ -28,7 +28,9 @@ This Pull Request resolves critical issues in the ETL pipeline orchestration wit
 - **Dispatcher Logic**: Completed the missing implementation for ``Exchanges-Saver`` and ``Main Date Range-Saver`` dispatchers.
 - **Observability**: 
     - Modified ``DBClient`` to return success indicators for all insertion methods.
+    - Reduced log noise by changing individual row insertion logs to ``DEBUG`` level.
     - Updated all ETL scripts to track and log the exact number of rows successfully inserted/updated in each run (e.g., ``Successfully inserted 960 intraday rows into the database.``).
+    - Implemented **periodic progress updates** (e.g., every 1000 records for bulk EOD) to provide visibility during long-running tasks without overwhelming the logs.
 - **Robustness**: Implemented safer dictionary access (``.get()``) across all scripts to handle potential missing fields from API responses.
 - **Bug Fix**: Corrected field names for bulk dividends (``unadjustedValue``, etc.).
 
