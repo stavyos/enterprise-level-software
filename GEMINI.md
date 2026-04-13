@@ -31,3 +31,8 @@
 
 ## Operational Rules
 - **Prefect Orchestration:** When starting the Prefect server, always ensure the `my-k8s-pool` work pool worker is running to process Kubernetes-based flow runs.
+- **Prefect CLI Operations:**
+    - **Context Awareness**: ALWAYS execute Prefect CLI commands from within the specific application directory (e.g., `apps/etl-service` or `apps/prefect-orchestrator`) where the virtual environment and `prefect` dependency reside.
+    - **Querying Flow Runs**: Use `uv run prefect flow-run ls --limit <N>` to list recent runs. Note that `--sort` is often NOT supported in the local CLI version; rely on the default chronological order.
+    - **Retrieving Logs**: Use `uv run prefect flow-run logs <UUID>` to fetch logs. If logs are large, use PowerShell pipes like `| Select-Object -Last 20` or `| Select-String "..."` for targeted analysis.
+    - **UUID Verification**: When extracting UUIDs from tables or logs, ensure the full ID is captured (not truncated) to avoid `ObjectNotFound` errors.

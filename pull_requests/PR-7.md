@@ -42,7 +42,7 @@ This Pull Request resolves critical issues in the ETL pipeline orchestration wit
 
 ### 4. Documentation & Workspace
 - Updated ``README.md`` with explicit Prefect startup and worker instructions.
-- Enhanced ``GEMINI.md`` with comprehensive Project Rules and Engineering Standards.
+- Enhanced ``GEMINI.md`` with comprehensive Project Rules, Engineering Standards, and **Prefect CLI Operation guidelines** to prevent common querying errors.
 - Corrected ``.gitignore`` to track ``GEMINI.md``.
 
 ## Workspace Dependency Graph
