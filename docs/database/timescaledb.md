@@ -30,7 +30,15 @@ We maintain several core tables:
 4. `stock_adjusted`: Pre-calculated adjusted pricing for research.
 5. `market_news`: Financial articles, tags, and sentiment data (Hypertable).
 
-### Why use Hypertables for News?
-While news articles are text-heavy, they are inherently time-series data. Storing them in a Hypertable allows us to:
-- Efficiently fetch "latest news" using time-based partitioning.
-- Use TimescaleDB's **Retention Policies** to automatically drop news older than X years, keeping the database lean.
+## Performance Optimization
+
+### Bulk Loading
+To take full advantage of TimescaleDB's write performance, this project implements a **Bulk Upsert** pattern. Instead of committing every row individually, our ETL scripts collect thousands of data points and insert them in a single database transaction.
+
+This approach:
+- Minimizes overhead from frequent `COMMIT` operations.
+- Optimizes disk I/O for Hypertable chunking.
+- Ensures data consistency across batch updates.
+
+### Schema Auto-Creation
+To simplify deployment, the `DBClient` automatically ensures all required tables and hypertables exist upon initialization using `Base.metadata.create_all()`.

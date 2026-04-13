@@ -44,3 +44,16 @@ We use **Loguru** across all libraries and apps. It provides:
 - Automatic context capture (e.g., Prefect `run_id`).
 - Pre-formatted, color-coded CLI output.
 - Easy integration with external monitoring tools.
+
+## 6. High-Efficiency Bulk Upserts
+To minimize database round-trips during high-volume ETL runs (e.g., Intraday data), we avoid row-by-row insertions. Instead, we collect records into a list and perform a single batch operation.
+
+**Implementation Pattern:**
+1. **DB Client**: Implements a `bulk_upsert(objects: list[Base])` method.
+2. **Script**: Fetches data from API, instantiates SQLAlchemy models, and stores them in a list.
+3. **Execution**: A single `session.commit()` is performed after all records in the batch are processed.
+
+**Benefits:**
+- **Performance**: Up to 100x faster than row-by-row commits.
+- **Atomicity**: Either the entire batch succeeds, or it's rolled back.
+- **Reduced Log Noise**: Summarizes thousands of insertions into a single `INFO` log entry.
