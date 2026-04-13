@@ -5,6 +5,7 @@ from datetime import date, datetime
 from loguru import logger
 
 from db_client.client import DBClient
+from db_client.models import MarketNews
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
@@ -28,7 +29,6 @@ def news_saver(
         port=settings.db_port,
     )
 
-    inserted_count = 0
     try:
         articles = client.get_news(
             symbols=symbols,
@@ -38,8 +38,9 @@ def news_saver(
             limit=limit,
         )
         total_articles = len(articles)
-        for i, article in enumerate(articles):
-            success = db_client.insert_market_news(
+        objects_to_upsert = []
+        for article in articles:
+            news = MarketNews(
                 date=datetime.fromisoformat(article.get("date").replace("Z", "+00:00"))
                 if article.get("date")
                 else None,
@@ -49,16 +50,15 @@ def news_saver(
                 symbols=article.get("symbols", []),
                 tags=article.get("tags", []),
             )
-            if success:
-                inserted_count += 1
+            objects_to_upsert.append(news)
 
-            if (i + 1) % 10 == 0:
-                logger.info(
-                    f"Progress: {i + 1}/{total_articles} news articles processed..."
-                )
+        success = db_client.bulk_upsert(objects_to_upsert)
+        if success:
+            logger.info(
+                f"Successfully inserted {len(objects_to_upsert)}/{total_articles} news articles."
+            )
+        else:
+            logger.error("Failed to bulk upsert news articles")
 
-        logger.info(
-            f"Successfully inserted {inserted_count}/{total_articles} news articles."
-        )
     except Exception as e:
         logger.error(f"Error saving news: {e}")

@@ -5,6 +5,7 @@ import datetime
 from loguru import logger
 
 from db_client.client import DBClient
+from db_client.models import Exchange
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
@@ -32,9 +33,9 @@ def exchanges_saver(bus_date: datetime.date) -> None:
             logger.warning("No exchanges data received from API.")
             return
 
-        rows_inserted = 0
+        objects_to_upsert = []
         for item in exchanges:
-            success = db_client.insert_exchange_data(
+            exchange = Exchange(
                 code=item.get("Code"),
                 name=item.get("Name"),
                 country=item.get("Country"),
@@ -43,12 +44,15 @@ def exchanges_saver(bus_date: datetime.date) -> None:
                 country_iso2=item.get("CountryISO2"),
                 country_iso3=item.get("CountryISO3"),
             )
-            if success:
-                rows_inserted += 1
+            objects_to_upsert.append(exchange)
 
-        logger.info(
-            f"Successfully inserted {rows_inserted}/{len(exchanges)} exchanges into the database."
-        )
+        success = db_client.bulk_upsert(objects_to_upsert)
+        if success:
+            logger.info(
+                f"Successfully inserted {len(objects_to_upsert)}/{len(exchanges)} exchanges into the database."
+            )
+        else:
+            logger.error("Failed to bulk upsert exchanges data")
 
     except Exception as e:
         logger.error(f"Error processing Exchanges: {e}")

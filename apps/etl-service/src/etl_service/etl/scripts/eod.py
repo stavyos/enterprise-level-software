@@ -5,6 +5,7 @@ import datetime
 from loguru import logger
 
 from db_client.client import DBClient
+from db_client.models import StockEOD
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
@@ -27,7 +28,7 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
         port=settings.db_port,
     )
 
-    rows_inserted = 0
+    objects_to_upsert = []
     total_tickers = len(tickers)
     for i, ticker_symbol in enumerate(tickers):
         try:
@@ -45,19 +46,18 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
 
             if data and isinstance(data, list) and len(data) > 0:
                 item = data[0]
-                success = db_client.insert_stock_data(
+                obj = StockEOD(
                     bus_date=bus_date,
                     symbol=ticker_symbol,
-                    open_price=item["open"],
-                    high_price=item["high"],
-                    low_price=item["low"],
-                    close_price=item["close"],
-                    adjusted_close_price=item["adjusted_close"],
+                    open=item["open"],
+                    high=item["high"],
+                    low=item["low"],
+                    close=item["close"],
+                    adjusted_close=item["adjusted_close"],
                     volume=item["volume"],
                 )
-                if success:
-                    rows_inserted += 1
-                logger.debug(f"Saved EOD data for {ticker_symbol} at {bus_date}")
+                objects_to_upsert.append(obj)
+                logger.debug(f"Collected EOD data for {ticker_symbol} at {bus_date}")
             else:
                 logger.warning(f"No EOD data found for {ticker_symbol} at {bus_date}")
 
@@ -69,6 +69,13 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
 
-    logger.info(
-        f"Successfully inserted {rows_inserted}/{total_tickers} rows into the database."
-    )
+    if objects_to_upsert:
+        success = db_client.bulk_upsert(objects_to_upsert)
+        if success:
+            logger.info(
+                f"Successfully inserted {len(objects_to_upsert)}/{total_tickers} rows into the database."
+            )
+        else:
+            logger.error("Failed to perform bulk upsert for EOD data.")
+    else:
+        logger.warning("No data collected for bulk upsert.")

@@ -497,3 +497,24 @@ class DBClient:
                 session.rollback()
                 logger.error(f"Error inserting exchange {code}: {e}")
                 return False
+
+    def bulk_upsert(self, objects: list[Base]) -> bool:
+        """
+        Performs a bulk upsert (merge) of multiple objects in a single session.
+
+        Args:
+            objects (list[Base]): List of SQLAlchemy model instances.
+        """
+        if not objects:
+            return True
+
+        with self._session() as session:
+            try:
+                for obj in objects:
+                    session.merge(obj)
+                session.commit()
+                return True
+            except Exception as e:
+                session.rollback()
+                logger.error(f"Error during bulk upsert: {e}")
+                return False

@@ -5,6 +5,7 @@ import datetime
 from loguru import logger
 
 from db_client.client import DBClient
+from db_client.models import StockIntraday
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
@@ -52,32 +53,29 @@ def intraday_saver(
             )
 
             if data and isinstance(data, list):
-                ticker_inserted_count = 0
-                total_ticker_records = len(data)
-                for i, item in enumerate(data):
-                    success = db_client.insert_stock_intraday_data(
+                objects_to_upsert = []
+                for item in data:
+                    stock_intraday = StockIntraday(
                         timestamp=item.get("timestamp"),
                         symbol=ticker_symbol,
                         bus_date=bus_date,
                         gmt_offset=item.get("gmtoffset"),
-                        open_price=item.get("open"),
-                        high_price=item.get("high"),
-                        low_price=item.get("low"),
-                        close_price=item.get("close"),
+                        open=item.get("open"),
+                        high=item.get("high"),
+                        low=item.get("low"),
+                        close=item.get("close"),
                         volume=item.get("volume"),
                     )
-                    if success:
-                        ticker_inserted_count += 1
+                    objects_to_upsert.append(stock_intraday)
 
-                    if (i + 1) % 100 == 0:
-                        logger.info(
-                            f"Progress: {i + 1}/{total_ticker_records} intraday records for {ticker_symbol}..."
-                        )
-
-                total_inserted_count += ticker_inserted_count
-                logger.info(
-                    f"Saved {ticker_inserted_count}/{total_ticker_records} records for {ticker_symbol} at {bus_date}"
-                )
+                success = db_client.bulk_upsert(objects_to_upsert)
+                if success:
+                    total_inserted_count += len(objects_to_upsert)
+                    logger.info(
+                        f"Saved {len(objects_to_upsert)} records for {ticker_symbol} at {bus_date}"
+                    )
+                else:
+                    logger.error(f"Failed to bulk upsert data for {ticker_symbol}")
             else:
                 logger.warning(
                     f"No intraday data found for {ticker_symbol} at {bus_date}"

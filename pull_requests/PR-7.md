@@ -34,8 +34,9 @@ This Pull Request resolves critical issues in the ETL pipeline orchestration wit
 - **Dispatcher Logic**: Completed the missing implementation for ``Main Date Range-Saver`` dispatcher.
 - **Observability**:
     - Modified ``DBClient`` to return success indicators for all insertion methods.
-    - Reduced log noise by changing individual row insertion logs to ``DEBUG`` level.
-    - Updated all ETL scripts to track and log the exact number of rows successfully inserted/updated in each run (e.g., ``Successfully inserted 960 intraday rows into the database.``).
+    - Implemented **Bulk Upsert** capability in ``DBClient``, allowing multiple records to be processed in a single session/commit.
+    - Standardized database client logs to use ``DEBUG`` level for individual row insertions and ``INFO`` level for batch summaries, significantly reducing log noise during high-volume runs.
+    - Updated all ETL scripts (``EOD``, ``Intraday``, ``Bulk``, ``News``, ``Exchanges``) to use batch processing for better performance and observability.
     - Implemented **periodic progress updates** (e.g., every 1000 records for bulk EOD) to provide visibility during long-running tasks without overwhelming the logs.
 - **Robustness**: Implemented safer dictionary access (``.get()``) across all scripts to handle potential missing fields from API responses.
 - **Bug Fix**: Corrected field names for bulk dividends (``unadjustedValue``, etc.).
