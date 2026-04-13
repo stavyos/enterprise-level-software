@@ -1,7 +1,6 @@
 """Script for saving EOD data."""
 
 import datetime
-import os
 
 from loguru import logger
 
@@ -24,7 +23,7 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
         dbname=settings.db_name,
         user=settings.db_user,
         password=settings.db_password,
-        host=settings.db_host,
+        host=settings.effective_db_host,
         port=settings.db_port,
     )
 
@@ -63,7 +62,9 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
                 logger.warning(f"No EOD data found for {ticker_symbol} at {bus_date}")
 
             if (i + 1) % 10 == 0:
-                logger.info(f"Progress: {i + 1}/{total_tickers} tickers processed for eod...")
+                logger.info(
+                    f"Progress: {i + 1}/{total_tickers} tickers processed for eod..."
+                )
 
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")

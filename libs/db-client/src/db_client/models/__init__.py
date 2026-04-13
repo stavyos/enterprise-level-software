@@ -6,13 +6,14 @@ __all__ = [
     "StockEOD",
     "Base",
     "MarketNews",
-    "TechnicalIndicator",
+    "Exchange",
 ]
 
 
 from .news import MarketNews
 from .stocks import (
     Base,
+    Exchange,
     StockAdjusted,
     StockDividends,
     StockEOD,

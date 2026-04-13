@@ -284,7 +284,7 @@ class JobVariables:
             "env": {
                 "PREFECT_API_URL": "http://host.docker.internal:4200/api",
                 "EODHD_API_KEY": settings.eodhd_api_key,
-                "DB_HOST": settings.db_host,
+                "DB_HOST": settings.effective_db_host,
                 "DB_PORT": str(settings.db_port),
                 "DB_USER": settings.db_user,
                 "DB_PASSWORD": settings.db_password,

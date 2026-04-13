@@ -1,7 +1,6 @@
 """Script for saving Intraday data."""
 
 import datetime
-import os
 
 from loguru import logger
 
@@ -26,7 +25,7 @@ def intraday_saver(
         dbname=settings.db_name,
         user=settings.db_user,
         password=settings.db_password,
-        host=settings.db_host,
+        host=settings.effective_db_host,
         port=settings.db_port,
     )
 
@@ -72,12 +71,12 @@ def intraday_saver(
 
                     if (i + 1) % 100 == 0:
                         logger.info(
-                            f"Progress: {i + 1}/{total_ticker_records} intraday records processed for {ticker_symbol}..."
+                            f"Progress: {i + 1}/{total_ticker_records} intraday records for {ticker_symbol}..."
                         )
 
                 total_inserted_count += ticker_inserted_count
                 logger.info(
-                    f"Saved {ticker_inserted_count}/{total_ticker_records} intraday records for {ticker_symbol} at {bus_date}"
+                    f"Saved {ticker_inserted_count}/{total_ticker_records} records for {ticker_symbol} at {bus_date}"
                 )
             else:
                 logger.warning(

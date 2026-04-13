@@ -21,8 +21,10 @@ def exchanges_saver(bus_date: datetime.date) -> None:
     Args:
         bus_date (datetime.date): The business date.
     """
+    from etl_service.etl.scripts.exchanges import exchanges_saver as run_exchanges_saver
+
     logger.info(f"Running Exchanges saver for bus_date={bus_date}")
-    logger.info("Successfully inserted 0 rows into the database (no-op until models are defined).")
+    run_exchanges_saver(bus_date=bus_date)
 
 
 @flow(**DEPLOYMENT_EXCHANGES.saver_dispatcher_flow_decorator_args)

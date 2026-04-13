@@ -1,6 +1,5 @@
 """Script for saving market news data."""
 
-import os
 from datetime import date, datetime
 
 from loguru import logger
@@ -25,7 +24,7 @@ def news_saver(
         dbname=settings.db_name,
         user=settings.db_user,
         password=settings.db_password,
-        host=settings.db_host,
+        host=settings.effective_db_host,
         port=settings.db_port,
     )
 
@@ -54,7 +53,9 @@ def news_saver(
                 inserted_count += 1
 
             if (i + 1) % 10 == 0:
-                logger.info(f"Progress: {i + 1}/{total_articles} news articles processed...")
+                logger.info(
+                    f"Progress: {i + 1}/{total_articles} news articles processed..."
+                )
 
         logger.info(
             f"Successfully inserted {inserted_count}/{total_articles} news articles."

@@ -32,6 +32,16 @@ class Settings(BaseSettings):
         env="JOB_PYTHONPATH",
     )
 
+    @property
+    def effective_db_host(self) -> str:
+        """Returns the effective database host.
+        Always returns host.docker.internal if db_host is localhost,
+        as this settings class is primarily used by Kubernetes pods.
+        """
+        if self.db_host == "localhost":
+            return "host.docker.internal"
+        return self.db_host
+
 
 # Global settings instance
 settings = Settings()

@@ -6,6 +6,8 @@ from sqlalchemy.engine import URL as PG_URL
 from sqlalchemy.orm import sessionmaker
 
 from .models import (
+    Base,
+    Exchange,
     MarketNews,
     StockAdjusted,
     StockDividends,
@@ -42,6 +44,9 @@ class DBClient:
 
         self.engine = create_engine(self.db_url)
         self._session = sessionmaker(bind=self.engine)
+
+        # Ensure all tables defined in models are created in the database
+        Base.metadata.create_all(self.engine)
 
         logger.info(f"DBClient initialized with database URL: {self.db_url}")
 
@@ -447,4 +452,46 @@ class DBClient:
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting news: {title}: {e}")
+                return False
+
+    def insert_exchange_data(
+        self,
+        code: str,
+        name: str,
+        country: str,
+        currency: str,
+        operating_mic: str | None,
+        country_iso2: str | None,
+        country_iso3: str | None,
+    ) -> bool:
+        """
+        Inserts or updates exchange data.
+
+        Args:
+            code (str): Exchange code.
+            name (str): Exchange name.
+            country (str): Country name.
+            currency (str): Currency code.
+            operating_mic (str | None): Operating MIC.
+            country_iso2 (str | None): ISO2 country code.
+            country_iso3 (str | None): ISO3 country code.
+        """
+        with self._session() as session:
+            try:
+                exchange = Exchange(
+                    code=code,
+                    name=name,
+                    country=country,
+                    currency=currency,
+                    operating_mic=operating_mic,
+                    country_iso2=country_iso2,
+                    country_iso3=country_iso3,
+                )
+                session.merge(exchange)
+                session.commit()
+                logger.info(f"Inserted/Updated exchange: {name} ({code}).")
+                return True
+            except Exception as e:
+                session.rollback()
+                logger.error(f"Error inserting exchange {code}: {e}")
                 return False

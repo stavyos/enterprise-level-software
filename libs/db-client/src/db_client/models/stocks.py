@@ -86,15 +86,17 @@ class StockSplits(Base):
     split = Column(Text)
 
 
-class TechnicalIndicator(Base):
+class Exchange(Base):
     """
-    Model representing calculated technical indicators for a symbol.
+    Model representing a stock exchange.
     """
 
-    __tablename__ = "technical_indicators"
+    __tablename__ = "exchanges"
 
-    bus_date = Column(Date, primary_key=True)
-    symbol = Column(Text, primary_key=True)
-    indicator_name = Column(Text, primary_key=True)
-
-    value = Column(Float)
+    code = Column(Text, primary_key=True)
+    name = Column(Text)
+    country = Column(Text)
+    currency = Column(Text)
+    operating_mic = Column(Text)
+    country_iso2 = Column(Text)
+    country_iso3 = Column(Text)

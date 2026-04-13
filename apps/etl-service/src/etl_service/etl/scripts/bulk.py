@@ -1,6 +1,5 @@
 """Script for saving bulk historical data."""
 
-import os
 from datetime import date
 
 from loguru import logger
@@ -18,7 +17,7 @@ def bulk_data_saver(country: str, bus_date: date, data_type: str, run_id: str) -
         dbname=settings.db_name,
         user=settings.db_user,
         password=settings.db_password,
-        host=settings.db_host,
+        host=settings.effective_db_host,
         port=settings.db_port,
     )
 
