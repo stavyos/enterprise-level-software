@@ -18,16 +18,13 @@ from etl_service.etl.deployments_settings.deployments.stocks.intraday import (
     DeploymentIntraday,
 )
 from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
-from etl_service.etl.deployments_settings.deployments.stocks.technical import (
-    DeploymentTechnical,
-)
 from etl_service.etl.flows.utils import enable_loguru_support
 
 DEPLOYMENT_MAIN = DeploymentMain()
 
 TIERS: list[list[AbstractDeploymentSettings]] = [
     [DeploymentExchanges()],
-    [DeploymentEOD(), DeploymentIntraday(), DeploymentTechnical()],
+    [DeploymentEOD(), DeploymentIntraday()],
 ]
 
 

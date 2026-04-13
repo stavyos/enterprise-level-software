@@ -14,9 +14,6 @@ from etl_service.etl.deployments_settings.deployments.stocks.intraday import (
 )
 from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
 from etl_service.etl.deployments_settings.deployments.stocks.news import DeploymentNews
-from etl_service.etl.deployments_settings.deployments.stocks.technical import (
-    DeploymentTechnical,
-)
 from etl_service.etl.deployments_settings.enums import PrefectDeployment
 
 
@@ -36,8 +33,6 @@ def map_deployment_to_settings(
             return DeploymentExchanges()
         case PrefectDeployment.MARKET_NEWS:
             return DeploymentNews()
-        case PrefectDeployment.TECHNICAL_INDICATORS:
-            return DeploymentTechnical()
         case PrefectDeployment.BULK_DATA:
             return DeploymentBulk()
         case _:
