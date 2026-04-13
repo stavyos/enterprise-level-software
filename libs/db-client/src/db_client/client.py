@@ -83,7 +83,7 @@ class DBClient:
                 )
                 session.merge(stock_eod)  # Use merge for ON CONFLICT (upsert) behavior
                 session.commit()
-                logger.debug(f"Inserted/Updated data for {symbol} at {bus_date}.")
+                logger.info(f"Inserted/Updated data for {symbol} at {bus_date}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -382,9 +382,7 @@ class DBClient:
                 )
                 session.merge(stock_splits)
                 session.commit()
-                logger.debug(
-                    f"Inserted/Updated splits data for {symbol} at {bus_date}."
-                )
+                logger.info(f"Inserted/Updated splits data for {symbol} at {bus_date}.")
                 return True
             except Exception as e:
                 session.rollback()
@@ -444,7 +442,7 @@ class DBClient:
                 )
                 session.merge(news)
                 session.commit()
-                logger.debug(f"Inserted/Updated news: {title}.")
+                logger.info(f"Inserted/Updated news: {title}.")
                 return True
             except Exception as e:
                 session.rollback()

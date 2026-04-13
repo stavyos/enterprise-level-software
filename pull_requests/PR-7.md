@@ -25,9 +25,10 @@ This Pull Request resolves critical issues in the ETL pipeline orchestration wit
 
 ### 3. ETL Flow Enhancements & Orchestration Fixes
 - **Merge Conflict Resolution**: Resolved critical syntax errors caused by merge conflicts in ``base.py`` and ``db_client/client.py``, restoring stable deployment and database operations.
-- **Main Orchestrator Fix**: Updated ``main_saver_dispatcher`` to correctly propagate mandatory ``tickers`` to sub-dispatchers, enabling fully automated tiered execution.
+- **Main Orchestrator Fix**: Updated ``main_saver_dispatcher`` to make ``tickers`` a mandatory parameter and correctly propagate it to sub-dispatchers, enabling fully automated tiered execution.
 - **Removal of Legacy Flows**: Removed the ``Technical Indicators`` deployment and associated flows (saver, dispatcher, models) as they are no longer required.
 - **Mandatory Parameters**: Updated all dispatchers (``EOD``, ``Intraday``, ``Bulk``, ``News``) to ensure identifying parameters like ``tickers`` or ``countries`` are strictly required.
+- **Logging Standardization**: Standardized database client logs to use ``INFO`` level for all successful row insertions/updates, providing better visibility during execution.
 - **Dispatcher Logic**: Completed the missing implementation for ``Exchanges-Saver`` and ``Main Date Range-Saver`` dispatchers.
 - **Observability**:
     - Modified ``DBClient`` to return success indicators for all insertion methods.
