@@ -620,13 +620,9 @@ class AbstractDeploymentSettings(ABC):
         """Get schedules for the deployment type."""
         return []
 
-<<<<<<< HEAD
-    def get_schedules(self, deployment_type: PrefectDeploymentType) -> list[Schedule]:
-=======
     def get_schedules(
         self, deployment_type: PrefectDeploymentType
     ) -> list[Schedule] | None:
->>>>>>> origin/master
         # noinspection PyUnreachableCode
         match deployment_type:
             case PrefectDeploymentType.SAVER:

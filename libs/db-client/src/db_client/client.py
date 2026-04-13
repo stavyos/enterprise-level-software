@@ -88,14 +88,10 @@ class DBClient:
                 return True
             except Exception as e:
                 session.rollback()
-<<<<<<< HEAD
-                logger.error(f"Error inserting stock data for {symbol} at {bus_date}: {e}")
-                return False
-=======
                 logger.error(
                     f"Error inserting stock data for {symbol} at {bus_date}: {e}"
                 )
->>>>>>> origin/master
+                return False
 
     def insert_stock_adjusted_data(
         self,
@@ -135,23 +131,16 @@ class DBClient:
                 )
                 session.merge(stock_adjusted)
                 session.commit()
-<<<<<<< HEAD
-                logger.debug(f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}.")
-                return True
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Error inserting adjusted stock data for {symbol} at {bus_date}: {e}")
-                return False
-=======
                 logger.info(
                     f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}."
                 )
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting adjusted stock data for {symbol} at {bus_date}: {e}"
                 )
->>>>>>> origin/master
+                return False
 
     def get_stock_data(self, symbol: str, limit: int = 2) -> list[StockEOD] | None:
         """
@@ -250,23 +239,16 @@ class DBClient:
                 )
                 session.merge(stock_dividends)
                 session.commit()
-<<<<<<< HEAD
-                logger.debug(f"Inserted/Updated dividends data for {symbol} at {bus_date}.")
-                return True
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Error inserting dividends data for {symbol} at {bus_date}: {e}")
-                return False
-=======
                 logger.info(
                     f"Inserted/Updated dividends data for {symbol} at {bus_date}."
                 )
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting dividends data for {symbol} at {bus_date}: {e}"
                 )
->>>>>>> origin/master
+                return False
 
     def get_stock_dividends_data(
         self, symbol: str, limit: int = 2
@@ -338,23 +320,16 @@ class DBClient:
                 )
                 session.merge(stock_intraday)
                 session.commit()
-<<<<<<< HEAD
-                logger.debug(f"Inserted/Updated intraday data for {symbol} at {bus_date}.")
-                return True
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Error inserting intraday stock data for {symbol} at {bus_date}: {e}")
-                return False
-=======
                 logger.info(
                     f"Inserted/Updated intraday data for {symbol} at {bus_date}."
                 )
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting intraday stock data for {symbol} at {bus_date}: {e}"
                 )
->>>>>>> origin/master
+                return False
 
     def get_stock_intraday_data(
         self, symbol: str, limit: int = 2
@@ -408,18 +383,16 @@ class DBClient:
                 )
                 session.merge(stock_splits)
                 session.commit()
-                logger.debug(f"Inserted/Updated splits data for {symbol} at {bus_date}.")
+                logger.debug(
+                    f"Inserted/Updated splits data for {symbol} at {bus_date}."
+                )
                 return True
             except Exception as e:
                 session.rollback()
-<<<<<<< HEAD
-                logger.error(f"Error inserting splits stock data for {symbol} at {bus_date}: {e}")
-                return False
-=======
                 logger.error(
                     f"Error inserting splits stock data for {symbol} at {bus_date}: {e}"
                 )
->>>>>>> origin/master
+                return False
 
     def get_stock_splits_data(
         self, symbol: str, limit: int = 2
@@ -493,7 +466,9 @@ class DBClient:
                 )
                 session.merge(ti)
                 session.commit()
-                logger.debug(f"Inserted/Updated technical indicator {indicator_name} for {symbol}.")
+                logger.debug(
+                    f"Inserted/Updated technical indicator {indicator_name} for {symbol}."
+                )
                 return True
             except Exception as e:
                 session.rollback()

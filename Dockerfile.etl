@@ -12,7 +12,6 @@ ENV PYTHONUNBUFFERED=1 \
     UV_SYSTEM_PYTHON=1
 
 # Copy shared tools and library definitions first for dependency resolution
-COPY tools/linter /app/tools/linter
 COPY libs/db-client/pyproject.toml /app/libs/db-client/
 COPY libs/eodhd-client/pyproject.toml /app/libs/eodhd-client/
 

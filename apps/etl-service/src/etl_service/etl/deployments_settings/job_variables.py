@@ -275,21 +275,20 @@ class JobVariables:
         Returns:
             dict[str, Any]: Configuration dictionary for the K8s worker.
         """
+
         return {
             "active_deadline_seconds": int(self.job_ttl_sec),
             "pod_watch_timeout_seconds": self.pod_watch_timeout_seconds,
             "app_label": self.app_label,
             "job_resources": self.job_resources.to_dict(),
             "env": {
-                "PREFECT_API_URL": settings.prefect_api_url,
-                "PYTHONPATH": settings.job_pythonpath,
+                "PREFECT_API_URL": "http://host.docker.internal:4200/api",
                 "EODHD_API_KEY": settings.eodhd_api_key,
-                "DB_HOST": "host.docker.internal"
-                if settings.db_host == "localhost"
-                else settings.db_host,
+                "DB_HOST": settings.db_host,
                 "DB_PORT": str(settings.db_port),
                 "DB_USER": settings.db_user,
                 "DB_PASSWORD": settings.db_password,
                 "DB_NAME": settings.db_name,
+                "PYTHONPATH": settings.job_pythonpath,
             },
         }

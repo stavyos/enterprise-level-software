@@ -1,5 +1,6 @@
 """Technical indicators flow module."""
 
+import datetime
 import uuid
 
 from loguru import logger
@@ -37,7 +38,10 @@ def technical_indicators_saver(save_request: TechnicalIndicatorSaveRequest) -> N
 @flow(**DEPLOYMENT_TECHNICAL.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def technical_indicators_saver_dispatcher(
-    tickers: list[dict], function: str = "rsi", period: int | None = None
+    tickers: list[str],
+    bus_date: datetime.date | None = None,
+    function: str = "rsi",
+    period: int | None = None,
 ) -> None:
     """Orchestrates technical indicators saving."""
     if not tickers:
@@ -45,19 +49,24 @@ async def technical_indicators_saver_dispatcher(
             "Tickers must be supplied for technical_indicators_saver_dispatcher."
         )
 
+    if not bus_date:
+        bus_date = datetime.date.today()
+
+    logger.info(f"Starting technical_indicators_dispatcher_saver for {bus_date=}")
+
     run_id = str(uuid.uuid4())
 
     params_list = [
         {
             "save_request": TechnicalIndicatorSaveRequest(
-                symbol=t["symbol"],
-                exchange=t["exchange"],
+                symbol=ticker,
+                exchange="US",
                 function=function,
                 period=period,
                 run_id=run_id,
             )
         }
-        for t in tickers
+        for ticker in tickers
     ]
 
     await DEPLOYMENT_TECHNICAL.dispatch_sub_flows(params=params_list)

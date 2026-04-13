@@ -23,10 +23,13 @@ This Pull Request resolves critical issues in the ETL pipeline orchestration wit
 - **Deployment Paths**: Redesigned ``deploy_etls.py`` to use the ``RunnerDeployment.from_entrypoint`` method properly, ensuring no host-specific absolute paths are recorded.
 - **Connectivity**: Implemented dynamic ``DB_HOST`` switching to ``host.docker.internal`` for pods when running against a local database.
 
-### 3. ETL Flow Enhancements
+### 3. ETL Flow Enhancements & Orchestration Fixes
+- **Merge Conflict Resolution**: Resolved critical syntax errors caused by merge conflicts in ``base.py`` and ``db_client/client.py``, restoring stable deployment and database operations.
+- **Main Orchestrator Fix**: Updated ``main_saver_dispatcher`` to correctly propagate mandatory ``tickers`` to sub-dispatchers, enabling fully automated tiered execution.
+- **Interface Standardization**: Modified ``technical_indicators_saver_dispatcher`` to support the standard ``bus_date`` and ``list[str]`` tickers interface, resolving ``SignatureMismatchError`` during main pipeline runs.
 - **Mandatory Parameters**: Updated all dispatchers (``EOD``, ``Intraday``, ``Bulk``, ``News``, ``Technical``) to ensure identifying parameters like ``tickers`` or ``countries`` are strictly required.
 - **Dispatcher Logic**: Completed the missing implementation for ``Exchanges-Saver`` and ``Main Date Range-Saver`` dispatchers.
-- **Observability**: 
+- **Observability**:
     - Modified ``DBClient`` to return success indicators for all insertion methods.
     - Reduced log noise by changing individual row insertion logs to ``DEBUG`` level.
     - Updated all ETL scripts to track and log the exact number of rows successfully inserted/updated in each run (e.g., ``Successfully inserted 960 intraday rows into the database.``).
