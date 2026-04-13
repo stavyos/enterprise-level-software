@@ -2,10 +2,12 @@
 
 import asyncio
 import datetime
+from typing import Annotated
 
 from loguru import logger
 from prefect import flow
 from prefect.client.schemas import FlowRun, StateType
+from pydantic import Field
 
 from etl_service.etl.deployments_settings.deployments.base import (
     AbstractDeploymentSettings,
@@ -31,14 +33,18 @@ TIERS: list[list[AbstractDeploymentSettings]] = [
 @flow(**DEPLOYMENT_MAIN.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def main_saver_dispatcher(
-    tickers: list[str], bus_date: datetime.date | None = None
+    tickers: Annotated[list[str], Field(min_length=1)],
+    bus_date: datetime.date | None = None,
 ) -> None:
     """Orchestrates the main ETL pipeline by running tiers of sub-flows sequentially.
 
     Args:
-        tickers (list[str]): List of tickers to process.
+        tickers (list[str]): List of tickers to process (must not be empty).
         bus_date (datetime.date | None, optional): The business date for which the ETL is running.
     """
+    if not tickers:
+        raise ValueError("Tickers list cannot be empty or None")
+
     if not bus_date:
         bus_date = datetime.date.today()
 
