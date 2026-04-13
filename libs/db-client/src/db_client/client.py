@@ -12,7 +12,6 @@ from .models import (
     StockEOD,
     StockIntraday,
     StockSplits,
-    TechnicalIndicator,
 )
 
 
@@ -450,29 +449,4 @@ class DBClient:
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting news: {title}: {e}")
-                return False
-
-    def insert_technical_indicator(
-        self, bus_date: date, symbol: str, indicator_name: str, value: float
-    ) -> bool:
-        """Inserts or updates a technical indicator."""
-        with self._session() as session:
-            try:
-                ti = TechnicalIndicator(
-                    bus_date=bus_date,
-                    symbol=symbol,
-                    indicator_name=indicator_name,
-                    value=value,
-                )
-                session.merge(ti)
-                session.commit()
-                logger.debug(
-                    f"Inserted/Updated technical indicator {indicator_name} for {symbol}."
-                )
-                return True
-            except Exception as e:
-                session.rollback()
-                logger.error(
-                    f"Error inserting technical indicator {indicator_name} for {symbol}: {e}"
-                )
                 return False

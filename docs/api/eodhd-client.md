@@ -15,14 +15,6 @@ These all inherit from `EODHDClientBase`, which provides the core HTTP and rate-
 
 ### 2. Lazy-Loaded Properties
 The main `EODHDClientBase` class uses Python properties to lazily initialize specialized clients.
-```python
-@property
-def technical(self):
-    from .technical_indicator_client import TechnicalIndicatorClient
-    if self._technical is None:
-        self._technical = TechnicalIndicatorClient(self.api_key)
-    return self._technical
-```
 **Benefits:**
 - **Performance**: We don't waste memory/time initializing every sub-client if only one is needed.
 - **Circular Dependency Prevention**: By importing inside the property, we avoid complex circular import issues.

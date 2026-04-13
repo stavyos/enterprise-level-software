@@ -18,5 +18,4 @@ from .stocks import (
     StockEOD,
     StockIntraday,
     StockSplits,
-    TechnicalIndicator,
 )

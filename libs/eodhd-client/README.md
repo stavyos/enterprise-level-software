@@ -19,9 +19,6 @@ client = EODHDClientBase(api_key="your_api_key")
 # Fetch EOD data
 eod_data = client.stocks_etf.get_eod_data("AAPL", "US")
 
-# Fetch Technical Indicators
-rsi = client.technical.get_technical_indicator("AAPL", "US", function="rsi", period=14)
-
 # Bulk Download
 bulk_eod = client.bulk.get_bulk_eod(country="US")
 ```

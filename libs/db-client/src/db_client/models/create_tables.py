@@ -11,7 +11,6 @@ from db_client.models.stocks import (
     StockEOD,
     StockIntraday,
     StockSplits,
-    TechnicalIndicator,
 )
 
 
@@ -55,7 +54,6 @@ def generate_all_tables_sql(base: Any) -> str:
             StockAdjusted.__tablename__,
             StockDividends.__tablename__,
             StockSplits.__tablename__,
-            TechnicalIndicator.__tablename__,
         ]:
             tables_sql.append(
                 f"SELECT create_hypertable('{table.name}', 'bus_date', if_not_exists => TRUE);"
