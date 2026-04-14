@@ -38,12 +38,13 @@ def deploy_flow(
         if not is_available:
             continue
 
-        dep_name = deployment_settings.get_deployment_name(deployment_type=dep_type)
+        # Keep Flow Name standard
         flow_name = deployment_settings.get_flow_name(deployment_type=dep_type)
 
+        # Use ENV_PREFIX only for the Deployment Name (e.g. flow-name/dev)
+        dep_name = deployment_settings.get_deployment_name(deployment_type=dep_type)
         if env_prefix:
-            dep_name = f"{env_prefix}-{dep_name}"
-            flow_name = f"{env_prefix}-{flow_name}"
+            dep_name = env_prefix
 
         dep_run_name = deployment_settings.get_deployment_run_name(
             deployment_type=dep_type
@@ -72,7 +73,6 @@ def deploy_flow(
         entrypoint = f"etl_service.etl.flows.etl.{module_path}:{flow_function_name}"
 
         # Use from_entrypoint to correctly capture the flow schema.
-        # We use a relative entrypoint so it doesn't pick up host-specific paths.
         d = RunnerDeployment.from_entrypoint(
             entrypoint=entrypoint,
             name=dep_name,
