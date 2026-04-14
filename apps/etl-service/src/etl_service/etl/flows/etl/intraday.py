@@ -32,14 +32,17 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
 @flow(**DEPLOYMENT_INTRADAY.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def intraday_saver_dispatcher(
-    bus_date: datetime.date, tickers: list[str] | None = None
+    bus_date: datetime.date | None = None, tickers: list[str] = None
 ) -> None:
     """Dispatcher flow for intraday data.
 
     Args:
-        bus_date (datetime.date): The business date.
-        tickers (list[str] | None): Optional list of tickers.
+        bus_date (datetime.date | None, optional): The business date. Defaults to None.
+        tickers (list[str]): List of stock tickers.
     """
+    if not bus_date:
+        bus_date = datetime.date.today()
+
     logger.info(f"Starting intraday_dispatcher_saver for {bus_date=}")
 
     if not tickers:

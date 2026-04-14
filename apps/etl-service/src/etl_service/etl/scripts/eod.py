@@ -1,12 +1,13 @@
 """Script for saving EOD data."""
 
 import datetime
-import os
 
 from loguru import logger
 
 from db_client.client import DBClient
+from db_client.models import StockEOD
 from eodhd_client.client import EODHDClientBase
+from etl_service.etl.deployments_settings.settings import settings
 
 
 def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
@@ -17,18 +18,19 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
         tickers (list[str]): List of stock tickers (e.g. ['AAPL.US', 'MSFT.US']).
         run_id (str): Unique identifier for the run.
     """
-    api_key = os.getenv("EODHD_API_KEY")
-    client = EODHDClientBase(api_key).stocks_etf
+    client = EODHDClientBase(settings.eodhd_api_key).stocks_etf
 
     db_client = DBClient(
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        host=os.getenv("DB_HOST"),
-        port=int(os.getenv("DB_PORT", 5432)),
+        dbname=settings.db_name,
+        user=settings.db_user,
+        password=settings.db_password,
+        host=settings.effective_db_host,
+        port=settings.db_port,
     )
 
-    for ticker_symbol in tickers:
+    objects_to_upsert = []
+    total_tickers = len(tickers)
+    for i, ticker_symbol in enumerate(tickers):
         try:
             # Tickers are expected in 'SYMBOL.EXCHANGE' format
             parts = ticker_symbol.split(".")
@@ -44,19 +46,36 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
 
             if data and isinstance(data, list) and len(data) > 0:
                 item = data[0]
-                db_client.insert_stock_data(
+                obj = StockEOD(
                     bus_date=bus_date,
                     symbol=ticker_symbol,
-                    open_price=item["open"],
-                    high_price=item["high"],
-                    low_price=item["low"],
-                    close_price=item["close"],
-                    adjusted_close_price=item["adjusted_close"],
+                    open=item["open"],
+                    high=item["high"],
+                    low=item["low"],
+                    close=item["close"],
+                    adjusted_close=item["adjusted_close"],
                     volume=item["volume"],
                 )
-                logger.info(f"Saved EOD data for {ticker_symbol} at {bus_date}")
+                objects_to_upsert.append(obj)
+                logger.debug(f"Collected EOD data for {ticker_symbol} at {bus_date}")
             else:
                 logger.warning(f"No EOD data found for {ticker_symbol} at {bus_date}")
 
+            if (i + 1) % 10 == 0:
+                logger.info(
+                    f"Progress: {i + 1}/{total_tickers} tickers processed for eod..."
+                )
+
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
+
+    if objects_to_upsert:
+        success = db_client.bulk_upsert(objects_to_upsert)
+        if success:
+            logger.info(
+                f"Successfully inserted {len(objects_to_upsert)}/{total_tickers} rows into the database."
+            )
+        else:
+            logger.error("Failed to perform bulk upsert for EOD data.")
+    else:
+        logger.warning("No data collected for bulk upsert.")

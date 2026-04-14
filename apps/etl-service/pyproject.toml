@@ -5,9 +5,11 @@ description = "An ETL service application"
 authors = [{ name = "Stav Yosef" }]
 requires-python = "==3.13.1"
 dependencies = [
-    "linter",
+    "db-client",
+    "eodhd-client",
     "loguru>=0.7.3",
     "prefect==3.6.25",
+    "pydantic-settings>=2.8.1",
 ]
 
 [project.optional-dependencies]
@@ -28,4 +30,5 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 
 [tool.uv.sources]
-linter = {path = "../../tools/linter", editable = true}
+db-client = {path = "../../libs/db-client", editable = true}
+eodhd-client = {path = "../../libs/eodhd-client", editable = true}

@@ -89,14 +89,6 @@ class EODHDClientBase:
         return self._bulk
 
     @property
-    def technical(self):
-        from .technical_indicator_client import TechnicalIndicatorClient
-
-        if self._technical is None:
-            self._technical = TechnicalIndicatorClient(self.api_key)
-        return self._technical
-
-    @property
     def real_time(self):
         from .real_time_client import RealTimeClient
 

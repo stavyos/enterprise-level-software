@@ -2,10 +2,12 @@
 
 import asyncio
 import datetime
+from typing import Annotated
 
 from loguru import logger
 from prefect import flow
 from prefect.client.schemas import FlowRun, StateType
+from pydantic import Field
 
 from etl_service.etl.deployments_settings.deployments.base import (
     AbstractDeploymentSettings,
@@ -23,27 +25,39 @@ from etl_service.etl.flows.utils import enable_loguru_support
 DEPLOYMENT_MAIN = DeploymentMain()
 
 TIERS: list[list[AbstractDeploymentSettings]] = [
-    [dep] for dep in [DeploymentExchanges(), DeploymentEOD(), DeploymentIntraday()]
+    [DeploymentExchanges()],
+    [DeploymentEOD(), DeploymentIntraday()],
 ]
 
 
 @flow(**DEPLOYMENT_MAIN.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
-async def main_saver_dispatcher(bus_date: datetime.date) -> None:
+async def main_saver_dispatcher(
+    tickers: Annotated[list[str], Field(min_length=1)],
+    bus_date: datetime.date | None = None,
+) -> None:
     """Orchestrates the main ETL pipeline by running tiers of sub-flows sequentially.
 
     Args:
-        bus_date (datetime.date): The business date for which the ETL is running.
-
-    Raises:
-        RuntimeError: If any sub-flow fails or does not reach a COMPLETED state.
+        tickers (list[str]): List of tickers to process (must not be empty).
+        bus_date (datetime.date | None, optional): The business date for which the ETL is running.
     """
+    if not tickers:
+        raise ValueError("Tickers list cannot be empty or None")
+
+    if not bus_date:
+        bus_date = datetime.date.today()
+
     for i, tier in enumerate(TIERS):
-        logger.info(f"Started running tear number {i} :: {tier=}")
+        logger.info(f"Started running tier number {i} :: {tier=}")
 
         results: list[FlowRun | Exception] = await asyncio.gather(
             *(
                 deployment.dispatch_deployment_saver_dispatcher(
+                    parameters={"bus_date": bus_date, "tickers": tickers}
+                )
+                if not isinstance(deployment, DeploymentExchanges)
+                else deployment.dispatch_deployment_saver_dispatcher(
                     parameters={"bus_date": bus_date}
                 )
                 for deployment in tier

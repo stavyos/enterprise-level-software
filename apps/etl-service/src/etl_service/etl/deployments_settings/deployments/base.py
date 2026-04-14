@@ -611,14 +611,14 @@ class AbstractDeploymentSettings(ABC):
 
     # region Schedule Properties
     @property
-    def saver_schedules(self) -> list[Schedule] | None:
+    def saver_schedules(self) -> list[Schedule]:
         """Get schedules for the deployment type."""
-        return None
+        return []
 
     @staticmethod
-    def saver_dispatcher_schedules() -> list[Schedule] | None:
+    def saver_dispatcher_schedules() -> list[Schedule]:
         """Get schedules for the deployment type."""
-        return None
+        return []
 
     def get_schedules(
         self, deployment_type: PrefectDeploymentType

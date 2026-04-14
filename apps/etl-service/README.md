@@ -8,13 +8,16 @@ To handle massive data requests (e.g., fetching years of intraday data for thous
 1.  **Dispatcher**: Orchestrates the work by splitting large requests into smaller, manageable chunks.
 2.  **Saver**: Parallel worker jobs that perform the actual API calls and database persistence for a specific chunk.
 
-This pattern allows for horizontal scaling across Kubernetes nodes.
+### Performance Optimizations
+- **Bulk Upserts**: All flows use batch processing to minimize database round-trips and optimize performance.
+- **Smart Logging**: Standardized log levels (`INFO` for summaries, `DEBUG` for individual rows) ensure observability without overwhelming the Prefect dashboard.
 
 ## Available Flows
+- `main_saver_dispatcher`: Sequential tiered orchestration of all core ETLs.
+- `exchanges_saver`: Global stock exchange data collection.
 - `eod_saver_dispatcher`: Daily EOD data collection.
 - `intraday_saver_dispatcher`: High-frequency data collection.
 - `market_news_saver_dispatcher`: Financial news ingestion.
-- `technical_indicators_saver_dispatcher`: Technical indicator calculation and storage.
 - `bulk_data_saver_dispatcher`: National bulk data updates (EOD, Splits, Dividends).
 
 ## Deployment

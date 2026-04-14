@@ -5,7 +5,6 @@ description = "Prefect Orchestration Application"
 authors = [{ name = "Stav Yosef" }]
 requires-python = "==3.13.1"
 dependencies = [
-    "linter",
     "prefect==3.6.25",
     "prefect-kubernetes==0.7.7"
 ]
@@ -26,6 +25,3 @@ packages = ["src/prefect_orchestrator"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-
-[tool.uv.sources]
-linter = {path = "../../tools/linter", editable = true}

@@ -71,14 +71,17 @@ def eod_saver(save_request: EODSaveRequest) -> None:
 @flow(**DEPLOYMENT_EOD.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def eod_saver_dispatcher(
-    bus_date: datetime.date, tickers: list[str] | None = None
+    bus_date: datetime.date | None = None, tickers: list[str] = None
 ) -> None:
     """Orchestrates EOD data saving by dispatching multiple parallel saver flows.
 
     Args:
-        bus_date (datetime.date): The business date.
-        tickers (list[str] | None, optional): List of tickers to process. Defaults to None.
+        bus_date (datetime.date | None, optional): The business date. Defaults to None.
+        tickers (list[str]): List of tickers to process.
     """
+    if not bus_date:
+        bus_date = datetime.date.today()
+
     logger.info(f"Running EOD dispatcher saver for bus_date={bus_date}")
 
     if not tickers:

@@ -6,13 +6,14 @@ from sqlalchemy.engine import URL as PG_URL
 from sqlalchemy.orm import sessionmaker
 
 from .models import (
+    Base,
+    Exchange,
     MarketNews,
     StockAdjusted,
     StockDividends,
     StockEOD,
     StockIntraday,
     StockSplits,
-    TechnicalIndicator,
 )
 
 
@@ -44,6 +45,9 @@ class DBClient:
         self.engine = create_engine(self.db_url)
         self._session = sessionmaker(bind=self.engine)
 
+        # Ensure all tables defined in models are created in the database
+        Base.metadata.create_all(self.engine)
+
         logger.info(f"DBClient initialized with database URL: {self.db_url}")
 
     def insert_stock_data(
@@ -56,7 +60,7 @@ class DBClient:
         close_price: float,
         adjusted_close_price: float,
         volume: int,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates End-Of-Day (EOD) stock data.
 
@@ -84,12 +88,14 @@ class DBClient:
                 )
                 session.merge(stock_eod)  # Use merge for ON CONFLICT (upsert) behavior
                 session.commit()
-                logger.info(f"Inserted/Updated data for {symbol} at {bus_date}.")
+                logger.debug(f"Inserted/Updated data for {symbol} at {bus_date}.")
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting stock data for {symbol} at {bus_date}: {e}"
                 )
+                return False
 
     def insert_stock_adjusted_data(
         self,
@@ -101,7 +107,7 @@ class DBClient:
         close_price: float,
         adjusted_close_price: float,
         volume: int,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates adjusted stock data.
 
@@ -129,14 +135,16 @@ class DBClient:
                 )
                 session.merge(stock_adjusted)
                 session.commit()
-                logger.info(
+                logger.debug(
                     f"Inserted/Updated adjusted stock data for {symbol} at {bus_date}."
                 )
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting adjusted stock data for {symbol} at {bus_date}: {e}"
                 )
+                return False
 
     def get_stock_data(self, symbol: str, limit: int = 2) -> list[StockEOD] | None:
         """
@@ -205,7 +213,7 @@ class DBClient:
         value: float,
         unadjusted_value: float,
         currency: str,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates stock dividend data.
 
@@ -235,14 +243,16 @@ class DBClient:
                 )
                 session.merge(stock_dividends)
                 session.commit()
-                logger.info(
+                logger.debug(
                     f"Inserted/Updated dividends data for {symbol} at {bus_date}."
                 )
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting dividends data for {symbol} at {bus_date}: {e}"
                 )
+                return False
 
     def get_stock_dividends_data(
         self, symbol: str, limit: int = 2
@@ -255,7 +265,7 @@ class DBClient:
             limit (int, optional): Maximum number of rows to return. Defaults to 2.
 
         Returns:
-            list[StockDividends] | None: A list of StockDividends objects or None if an error occurs.  # noqa: E501
+            list[StockDividends] | None: A list of StockDividends objects or None if an error occurs.
         """
         with self._session() as session:
             try:
@@ -284,7 +294,7 @@ class DBClient:
         low_price: float,
         close_price: float,
         volume: int,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates intraday stock data.
 
@@ -314,14 +324,16 @@ class DBClient:
                 )
                 session.merge(stock_intraday)
                 session.commit()
-                logger.info(
+                logger.debug(
                     f"Inserted/Updated intraday data for {symbol} at {bus_date}."
                 )
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting intraday stock data for {symbol} at {bus_date}: {e}"
                 )
+                return False
 
     def get_stock_intraday_data(
         self, symbol: str, limit: int = 2
@@ -357,7 +369,7 @@ class DBClient:
         bus_date: date,
         symbol: str,
         split: str,
-    ) -> None:
+    ) -> bool:
         """
         Inserts or updates stock split data.
 
@@ -375,12 +387,16 @@ class DBClient:
                 )
                 session.merge(stock_splits)
                 session.commit()
-                logger.info(f"Inserted/Updated splits data for {symbol} at {bus_date}.")
+                logger.debug(
+                    f"Inserted/Updated splits data for {symbol} at {bus_date}."
+                )
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(
                     f"Error inserting splits stock data for {symbol} at {bus_date}: {e}"
                 )
+                return False
 
     def get_stock_splits_data(
         self, symbol: str, limit: int = 2
@@ -419,7 +435,7 @@ class DBClient:
         link: str,
         symbols: list[str],
         tags: list[str],
-    ) -> None:
+    ) -> bool:
         """Inserts or updates market news."""
         with self._session() as session:
             try:
@@ -433,26 +449,72 @@ class DBClient:
                 )
                 session.merge(news)
                 session.commit()
+                logger.debug(f"Inserted/Updated news: {title}.")
+                return True
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error inserting news: {title}: {e}")
+                return False
 
-    def insert_technical_indicator(
-        self, bus_date: date, symbol: str, indicator_name: str, value: float
-    ) -> None:
-        """Inserts or updates a technical indicator."""
+    def insert_exchange_data(
+        self,
+        code: str,
+        name: str,
+        country: str,
+        currency: str,
+        operating_mic: str | None,
+        country_iso2: str | None,
+        country_iso3: str | None,
+    ) -> bool:
+        """
+        Inserts or updates exchange data.
+
+        Args:
+            code (str): Exchange code.
+            name (str): Exchange name.
+            country (str): Country name.
+            currency (str): Currency code.
+            operating_mic (str | None): Operating MIC.
+            country_iso2 (str | None): ISO2 country code.
+            country_iso3 (str | None): ISO3 country code.
+        """
         with self._session() as session:
             try:
-                ti = TechnicalIndicator(
-                    bus_date=bus_date,
-                    symbol=symbol,
-                    indicator_name=indicator_name,
-                    value=value,
+                exchange = Exchange(
+                    code=code,
+                    name=name,
+                    country=country,
+                    currency=currency,
+                    operating_mic=operating_mic,
+                    country_iso2=country_iso2,
+                    country_iso3=country_iso3,
                 )
-                session.merge(ti)
+                session.merge(exchange)
                 session.commit()
+                logger.debug(f"Inserted/Updated exchange: {name} ({code}).")
+                return True
             except Exception as e:
                 session.rollback()
-                logger.error(
-                    f"Error inserting technical indicator {indicator_name} for {symbol}: {e}"
-                )
+                logger.error(f"Error inserting exchange {code}: {e}")
+                return False
+
+    def bulk_upsert(self, objects: list[Base]) -> bool:
+        """
+        Performs a bulk upsert (merge) of multiple objects in a single session.
+
+        Args:
+            objects (list[Base]): List of SQLAlchemy model instances.
+        """
+        if not objects:
+            return True
+
+        with self._session() as session:
+            try:
+                for obj in objects:
+                    session.merge(obj)
+                session.commit()
+                return True
+            except Exception as e:
+                session.rollback()
+                logger.error(f"Error during bulk upsert: {e}")
+                return False

@@ -1,12 +1,13 @@
 """Script for saving Intraday data."""
 
 import datetime
-import os
 
 from loguru import logger
 
 from db_client.client import DBClient
+from db_client.models import StockIntraday
 from eodhd_client.client import EODHDClientBase
+from etl_service.etl.deployments_settings.settings import settings
 
 
 def intraday_saver(
@@ -19,15 +20,14 @@ def intraday_saver(
         tickers (list[str]): List of stock tickers.
         interval (str): Time interval (e.g. '1m', '5m', '1h').
     """
-    api_key = os.getenv("EODHD_API_KEY")
-    client = EODHDClientBase(api_key).stocks_etf
+    client = EODHDClientBase(settings.eodhd_api_key).stocks_etf
 
     db_client = DBClient(
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        host=os.getenv("DB_HOST"),
-        port=int(os.getenv("DB_PORT", 5432)),
+        dbname=settings.db_name,
+        user=settings.db_user,
+        password=settings.db_password,
+        host=settings.effective_db_host,
+        port=settings.db_port,
     )
 
     # Convert bus_date to timestamps for EODHD API
@@ -37,6 +37,7 @@ def intraday_saver(
     timestamp_from = int(dt_start.timestamp())
     timestamp_to = int(dt_end.timestamp())
 
+    total_inserted_count = 0
     for ticker_symbol in tickers:
         try:
             parts = ticker_symbol.split(".")
@@ -52,21 +53,29 @@ def intraday_saver(
             )
 
             if data and isinstance(data, list):
+                objects_to_upsert = []
                 for item in data:
-                    db_client.insert_stock_intraday_data(
-                        timestamp=item["timestamp"],
+                    stock_intraday = StockIntraday(
+                        timestamp=item.get("timestamp"),
                         symbol=ticker_symbol,
                         bus_date=bus_date,
-                        gmt_offset=item["gmtoffset"],
-                        open_price=item["open"],
-                        high_price=item["high"],
-                        low_price=item["low"],
-                        close_price=item["close"],
-                        volume=item["volume"],
+                        gmt_offset=item.get("gmtoffset"),
+                        open=item.get("open"),
+                        high=item.get("high"),
+                        low=item.get("low"),
+                        close=item.get("close"),
+                        volume=item.get("volume"),
                     )
-                logger.info(
-                    f"Saved {len(data)} intraday records for {ticker_symbol} at {bus_date}"
-                )
+                    objects_to_upsert.append(stock_intraday)
+
+                success = db_client.bulk_upsert(objects_to_upsert)
+                if success:
+                    total_inserted_count += len(objects_to_upsert)
+                    logger.info(
+                        f"Saved {len(objects_to_upsert)} records for {ticker_symbol} at {bus_date}"
+                    )
+                else:
+                    logger.error(f"Failed to bulk upsert data for {ticker_symbol}")
             else:
                 logger.warning(
                     f"No intraday data found for {ticker_symbol} at {bus_date}"
@@ -74,3 +83,7 @@ def intraday_saver(
 
         except Exception as e:
             logger.error(f"Error processing Intraday for {ticker_symbol}: {e}")
+
+    logger.info(
+        f"Successfully inserted {total_inserted_count} intraday rows into the database."
+    )

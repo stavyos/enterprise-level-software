@@ -12,10 +12,10 @@ node_modules
 .venv
 __pycache__/
 *.pyc
-GEMINI.md
 .worktrees/
 .nx/
 .env
 
 .gemini
 todos
+.idea/

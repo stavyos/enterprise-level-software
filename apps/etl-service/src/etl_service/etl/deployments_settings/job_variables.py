@@ -6,6 +6,7 @@ from etl_service.etl.deployments_settings.enums import (
     PrefectDeployment,
     PrefectDeploymentType,
 )
+from etl_service.etl.deployments_settings.settings import settings
 
 
 class ResourceLimits:
@@ -274,6 +275,7 @@ class JobVariables:
         Returns:
             dict[str, Any]: Configuration dictionary for the K8s worker.
         """
+
         return {
             "active_deadline_seconds": int(self.job_ttl_sec),
             "pod_watch_timeout_seconds": self.pod_watch_timeout_seconds,
@@ -281,5 +283,12 @@ class JobVariables:
             "job_resources": self.job_resources.to_dict(),
             "env": {
                 "PREFECT_API_URL": "http://host.docker.internal:4200/api",
+                "EODHD_API_KEY": settings.eodhd_api_key,
+                "DB_HOST": settings.effective_db_host,
+                "DB_PORT": str(settings.db_port),
+                "DB_USER": settings.db_user,
+                "DB_PASSWORD": settings.db_password,
+                "DB_NAME": settings.db_name,
+                "PYTHONPATH": settings.job_pythonpath,
             },
         }

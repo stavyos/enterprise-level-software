@@ -32,9 +32,17 @@ def bulk_data_saver(save_request: BulkDataSaveRequest) -> None:
 @flow(**DEPLOYMENT_BULK.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def bulk_data_saver_dispatcher(
-    countries: list[str], bus_date: datetime.date, data_types: list[str] | None = None
+    countries: list[str],
+    bus_date: datetime.date | None = None,
+    data_types: list[str] | None = None,
 ) -> None:
     """Orchestrates bulk data saving."""
+    if not countries:
+        raise ValueError("Countries must be supplied for bulk_data_saver_dispatcher.")
+
+    if not bus_date:
+        bus_date = datetime.date.today()
+
     run_id = str(uuid.uuid4())
 
     if not data_types:

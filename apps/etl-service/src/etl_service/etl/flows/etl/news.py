@@ -43,6 +43,9 @@ async def market_news_saver_dispatcher(
     """Orchestrates market news saving."""
     run_id = str(uuid.uuid4())
 
+    if not symbols and not tags:
+        raise ValueError("Symbols or Tags must be supplied for market_news_saver_dispatcher.")
+
     # Simple dispatch for now
     params_list = [
         {
