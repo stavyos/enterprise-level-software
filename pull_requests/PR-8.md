@@ -1,61 +1,33 @@
-# PR-8: Environment Separation (Dev & Prod)
+# PR-8: Implement Multi-Environment Jenkins CI/CD Plan
 
 ## Purpose
-This PR introduces a formal separation between "Development" and "Production" environments for both the Database (TimescaleDB) and the Orchestration layer (Prefect).
+This PR introduces a parameterized `Jenkinsfile` to automate the CI/CD pipeline for both development and production environments. It provides a flexible way to run linting, tests, builds, and deployments for Prefect flows across different clusters and databases.
 
 ## Reviewer Reading Guide
-1. **Infrastructure**: Check `docker-compose.yaml` for the dual-database setup.
-2. **Configuration**:
-    - Review `.env.dev` and `.env.prod` for environment-specific variables.
-    - Check `template.env.dev` and `template.env.prod` for variable definitions and documentation.
-3. **Application Logic**:
-    - `apps/prefect-orchestrator/project.json`: New `run:dev/prod` and `worker:dev/prod` targets.
-    - `apps/etl-service/project.json`: New `deploy:dev/prod` targets.
-4. **Dependencies**: `pyproject.toml` updates to include `python-dotenv[cli]`.
-5. **Documentation**: Comprehensive updates across `docs/` to reflect the new architecture.
+1. `Jenkinsfile`: The main pipeline configuration with `ENVIRONMENT` parameter.
+2. `docs/infrastructure/jenkins.md`: Updated documentation for the multi-environment Jenkins setup.
 
 ## Key Changes
-- **Docker**: Added `docker-compose.yaml` in the root to manage `timescaledb-dev` (port 5434) and `timescaledb-prod` (port 5435).
-- **Security & Isolation**:
-    - Unique database credentials for each environment (`dev_user`/`dev_pass` vs `prod_user`/`prod_pass`).
-    - **Metadata Isolation**: Individual `PREFECT_HOME` directories for Dev and Prod to ensure completely fresh clusters and prevent data bleed.
-- **Environment Management**:
-    - Created `.env.dev` and `.env.prod`.
-    - Added `template.env.dev` and `template.env.prod` to provide documentation for required variables.
-    - Integrated `python-dotenv` CLI for reliable environment variable loading in Nx targets.
-- **Prefect Orchestration**:
-    - Separate Prefect API URLs (4200 for dev, 4201 for prod).
-    - Separate K8s Work Pools (`dev-k8s-pool`, `prod-k8s-pool`).
-- **Documentation**:
-    - Updated `GEMINI.md` with environment isolation rules.
-    - Updated `docs/infrastructure/docker.md` and `docs/infrastructure/kubernetes.md`.
-    - Updated `docs/orchestration/prefect.md` and `docs/orchestration/setup-guide.md`.
-    - Updated `docs/tooling/nx-uv.md` with `python-dotenv` details.
+- Added a parameterized `Jenkinsfile` in the root directory.
+- Support for `DEV` and `PROD` environments through a selection parameter in the Jenkins UI.
+- Configured stages for:
+    - **Setup**: Environment initialization and code quality checks with `ruff`.
+    - **Tests**: Running project tests for each app in the monorepo.
+    - **Build**: Building the `etl-service` Docker image with environment-specific tags (`dev` or `prod`).
+    - **Publish**: Placeholder stage for pushing images to a remote ECR repository.
+    - **Deploy**: Registering Prefect deployments using the correct environment configuration via `python-dotenv`.
+- Environment-specific targeting for Prefect API URLs and database connections.
 
-## Architecture Diagram
+## Architecture & Dependencies
 ```mermaid
 graph TD
-    subgraph Development
-        D_DB[(TimescaleDB Dev:5434)]
-        D_P[Prefect Server Dev:4200]
-        D_W[Prefect Worker: dev-k8s-pool]
-        D_META[(Dev Metadata)]
-    end
-
-    subgraph Production
-        P_DB[(TimescaleDB Prod:5435)]
-        P_P[Prefect Server Prod:4201]
-        P_W[Prefect Worker: prod-k8s-pool]
-        P_META[(Prod Metadata)]
-    end
-
-    ETL[ETL Service] -->|Deploys to| D_P
-    ETL -->|Deploys to| P_P
-    D_W -->|Writes to| D_DB
-    P_W -->|Writes to| P_DB
-    D_P --> D_META
-    P_P --> P_META
+    A[Jenkins UI] -->|Select ENV: DEV/PROD| B[Set Environment]
+    B --> C[Setup: npm install, uv sync, ruff]
+    C --> D[Tests: nx run-many -t test]
+    D --> E[Build: docker build with tag]
+    E --> F[Publish: ECR Placeholder]
+    F --> G[Deploy: Register Prefect Flows]
 ```
 
 ## Date
-Tuesday, April 14, 2026
+2026-04-15
