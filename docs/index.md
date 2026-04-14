@@ -1,43 +1,35 @@
 # Tech Learning Center
 
-Welcome to the technical documentation for this monorepo. This center is designed to help you understand the technologies, tools, and patterns used throughout our software stack.
+Welcome to the central documentation hub for our enterprise-grade financial data processing system. This site serves as the "source of truth" for our architectural decisions, coding standards, and deployment workflows.
 
-## Documentation Structure
+## System Architecture
 
-### [Workflow Orchestration](./orchestration/prefect.md)
-Learn how we use **Prefect 3.x** to manage distributed ETL pipelines using the **Dispatcher/Saver pattern**.
+The project is built as a **Python Monorepo** managed by **Nx**, utilizing a dispatcher/saver pattern for scalable ETL operations.
 
-### [Monorepo Tooling](./tooling/nx-uv.md)
-A guide to how we use **Nx** and **UV** to manage projects and dependencies in this monorepo.
+### High-Level Flow
+1.  **Orchestration**: A unified **Prefect 3.x** cluster manages all scheduled and manual runs.
+2.  **Environment Isolation**: Development and Production environments are isolated through:
+    -   **Isolated Databases**: Separate TimescaleDB instances (`dev` on 5434, `prod` on 5435).
+    -   **Deployment Prefixing**: Deployments are prefixed with `dev-` or `prod-` for logical separation.
+3.  **Data Acquisition**: The `etl-service` interacts with the **EODHD API** to fetch historical and real-time market data.
+4.  **Persistence**: Data is stored in **TimescaleDB**, optimized using hypertables for time-series performance.
 
-### [Python Ecosystem](./python/overview.md)
-Learn about the Python version we use, our modern type hinting standards, and the monorepo management tools like **Nx** and **UV**.
-- [Design Patterns](./python/patterns.md): A guide to the advanced Python patterns used in this codebase.
+## Core Documentation
 
-### [Popular Packages](./python/packages/overview.md)
-Detailed guides on the core libraries powering our services:
-- **SQLAlchemy**: Database ORM.
-- **Loguru**: Structured logging.
-- **Requests**: HTTP interactions.
-- **Pandas & PyArrow**: Data analysis and high-performance storage.
+### 🛠️ Tooling & Infrastructure
+- [**Nx & UV**](./tooling/nx-uv.md): How we manage the monorepo and Python dependencies.
+- [**Docker**](./infrastructure/docker.md): Containerization of our persistent storage.
+- [**Kubernetes**](./infrastructure/kubernetes.md): The execution environment for our ETL workers.
 
-### [Database Architecture](./database/timescaledb.md)
-Information about **TimescaleDB**, our time-series database choice, how we manage schemas, and the use of Hypertables for financial data.
-- [SQL vs. NoSQL](./database/sql-vs-nosql.md): Understand the fundamental differences and a reference for **Popular SQL Queries**.
+### 🎭 Orchestration
+- [**Prefect Overview**](./orchestration/prefect-overview.md): Understanding the unified cluster strategy.
+- [**Setup Guide**](./orchestration/setup-guide.md): How to get the system running locally.
+- [**Deployment Pattern**](./orchestration/prefect.md): Deep dive into the Dispatcher/Saver architecture.
 
-### [Quality Assurance](./quality/testing.md)
-Learn about our testing strategy, including unit tests, integration tests, and linting standards.
+### 📊 Database & Data
+- [**TimescaleDB**](./database/timescaledb.md): Our time-series database strategy and models.
+- [**EODHD Client**](./api/eodhd-client.md): Documentation for our custom API client.
 
-### [Infrastructure & DevOps](./infrastructure/docker.md)
-Learn about **Docker**, why we use containerization, and a quick reference for **Popular Docker Commands**.
-
-### [Source Control & Workflow](./source-control/git.md)
-Understand **Git**, our version control standard, and a quick reference for **Popular Git Commands**.
-- [GitHub Overview](./source-control/github.md): Learn about our collaboration platform and the importance of Pull Requests.
-
-### [API & Authentication](./api/overview.md)
-An introduction to APIs, what an API Key is, and how to safely manage credentials in this project.
-- [EODHD Client Architecture](./api/eodhd-client.md): Deep dive into our specialized financial data client.
-
----
-*Last updated: April 11, 2026*
+### 🧪 Quality & Standards
+- [**Testing**](./quality/testing.md): Our strategy for ensuring data integrity and system reliability.
+- [**Source Control**](./source-control/git.md): Branching and Pull Request workflows.

@@ -3,6 +3,13 @@
 ## Purpose
 This PR implements a robust data isolation strategy by using separate database instances for "Development" and "Production", while simplifying the orchestration layer to a single Prefect cluster with environment-specific deployment prefixing.
 
+## Architectural Decision: Single Unified Cluster
+During development, we explored running multiple isolated Prefect clusters (separate API servers and metadata databases). We decided to transition to a **single unified cluster** for the following reasons:
+1.  **Metadata Isolation Limits**: Locally, Prefect 3.x instances often share global state/cache, making absolute metadata isolation complex to maintain on a single machine.
+2.  **Resource Efficiency**: Running two full Prefect control planes (Server + Worker) doubles local resource consumption (CPU/RAM).
+3.  **Logical Isolation**: By using mandatory environment prefixing (`dev-` and `prod-`), we achieve clear logical separation within the UI and API while maintaining a simpler, more performant local setup.
+4.  **Database Isolation**: Crucially, data integrity is still guaranteed as each deployment environment routes its workload to a completely isolated TimescaleDB instance.
+
 ## Reviewer Reading Guide
 1. **Infrastructure**: Check `docker-compose.yaml` for the dual-database setup.
 2. **Configuration**:
