@@ -6,6 +6,24 @@
 - **No Autonomous Merges:** You must never merge a Pull Request (PR) or perform a git merge into a protected branch on your own.
 - **Workflow:** All changes must be performed in a feature branch and isolated within a git worktree as per global instructions. When creating a new worktree, you MUST also copy relevant `.env` files from the root or parent directory to the new worktree to ensure consistent local configuration. Final merging and pushing to the primary branch must be handled by the user.
 
+## Environment & Infrastructure Management
+- **Environment Isolation:** This project maintains strict separation between **Development (dev)** and **Production (prod)** environments.
+- **Database (TimescaleDB):**
+    - **Dev Instance**: Accessible on port `5430` (container: `timescaledb-dev`).
+    - **Prod Instance**: Accessible on port `5431` (container: `timescaledb-prod`).
+    - Use `docker-compose up -d` to start both instances.
+- **Prefect Orchestration:**
+    - **Dev Server**: Runs on port `4200` with `dev-k8s-pool`.
+    - **Prod Server**: Runs on port `4201` with `prod-k8s-pool`.
+- **Nx Targets:** ALWAYS use environment-specific targets for server operations and deployments:
+    - **Dev**: `nx run prefect-orchestrator:start:dev`, `nx run etl-service:deploy:dev`.
+    - **Prod**: `nx run prefect-orchestrator:start:prod`, `nx run etl-service:deploy:prod`.
+
+## Configuration Management
+- **Environment Files:** Use `.env.dev` and `.env.prod` for environment-specific variables.
+- **Templates:** For any new environment variable, you MUST update `template.env.dev` and `template.env.prod` with clear descriptions and placeholders.
+- **Variable Loading:** Use `dotenv-run` within Nx targets to ensure the correct environment file is loaded (e.g., `uv run dotenv-run -e ../../.env.prod -- ...`).
+
 ## Engineering Standards
 - **Documentation & Docstrings:** ALWAYS add comprehensive docstrings to all new or modified classes and methods. Docstrings must include a clear description of purpose, parameters (Args), and return values (Returns) following standard Python conventions (e.g., Google or Sphinx style).
 - **Type Hinting:** Mandatory use of Python type hints for all function/method parameters and return values. Ensure modern PEP 585/604 syntax (e.g., `list[str]` instead of `List[str]`, `X | Y` instead of `Union[X, Y]`).
@@ -30,7 +48,7 @@
 - **Permission to Open PR:** You MUST ALWAYS ask the user for explicit permission before opening a new Pull Request on GitHub. Do not automate the creation of PRs without a direct confirmation.
 
 ## Operational Rules
-- **Prefect Orchestration:** When starting the Prefect server, always ensure the `my-k8s-pool` work pool worker is running to process Kubernetes-based flow runs.
+- **Prefect Orchestration:** When starting the Prefect server, always ensure the environment-specific work pool (e.g., `dev-k8s-pool` or `prod-k8s-pool`) is running to process Kubernetes-based flow runs.
 - **Prefect CLI Operations:**
     - **Context Awareness**: ALWAYS execute Prefect CLI commands from within the specific application directory (e.g., `apps/etl-service` or `apps/prefect-orchestrator`) where the virtual environment and `prefect` dependency reside.
     - **Querying Flow Runs**: Use `uv run prefect flow-run ls --limit <N>` to list recent runs. Note that `--sort` is often NOT supported in the local CLI version; rely on the default chronological order.

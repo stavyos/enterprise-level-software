@@ -1,0 +1,26 @@
+services:
+  timescaledb-dev:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb-dev
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5430:5432"
+    volumes:
+      - timescaledb_data_dev:/var/lib/postgresql/data
+    restart: always
+
+  timescaledb-prod:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb-prod
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5431:5432"
+    volumes:
+      - timescaledb_data_prod:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  timescaledb_data_dev:
+  timescaledb_data_prod:
