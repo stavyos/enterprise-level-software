@@ -9,8 +9,8 @@
 ## Environment & Infrastructure Management
 - **Environment Isolation:** This project maintains strict separation between **Development (dev)** and **Production (prod)** environments.
 - **Database (TimescaleDB):**
-    - **Dev Instance**: Accessible on port `5430` (container: `timescaledb-dev`).
-    - **Prod Instance**: Accessible on port `5431` (container: `timescaledb-prod`).
+    - **Dev Instance**: Accessible on port `5434` (container: `timescaledb-dev`).
+    - **Prod Instance**: Accessible on port `5435` (container: `timescaledb-prod`).
     - Use `docker-compose up -d` to start both instances.
 - **Prefect Orchestration:**
     - **Dev Server**: Runs on port `4200` with `dev-k8s-pool`.
@@ -22,7 +22,7 @@
 ## Configuration Management
 - **Environment Files:** Use `.env.dev` and `.env.prod` for environment-specific variables.
 - **Templates:** For any new environment variable, you MUST update `template.env.dev` and `template.env.prod` with clear descriptions and placeholders.
-- **Variable Loading:** Use `dotenv-run` within Nx targets to ensure the correct environment file is loaded (e.g., `uv run dotenv-run -e ../../.env.prod -- ...`).
+- **Variable Loading:** Use the `python-dotenv` CLI within Nx targets to ensure the correct environment file is loaded (e.g., `uv run dotenv -f ../../.env.prod run -- ...`).
 
 ## Engineering Standards
 - **Documentation & Docstrings:** ALWAYS add comprehensive docstrings to all new or modified classes and methods. Docstrings must include a clear description of purpose, parameters (Args), and return values (Returns) following standard Python conventions (e.g., Google or Sphinx style).

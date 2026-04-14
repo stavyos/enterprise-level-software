@@ -10,7 +10,7 @@ dependencies = [
     "loguru>=0.7.3",
     "prefect==3.6.25",
     "pydantic-settings>=2.8.1",
-    "dotenv-run>=0.2.0"
+    "python-dotenv[cli]>=1.0.1"
 ]
 
 [project.optional-dependencies]

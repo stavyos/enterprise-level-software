@@ -12,7 +12,7 @@
     "deploy:dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv-run -e ../../.env.dev -- python -m etl_service.etl.deploy_etls",
+        "command": "uv run dotenv -f ../../.env.dev run -- python -m etl_service.etl.deploy_etls",
         "cwd": "{projectRoot}",
         "env": {
           "PYTHONPATH": "../../libs/db-client/src;../../libs/eodhd-client/src;src"
@@ -23,7 +23,7 @@
     "deploy:prod": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv-run -e ../../.env.prod -- python -m etl_service.etl.deploy_etls",
+        "command": "uv run dotenv -f ../../.env.prod run -- python -m etl_service.etl.deploy_etls",
         "cwd": "{projectRoot}",
         "env": {
           "PYTHONPATH": "../../libs/db-client/src;../../libs/eodhd-client/src;src"

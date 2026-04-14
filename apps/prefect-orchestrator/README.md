@@ -8,10 +8,23 @@ Management layer for the Prefect 3.x control plane and Kubernetes execution envi
 - **Workers**: Deployment and scaling of Prefect workers within the cluster.
 
 ## Key Commands
-- **Start All**: `npx nx run prefect-orchestrator:start` (Starts both server and worker).
-- **Start Local Server**: `npx nx run prefect-orchestrator:run`
-- **Start Local Worker**: `npx nx run prefect-orchestrator:worker`
-- **View Dashboard**: Access the Prefect UI (defaults to `http://localhost:4200`) to monitor flow runs and worker status.
+
+| Task | Development (Dev) | Production (Prod) |
+| :--- | :--- | :--- |
+| **Start All** | `npx nx run prefect-orchestrator:start:dev` | `npx nx run prefect-orchestrator:start:prod` |
+| **Start Server** | `npx nx run prefect-orchestrator:run:dev` | `npx nx run prefect-orchestrator:run:prod` |
+| **Start Worker** | `npx nx run prefect-orchestrator:worker:dev` | `npx nx run prefect-orchestrator:worker:prod` |
+| **UI URL** | `http://localhost:4200` | `http://localhost:4201` |
+
+## Environment Configuration
+This application uses `python-dotenv` to manage environment-specific configurations.
+- Use `.env.dev` for development.
+- Use `.env.prod` for production.
+
+To run a single command with specific environment:
+```bash
+uv run dotenv -f ../../.env.prod run -- prefect server start
+```
 
 ## Development
 

@@ -11,14 +11,16 @@ This PR introduces a formal separation between "Development" and "Production" en
 3. **Application Logic**:
     - `apps/prefect-orchestrator/project.json`: New `run:dev/prod` and `worker:dev/prod` targets.
     - `apps/etl-service/project.json`: New `deploy:dev/prod` targets.
-4. **Dependencies**: `pyproject.toml` updates to include `dotenv-run`.
+4. **Dependencies**: `pyproject.toml` updates to include `python-dotenv[cli]`.
 
 ## Key Changes
-- **Docker**: Added `docker-compose.yaml` in the root to manage `timescaledb-dev` (port 5430) and `timescaledb-prod` (port 5431).
+- **Docker**: Added `docker-compose.yaml` in the root to manage `timescaledb-dev` (port 5434) and `timescaledb-prod` (port 5435).
+- **Security & Isolation**:
+    - Unique database credentials for each environment (`dev_user`/`dev_pass` vs `prod_user`/`prod_pass`).
 - **Environment Management**:
     - Created `.env.dev` and `.env.prod`.
     - Added `template.env.dev` and `template.env.prod` to provide a clear structure and documentation for required environment variables.
-    - Integrated `dotenv-run` for reliable environment variable loading in Nx targets.
+    - Integrated `python-dotenv` CLI for reliable environment variable loading in Nx targets.
 - **Prefect Orchestration**:
     - Separate Prefect API URLs (4200 for dev, 4201 for prod).
     - Separate K8s Work Pools (`dev-k8s-pool`, `prod-k8s-pool`).
@@ -30,13 +32,13 @@ This PR introduces a formal separation between "Development" and "Production" en
 ```mermaid
 graph TD
     subgraph Development
-        D_DB[(TimescaleDB Dev:5430)]
+        D_DB[(TimescaleDB Dev:5434)]
         D_P[Prefect Server Dev:4200]
         D_W[Prefect Worker: dev-k8s-pool]
     end
 
     subgraph Production
-        P_DB[(TimescaleDB Prod:5431)]
+        P_DB[(TimescaleDB Prod:5435)]
         P_P[Prefect Server Prod:4201]
         P_W[Prefect Worker: prod-k8s-pool]
     end

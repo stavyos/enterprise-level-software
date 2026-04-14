@@ -20,10 +20,21 @@ To handle massive data requests (e.g., fetching years of intraday data for thous
 - `market_news_saver_dispatcher`: Financial news ingestion.
 - `bulk_data_saver_dispatcher`: National bulk data updates (EOD, Splits, Dividends).
 
-## Deployment
-Flows are automatically registered with Prefect using:
+## Environment Specific Commands
+
+| Task | Development (Dev) | Production (Prod) |
+| :--- | :--- | :--- |
+| **Register Flows** | `npx nx run etl-service:deploy:dev` | `npx nx run etl-service:deploy:prod` |
+| **Docker Build** | `npx nx run etl-service:docker-build:dev` | `npx nx run etl-service:docker-build:prod` |
+
+## Configuration
+This application uses `python-dotenv` to manage environment-specific configurations.
+- Use `.env.dev` for development.
+- Use `.env.prod` for production.
+
+To run a single command with specific environment:
 ```bash
-npx nx run etl-service:deploy
+uv run dotenv -f ../../.env.prod run -- python -m etl_service.etl.deploy_etls
 ```
 
 ## Development

@@ -3,19 +3,30 @@
 Our data persistence layer is designed for high-performance storage and retrieval of financial time-series data.
 
 ## TimescaleDB
-We use **TimescaleDB**, which is an open-source database designed to make SQL scalable for time-series data. It is built as an extension of **PostgreSQL**.
+We use **TimescaleDB**, an open-source database designed to make SQL scalable for time-series data. It is built as an extension of **PostgreSQL**.
 
 ### Key Features used in this project:
 - **Hypertables**: We partition our stock data (EOD, Intraday) into "Hypertables". These automatically partition data by time, ensuring that as our dataset grows into millions of rows, performance remains consistent.
 - **Full SQL Support**: Since it's built on Postgres, we can use all standard SQL features and the SQLAlchemy ORM.
 
-## Setup & Maintenance
+## Environment Separation
 
-### Docker
-The database is containerized for easy local development. You can start a fresh instance with:
+We maintain strict isolation between **Development** and **Production** data using separate containerized instances.
+
+### Infrastructure Setup
+The databases are managed via Docker Compose. From the project root, run:
 ```bash
-docker run -d --name timescaledb -p 5430:5432 -e POSTGRES_PASSWORD=postgres timescale/timescaledb-ha:pg17
+docker-compose up -d
 ```
+
+### Instance Configuration
+
+| Environment | Host | Port | Container Name | User | Password |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Development** | `localhost` | `5434` | `timescaledb-dev` | `dev_user` | `dev_pass` |
+| **Production** | `localhost` | `5435` | `timescaledb-prod` | `prod_user` | `prod_pass` |
+
+## Setup & Maintenance
 
 ### Schema Generation
 Instead of writing SQL by hand, we use SQLAlchemy models to generate our schema.

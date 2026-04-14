@@ -14,7 +14,7 @@ This workspace is managed using [Nx](https://nx.dev) and is organized into appli
 - **`eodhd-client`**: A high-performance, rate-limited Python client for the [EODHD API](https://eodhd.com).
 - **`db-client`**: Database persistence layer using SQLAlchemy and TimescaleDB optimization (Hypertables).
 
-### Core Capabilities
+## Core Capabilities
 
 ### EODHD Integration
 The `eodhd-client` provides 100% coverage for essential API endpoints verified under production keys:
@@ -46,21 +46,28 @@ Automated data pipelines managed by Prefect 3.x:
 - Node.js (for Nx CLI)
 - Docker (for Kubernetes/TimescaleDB)
 - [uv](https://github.com/astral-sh/uv) for Python dependency management.
+- `python-dotenv[cli]` for environment variable management.
 
 ### Configuration
-1. Copy `.env.example` to `.env`.
-2. Provide your `EODHD_API_KEY`.
-3. Configure your database connection details.
+1.  Copy `template.env.dev` to `.env.dev` and `template.env.prod` to `.env.prod`.
+2.  Provide your `EODHD_API_KEY` in both files.
+3.  Configure your database credentials and Prefect API URLs as defined in the templates.
 
-### Development Commands
-- **Install all dependencies**: `npm run install:all`
-- **Run all tests**: `npx nx run-many -t test`
-- **Lint the project**: `npx nx run-many -t lint` (Uses **Ruff**)
-- **Format the project**: `npx nx run-many -t format` (Uses **Ruff**)
-- **Build Docker images**: `npx nx run etl-service:docker-build`
-- **Register Flows**: `npx nx run etl-service:deploy`
-- **Start Prefect Server**: `npx nx run prefect-orchestrator:run` (Ensure `my-k8s-pool` worker is running)
-- **Start Prefect Worker**: `npx nx run prefect-orchestrator:worker`
+### Infrastructure Setup
+Start both development and production databases using Docker Compose:
+```bash
+docker-compose up -d
+```
+
+### Key Development Commands
+
+| Task | Development (Dev) | Production (Prod) |
+| :--- | :--- | :--- |
+| **Install All** | `npm run install:all` | `npm run install:all` |
+| **Start Prefect** | `npx nx run prefect-orchestrator:start:dev` | `npx nx run prefect-orchestrator:start:prod` |
+| **Register Flows** | `npx nx run etl-service:deploy:dev` | `npx nx run etl-service:deploy:prod` |
+| **Docker Build** | `npx nx run etl-service:docker-build:dev` | `npx nx run etl-service:docker-build:prod` |
+| **Run Tests** | `npx nx run-many -t test` | `npx nx run-many -t test` |
 
 ### Pre-commit Hooks
 This project uses `pre-commit` to ensure code quality before every commit.

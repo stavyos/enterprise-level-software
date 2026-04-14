@@ -12,7 +12,7 @@
     "run:dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv-run -e ../../.env.dev -- prefect server start --host 0.0.0.0",
+        "command": "uv run dotenv -f ../../.env.dev run -- prefect server start --host 0.0.0.0",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
@@ -20,7 +20,7 @@
     "run:prod": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv-run -e ../../.env.prod -- prefect server start --host 0.0.0.0 --port 4201",
+        "command": "uv run dotenv -f ../../.env.prod run -- prefect server start --host 0.0.0.0 --port 4201",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
@@ -28,7 +28,7 @@
     "worker:dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv-run -e ../../.env.dev -- prefect worker start --pool dev-k8s-pool",
+        "command": "uv run dotenv -f ../../.env.dev run -- prefect worker start --pool dev-k8s-pool",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
@@ -36,7 +36,7 @@
     "worker:prod": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv-run -e ../../.env.prod -- prefect worker start --pool prod-k8s-pool",
+        "command": "uv run dotenv -f ../../.env.prod run -- prefect worker start --pool prod-k8s-pool",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
