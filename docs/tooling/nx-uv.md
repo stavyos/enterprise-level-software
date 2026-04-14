@@ -18,16 +18,11 @@ npx nx run-many -t test
 
 ### Why Nx?
 - **Consistency**: All projects, regardless of their internal logic, are managed with the same set of commands.
-- **Dependency Graph**: Nx understands which libs are used by which apps, allowing for optimized CI/CD (e.g., only testing what changed).
+- **Dependency Graph**: Nx understands which libs are used by which apps, allowing for optimized CI/CD.
 
 ## UV: Modern Python Dependency Management
 
 We use [uv](https://github.com/astral-sh/uv) for all Python-related tasks. It is a blazing-fast Python package installer and resolver written in Rust.
-
-### Key Benefits
-- **Speed**: `uv` is often 10-100x faster than `pip` or `poetry`.
-- **Reproducibility**: The `uv.lock` file ensures that every developer and production environment uses the exact same versions of every dependency.
-- **Venv Management**: `uv` handles virtual environment creation and syncing automatically.
 
 ### Workspace Usage
 - **Root `pyproject.toml`**: Manages workspace-wide settings and tools like **Ruff**.
@@ -38,14 +33,26 @@ We use [uv](https://github.com/astral-sh/uv) for all Python-related tasks. It is
 - **Run a script**: `uv run python <script.py>`.
 - **Sync environments**: `uv sync`.
 
+## Python-Dotenv: Environment Management
+
+To manage multiple environments (Dev/Prod) within the same monorepo, we use the **`python-dotenv`** CLI.
+
+### Integration with Nx
+We wrap our Nx targets with `dotenv run` to ensure the correct environment variables are loaded for each command.
+
+**Example from `project.json`:**
+```json
+"run:prod": {
+  "executor": "nx:run-commands",
+  "options": {
+    "command": "uv run dotenv -f ../../.env.prod run -- prefect server start --port 4201"
+  }
+}
+```
+
 ## Ruff: Fast & Unified Linting
 
 We use [Ruff](https://github.com/astral-sh/ruff) as our single tool for both linting and formatting — it replaces Flake8, isort, and Black.
-
-### Why Ruff?
-- **Speed**: It is written in Rust and is orders of magnitude faster than traditional Python linters.
-- **Unified**: Replaces multiple tools with a single configuration in the root `pyproject.toml`.
-- **Pre-commit integration**: Ensures code quality before it even reaches a Pull Request.
 
 ## Pre-commit Hooks
 
@@ -55,10 +62,4 @@ To ensure consistency across the monorepo, we use [pre-commit](https://pre-commi
 Run the following command once to install the hooks in your local Git repository:
 ```bash
 uvx pre-commit install
-```
-
-### Manual Execution
-You can run the hooks on all files at any time:
-```bash
-uvx pre-commit run --all-files
 ```

@@ -12,6 +12,7 @@ This PR introduces a formal separation between "Development" and "Production" en
     - `apps/prefect-orchestrator/project.json`: New `run:dev/prod` and `worker:dev/prod` targets.
     - `apps/etl-service/project.json`: New `deploy:dev/prod` targets.
 4. **Dependencies**: `pyproject.toml` updates to include `python-dotenv[cli]`.
+5. **Documentation**: Comprehensive updates across `docs/` to reflect the new architecture.
 
 ## Key Changes
 - **Docker**: Added `docker-compose.yaml` in the root to manage `timescaledb-dev` (port 5434) and `timescaledb-prod` (port 5435).
@@ -19,14 +20,16 @@ This PR introduces a formal separation between "Development" and "Production" en
     - Unique database credentials for each environment (`dev_user`/`dev_pass` vs `prod_user`/`prod_pass`).
 - **Environment Management**:
     - Created `.env.dev` and `.env.prod`.
-    - Added `template.env.dev` and `template.env.prod` to provide a clear structure and documentation for required environment variables.
+    - Added `template.env.dev` and `template.env.prod` to provide documentation for required variables.
     - Integrated `python-dotenv` CLI for reliable environment variable loading in Nx targets.
 - **Prefect Orchestration**:
     - Separate Prefect API URLs (4200 for dev, 4201 for prod).
     - Separate K8s Work Pools (`dev-k8s-pool`, `prod-k8s-pool`).
-- **Nx Workflow**:
-    - Added granular targets: `start:dev`, `start:prod`, `deploy:dev`, `deploy:prod`.
-    - Environment-specific Docker builds: `docker-build:dev`, `docker-build:prod`.
+- **Documentation**:
+    - Updated `GEMINI.md` with environment isolation rules.
+    - Updated `docs/infrastructure/docker.md` and `docs/infrastructure/kubernetes.md`.
+    - Updated `docs/orchestration/prefect.md` and `docs/orchestration/setup-guide.md`.
+    - Updated `docs/tooling/nx-uv.md` with `python-dotenv` details.
 
 ## Architecture Diagram
 ```mermaid
