@@ -1,35 +1,29 @@
 # Prefect Orchestration
 
 ## Overview
-We use **Prefect 3.x** as our workflow orchestration engine to manage, schedule, and monitor our ETL flows.
+We use **Prefect 3.x** to manage, schedule, and monitor our ETL flows.
 
-## Environment Architecture
+## Environment Architecture: Single Cluster, Multi-Tenant
+To optimize local resources, we maintain a **single unified Prefect cluster** but achieve strict isolation at the data and execution layers.
 
-We use a **single Prefect cluster** for both Development and Production. Isolation is achieved by:
-1.  **Deployment Prefixing**: Deployments are named `dev-flow-name` or `prod-flow-name`.
-2.  **Database Routing**: The workers connect to different TimescaleDB instances based on the environment variables.
+### Isolation Pillars
+1.  **Deployment Naming**: Every deployment is registered with an environment suffix (e.g., `EOD-Saver/dev`).
+2.  **Isolated Databases**: Workers connect to different TimescaleDB instances (`5434` for dev, `5435` for prod).
+3.  **Baked Docker Images**: Environment variables are baked into the Docker images at build time, ensuring that an image tagged `:prod` can only talk to the production database.
 
-| Feature | Shared Value |
-| :--- | :--- |
-| **API URL** | `http://127.0.0.1:4200/api` |
-| **Work Pool** | `my-k8s-pool` |
+| Feature | Development (Dev) | Production (Prod) |
+| :--- | :--- | :--- |
+| **Deployment Suffix** | `/dev` | `/prod` |
+| **App DB Port** | `5434` | `5435` |
+| **Docker Image** | `etl-service:dev` | `etl-service:prod` |
 
 ## Infrastructure
-- **Orchestrator Application**: Manages the single Prefect control plane and Kubernetes worker.
-- **Flow Implementation**: Defined within the `etl-service` application.
-- **Deployment logic**: The `deploy_etls.py` script automatically reads the `ENV_PREFIX` and configures the deployment names.
+- **Orchestrator Application**: Manages the single Prefect server and worker.
+- **Registration logic**: The `deploy_etls.py` script uses the `ENV_PREFIX` variable to configure the deployment name and metadata.
 
 ## Execution
-
-To start the cluster:
+Start the cluster:
 ```bash
 npx nx run prefect-orchestrator:start
 ```
-
-## Configuration Management
-This project uses **`python-dotenv`** to load environment variables for Nx targets. This ensures that the correct database credentials and environment prefix are set before any command is executed.
-
-Example for manual registration:
-```bash
-uv run dotenv -f prod.env run -- python -m etl_service.etl.deploy_etls
-```
+Access the UI: [http://localhost:4200](http://localhost:4200)

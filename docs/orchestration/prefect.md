@@ -1,36 +1,27 @@
-# Workflow Orchestration with Prefect 3.x
+# Workflow Orchestration Strategy
 
-Our system uses **Prefect 3.x** to manage, schedule, and observe complex ETL pipelines.
+Our system uses a two-tier architecture (Dispatcher/Saver) to handle high-volume financial data acquisition.
 
-## Environment Separation
+## The Image-Baking Pattern
+To maintain environment isolation within a single cluster, we use the **Image-Baking** pattern.
 
-We maintain isolation between **Development** and **Production** using a single cluster with prefixed deployments and isolated databases.
+### 1. Build Phase
+We use Docker build arguments (`--build-arg`) to inject environment-specific database credentials and prefixes into the image.
+- `etl-service:dev`: Hardcoded to Port 5434.
+- `etl-service:prod`: Hardcoded to Port 5435.
 
-| Feature | Shared Value |
-| :--- | :--- |
-| **API URL** | `http://127.0.0.1:4200/api` |
-| **Work Pool** | `my-k8s-pool` |
+### 2. Registration Phase
+When we run the deployment script, we pass the image name. Prefect creates a deployment entry that links the flow to that specific image.
 
-### Deployment Prefixing
-To distinguish between environments, we use the `ENV_PREFIX` variable:
-- **Dev Flows**: Prefixed with `dev-` (e.g., `dev-EOD-Saver`).
-- **Prod Flows**: Prefixed with `prod-` (e.g., `prod-EOD-Saver`).
+### 3. Execution Phase
+When a flow is triggered, the Prefect worker pulls the specific image. Because the database connection string is already inside the container, the worker automatically connects to the correct data instance without needing external environment variables.
 
-## The Dispatcher/Saver Pattern
-To handle enterprise-scale data, we use a two-tier architecture:
-1.  **The Dispatcher Flow**: Splits the workload into smaller "chunks".
-2.  **The Saver Flow**: Executes the actual API calls and persists data to the isolated environment database.
+## Deployment Suffixes
+We use the `ENV_PREFIX` variable to name our deployments:
+- `dev`: `Flow-Name/dev`
+- `prod`: `Flow-Name/prod`
 
-## Deployment Commands
-
-### Development (Dev)
-To register all flows with `dev-` prefix:
-```bash
-npx nx run etl-service:deploy:dev
-```
-
-### Production (Prod)
-To register all flows with `prod-` prefix:
-```bash
-npx nx run etl-service:deploy:prod
-```
+## Key Benefits
+- **Zero Configuration Leakage**: Dev workers cannot accidentally connect to the Prod database because the connection logic is isolated within the image.
+- **Unified Observability**: View all environment runs in a single dashboard while keeping them logically separated.
+- **Resource Efficiency**: No need to run multiple heavy Prefect control planes locally.

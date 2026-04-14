@@ -1,56 +1,38 @@
 # Project Rules
 
 ## Source Control & Deployment
-- **No Direct Pushes:** You are STRICTLY PROHIBITED from pushing code directly to the `master` or `main` branches. NEVER push to these branches.
-- **Pull Request Only:** ALL changes, including documentation and configuration updates, MUST be performed in a feature branch (prefixed with `sy/`) and submitted via a Pull Request.
-- **No Autonomous Merges:** You must never merge a Pull Request (PR) or perform a git merge into a protected branch on your own.
-- **Workflow:** All changes must be performed in a feature branch and isolated within a git worktree as per global instructions. When creating a new worktree, you MUST also copy relevant environment files from the root or parent directory to the new worktree to ensure consistent local configuration. Final merging and pushing to the primary branch must be handled by the user.
+- **No Direct Pushes**: You are STRICTLY PROHIBITED from pushing code directly to the `master` or `main` branches.
+- **Pull Request Only**: ALL changes MUST be performed in a feature branch (prefixed with `sy/`) and submitted via a Pull Request.
+- **Workflow**: All changes must be performed in a feature branch and isolated within a git worktree. When creating a new worktree, copy relevant environment files (`dev.env`, `prod.env`) to the new worktree.
 
 ## Environment & Infrastructure Management
-- **Environment Isolation:** This project maintains strict separation between **Development (dev)** and **Production (prod)** data using isolated database instances.
-- **Databases (TimescaleDB):**
-    - **Dev Instance**: Accessible on port `5434` (container: `timescaledb-dev`).
-    - **Prod Instance**: Accessible on port `5435` (container: `timescaledb-prod`).
-    - Use `docker-compose up -d` to start both instances.
-- **Prefect Orchestration:**
-    - A **single Prefect cluster** is used for both environments.
-    - **Prefixed Deployments**: All Prefect deployments are prefixed with `dev-` or `prod-` (using the `ENV_PREFIX` variable) to distinguish between environments within the same cluster.
-- **Nx Targets:** ALWAYS use environment-specific targets for deployments to ensure correct prefixing and database routing:
-    - **Dev**: `nx run etl-service:deploy:dev`.
-    - **Prod**: `nx run etl-service:deploy:prod`.
+- **Environment Isolation**: This project maintains strict separation between **Development (dev)** and **Production (prod)** data.
+- **Databases (TimescaleDB)**:
+    - **Dev Instance**: Port `5434` (`timescaledb-dev`).
+    - **Prod Instance**: Port `5435` (`timescaledb-prod`).
+    - Use `docker-compose up -d` to manage both.
+- **Prefect Orchestration**:
+    - A **single Prefect cluster** (port `4200`) is used for all environments.
+    - **Isolation via Docker**: Isolation is enforced by building environment-specific images (`etl-service:dev` and `etl-service:prod`) where configuration is baked-in at build time.
+    - **Deployment Suffixing**: Deployments must be registered with an environment suffix (e.g., `Flow-Name/dev`) using the `ENV_PREFIX` variable.
 
 ## Configuration Management
-- **Environment Files:** Use `dev.env` and `prod.env` for environment-specific variables.
-- **Templates:** For any new environment variable, you MUST update `template.dev.env` and `template.prod.env` with clear descriptions and placeholders.
-- **Variable Loading:** Use the `python-dotenv` CLI within Nx targets to ensure the correct environment file is loaded (e.g., `uv run dotenv -f ../../prod.env run -- ...`).
+- **Environment Files**: Use `dev.env` and `prod.env` for local variable storage. These are ignored by git.
+- **Templates**: For any new environment variable, you MUST update `template.dev.env` and `template.prod.env` with descriptions and placeholders.
+- **Image Baking**: Use `--build-arg` during Docker builds to permanently set environment variables within the image.
 
 ## Engineering Standards
-- **Documentation & Docstrings:** ALWAYS add comprehensive docstrings to all new or modified classes and methods. Docstrings must include a clear description of purpose, parameters (Args), and return values (Returns) following standard Python conventions (e.g., Google or Sphinx style).
-- **Type Hinting:** Mandatory use of Python type hints for all function/method parameters and return values. Ensure modern PEP 585/604 syntax (e.g., `list[str]` instead of `List[str]`, `X | Y` instead of `Union[X, Y]`).
+- **Documentation & Docstrings**: ALWAYS add comprehensive docstrings to all new or modified classes and methods (Google or Sphinx style).
+- **Type Hinting**: Mandatory use of Python type hints (PEP 585/604 syntax).
 
 ## Documentation & Tech Learning Center
-- **Folder Structure:** This project maintains a `docs/` folder acting as a \"Tech Learning Center.\" All major technologies, architectural decisions, and third-party integrations MUST be documented here.
-- **Organization:** Documentations must be logically grouped (e.g., `docs/python/`, `docs/database/`). Language-specific libraries should be nested under their respective language folder (e.g., `docs/python/packages/`).
-- **Standardized Content:** Documentation files should explain *what* the tech is, *why* we use it, and *how* it is implemented/configured in this specific project.
-- **Validation:** Before finalizing a Pull Request, you MUST run the `docs-validator` skill to ensure all new technologies and code changes are properly represented in the `docs/` folder.
-- **PR Links:** When creating or updating a PR, always check if new documentation is required or if existing docs need updates to stay in sync with the code.
+- **Folder Structure**: This project maintains a `docs/` folder ("Tech Learning Center"). All major technologies and architectural decisions MUST be documented here.
+- **Validation**: Before finalizing a PR, run the `docs-validator` skill to ensure documentation is synchronized with code changes.
 
 ## Pull Request Documentation
-- **Summary File:** For every new Pull Request, you MUST create a summary markdown file in the `pull_requests/` directory (e.g., `PR-1.md`, `PR-2.md`, etc.).
-- **Content:** The summary should include:
-  - A clear title and purpose of the PR.
-  - A **Reviewer Reading Guide** providing a logical order to review the files.
-  - A detailed list of key changes.
-  - A Mermaid graph to visualize architectural changes or workspace dependencies if applicable.
-  - The date of creation.
-- **Continuous Updates:** You MUST update the corresponding `PR-X.md` file whenever you make changes to the code within a PR to ensure the documentation stays in sync with the implementation.
-- **GitHub CLI:** You may use the `gh` CLI to create and manage pull requests directly. When creating a PR, use the corresponding summary file as the body (e.g., `gh pr create --title \"...\" --body-file pull_requests/PR-X.md`).
-- **Permission to Open PR:** You MUST ALWAYS ask the user for explicit permission before opening a new Pull Request on GitHub. Do not automate the creation of PRs without a direct confirmation.
+- **Summary File**: For every PR, create a summary in `pull_requests/PR-X.md`.
+- **Content**: Include Purpose, Reviewer Reading Guide, Key Changes, and an Architecture Diagram if applicable.
 
 ## Operational Rules
-- **Prefect Orchestration:** When starting the Prefect server, always ensure the `my-k8s-pool` work pool worker is running to process Kubernetes-based flow runs.
-- **Prefect CLI Operations:**
-    - **Context Awareness**: ALWAYS execute Prefect CLI commands from within the specific application directory (e.g., `apps/etl-service` or `apps/prefect-orchestrator`) where the virtual environment and `prefect` dependency reside.
-    - **Querying Flow Runs**: Use `uv run prefect flow-run ls --limit <N>` to list recent runs. Note that `--sort` is often NOT supported in the local CLI version; rely on the default chronological order.
-    - **Retrieving Logs**: Use `uv run prefect flow-run logs <UUID>` to fetch logs. If logs are large, use PowerShell pipes like `| Select-Object -Last 20` or `| Select-String "..."` for targeted analysis.
-    - **UUID Verification**: When extracting UUIDs from tables or logs, ensure the full ID is captured (not truncated) to avoid `ObjectNotFound` errors.
+- **Prefect Worker**: Ensure the `my-k8s-pool` is created in the Prefect UI to process flows.
+- **CLI Context**: Execute Prefect commands from the specific application directory where dependencies reside.

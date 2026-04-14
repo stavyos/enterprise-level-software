@@ -1,59 +1,52 @@
-# Kubernetes and Prefect Setup Guide
+# Local Environment Setup Guide
 
-This guide outlines the steps to set up development and production environments using a shared Prefect cluster and isolated TimescaleDB instances.
+This guide explains how to set up the dual-environment (Dev/Prod) system on a single machine using Docker Desktop and Prefect.
 
-## 1. Prerequisites
-- **Docker Desktop**: With Kubernetes enabled.
-- **uv**: Python package manager.
-- **Node.js**: For the Nx CLI.
-- **python-dotenv[cli]**: For environment variable management.
-
-## 2. Infrastructure Setup (Databases)
-**Action**: Start the isolated databases from the project root.
+## 1. Infrastructure
+Start the isolated databases using Docker Compose:
 ```bash
 docker-compose up -d
 ```
 
-| Environment | App DB Port | Container Name |
+| Database | Port | Container Name |
 | :--- | :--- | :--- |
-| **Development** | `5434` | `timescaledb-dev` |
-| **Production** | `5435` | `timescaledb-prod` |
+| **Dev** | `5434` | `timescaledb-dev` |
+| **Prod** | `5435` | `timescaledb-prod` |
 
-## 3. Configuration
-1. Copy `template.dev.env` to `dev.env`.
-2. Copy `template.prod.env` to `prod.env`.
-3. Update the `DB_USER`, `DB_PASSWORD`, and `EODHD_API_KEY` in both files.
-
-## 4. Set Up Prefect Orchestrator
-We use a single Prefect cluster for all environments.
-
+## 2. Prefect Cluster
+Start the unified Prefect server and worker:
 ```bash
-# Start server and worker
 npx nx run prefect-orchestrator:start
 ```
+*Note: Ensure you have created the `my-k8s-pool` in the UI at http://localhost:4200/work-pools.*
 
-## 5. Configure Work Pool
-After starting the Prefect server, create the Kubernetes Work Pool in the UI ([http://127.0.0.1:4200](http://127.0.0.1:4200)):
-- Name: `my-k8s-pool`
+## 3. Image Isolation
+We bake environment settings into Docker images to ensure data isolation.
 
-## 6. Register Deployments
-Register ETL flows with environment-specific prefixes.
-
+### Build Dev Image
 ```bash
-# Register for Dev (prefixed with dev-)
-npx nx run etl-service:deploy:dev
+npx nx run etl-service:docker-build:dev
+```
 
-# Register for Prod (prefixed with prod-)
+### Build Prod Image
+```bash
+npx nx run etl-service:docker-build:prod
+```
+
+## 4. Deployment Registration
+Register your flows with the cluster. Each deployment will be suffixed with `/dev` or `/prod`.
+
+### Register Dev Deployments
+```bash
+npx nx run etl-service:deploy:dev
+```
+
+### Register Prod Deployments
+```bash
 npx nx run etl-service:deploy:prod
 ```
 
-## 7. Docker Build
-Build the Docker images used by the workers.
-
-```bash
-# Build for Dev
-npx nx run etl-service:docker-build:dev
-
-# Build for Prod
-npx nx run etl-service:docker-build:prod
-```
+## 5. Running Flows
+1. Open the [Prefect Dashboard](http://localhost:4200/deployments).
+2. You will see deployments like `EOD-Saver/dev` and `EOD-Saver/prod`.
+3. Triggering a `/dev` deployment will run the `:dev` image, which is hardcoded to use the `dev` database.

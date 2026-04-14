@@ -15,19 +15,23 @@ While [Nx](https://nx.dev) is traditionally associated with JavaScript/TypeScrip
 
 We use [uv](https://github.com/astral-sh/uv) for all Python-related tasks. It is a blazing-fast Python package installer and resolver written in Rust.
 
+### Workspace Usage
+- **Root `pyproject.toml`**: Manages workspace-wide settings and tools like **Ruff**.
+- **Project `pyproject.toml`**: Each app and lib defines its specific dependencies.
+
 ## Python-Dotenv: Environment Management
 
-To manage multiple environments (Dev/Prod) within the same monorepo, we use the **`python-dotenv`** CLI.
+To manage multiple environments (Dev/Prod) locally, we use the **`python-dotenv`** CLI.
 
 ### Integration with Nx
-We wrap our Nx targets with `dotenv run` to ensure the correct environment variables are loaded for each command.
+We wrap our Nx targets with `dotenv run` to load the appropriate `.env` files (`dev.env` or `prod.env`) for local registration and testing.
 
 **Example from `project.json`:**
 ```json
-"run:prod": {
+"deploy:prod": {
   "executor": "nx:run-commands",
   "options": {
-    "command": "uv run dotenv -f ../../prod.env run -- prefect server start --port 4201"
+    "command": "uv run --env-file ../../prod.env python -m etl_service.etl.deploy_etls etl-service:prod"
   }
 }
 ```
