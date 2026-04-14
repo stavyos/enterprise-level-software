@@ -10,21 +10,21 @@ Before starting, ensure you have the following installed:
 - **python-dotenv[cli]**: For environment variable management.
 
 ## 2. Infrastructure Setup (Databases)
-We use Docker Compose to manage two separate TimescaleDB instances.
+We use Docker Compose to manage isolated application and metadata databases.
 
-**Action**: Start the databases from the project root.
+**Action**: Start all databases from the project root.
 ```bash
 docker-compose up -d
 ```
 
-| Instance | Port | Container Name |
+| Environment | App DB Port | Meta DB Port |
 | :--- | :--- | :--- |
-| **Development** | `5434` | `timescaledb-dev` |
-| **Production** | `5435` | `timescaledb-prod` |
+| **Development** | `5434` | `5436` |
+| **Production** | `5435` | `5437` |
 
 ## 3. Configuration
-1. Copy `template.env.dev` to `.env.dev`.
-2. Copy `template.env.prod` to `.env.prod`.
+1. Copy `template.dev.env` to `dev.env`.
+2. Copy `template.prod.env` to `prod.env`.
 3. Update the `DB_USER`, `DB_PASSWORD`, and `EODHD_API_KEY` in both files.
 
 ## 4. Set Up Prefect Orchestrator
@@ -35,10 +35,6 @@ Starts the server on port `4200` and the worker for `dev-k8s-pool`.
 ```bash
 # Start both server and worker
 npx nx run prefect-orchestrator:start:dev
-
-# Or start separately
-npx nx run prefect-orchestrator:run:dev
-npx nx run prefect-orchestrator:worker:dev
 ```
 
 ### Production (Prod)
@@ -46,10 +42,6 @@ Starts the server on port `4201` and the worker for `prod-k8s-pool`.
 ```bash
 # Start both server and worker
 npx nx run prefect-orchestrator:start:prod
-
-# Or start separately
-npx nx run prefect-orchestrator:run:prod
-npx nx run prefect-orchestrator:worker:prod
 ```
 
 ## 5. Configure Work Pools
@@ -83,4 +75,3 @@ npx nx run etl-service:docker-build:prod
 ## Troubleshooting & Tips
 - **Variable Loading**: We use `uv run dotenv -f <file> run -- <command>` to ensure the correct environment variables are loaded for each Nx target.
 - **Image Pulls**: Since we are using a local cluster, ensure your Docker images are either built locally (and visible to the `docker-desktop` context) or hosted in an accessible registry.
-- **Resources**: If a flow fails with `OOMKilled`, check the `JobVariables` in your deployment settings to increase Memory limits.

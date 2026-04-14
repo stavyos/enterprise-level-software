@@ -4,7 +4,7 @@
 - **No Direct Pushes:** You are STRICTLY PROHIBITED from pushing code directly to the `master` or `main` branches. NEVER push to these branches.
 - **Pull Request Only:** ALL changes, including documentation and configuration updates, MUST be performed in a feature branch (prefixed with `sy/`) and submitted via a Pull Request.
 - **No Autonomous Merges:** You must never merge a Pull Request (PR) or perform a git merge into a protected branch on your own.
-- **Workflow:** All changes must be performed in a feature branch and isolated within a git worktree as per global instructions. When creating a new worktree, you MUST also copy relevant `.env` files from the root or parent directory to the new worktree to ensure consistent local configuration. Final merging and pushing to the primary branch must be handled by the user.
+- **Workflow:** All changes must be performed in a feature branch and isolated within a git worktree as per global instructions. When creating a new worktree, you MUST also copy relevant environment files from the root or parent directory to the new worktree to ensure consistent local configuration. Final merging and pushing to the primary branch must be handled by the user.
 
 ## Environment & Infrastructure Management
 - **Environment Isolation:** This project maintains strict separation between **Development (dev)** and **Production (prod)** environments.
@@ -15,12 +15,12 @@
 - **Prefect Orchestration:**
     - **Dev Server**: Runs on port `4200` with `dev-k8s-pool`.
     - **Prod Server**: Runs on port `4201` with `prod-k8s-pool`.
-    - **Metadata Isolation**: Use separate `PREFECT_HOME` directories (e.g., `../../.prefect/dev` vs `../../.prefect/prod`) to prevent metadata bleed between environments.
+    - **Metadata Isolation**: Use separate PostgreSQL databases (`prefect-db-dev` on 5436, `prefect-db-prod` on 5437) to prevent metadata bleed between environments.
 
 ## Configuration Management
-- **Environment Files:** Use `.env.dev` and `.env.prod` for environment-specific variables.
-- **Templates:** For any new environment variable, you MUST update `template.env.dev` and `template.env.prod` with clear descriptions and placeholders.
-- **Variable Loading:** Use the `python-dotenv` CLI within Nx targets to ensure the correct environment file is loaded (e.g., `uv run dotenv -f ../../.env.prod run -- ...`).
+- **Environment Files:** Use `dev.env` and `prod.env` for environment-specific variables.
+- **Templates:** For any new environment variable, you MUST update `template.dev.env` and `template.prod.env` with clear descriptions and placeholders.
+- **Variable Loading:** Use the `python-dotenv` CLI within Nx targets to ensure the correct environment file is loaded (e.g., `uv run dotenv -f ../../prod.env run -- ...`).
 
 ## Engineering Standards
 - **Documentation & Docstrings:** ALWAYS add comprehensive docstrings to all new or modified classes and methods. Docstrings must include a clear description of purpose, parameters (Args), and return values (Returns) following standard Python conventions (e.g., Google or Sphinx style).

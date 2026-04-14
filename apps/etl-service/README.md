@@ -29,12 +29,12 @@ To handle massive data requests (e.g., fetching years of intraday data for thous
 
 ## Configuration
 This application uses `python-dotenv` to manage environment-specific configurations.
-- Use `.env.dev` for development.
-- Use `.env.prod` for production.
+- Use `dev.env` for development.
+- Use `prod.env` for production.
 
 To run a single command with specific environment:
 ```bash
-uv run dotenv -f ../../.env.prod run -- python -m etl_service.etl.deploy_etls
+uv run dotenv -f ../../prod.env run -- python -m etl_service.etl.deploy_etls
 ```
 
 ## Development

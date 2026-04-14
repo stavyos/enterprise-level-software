@@ -49,12 +49,13 @@ Automated data pipelines managed by Prefect 3.x:
 - `python-dotenv[cli]` for environment variable management.
 
 ### Configuration
-1.  Copy `template.env.dev` to `.env.dev` and `template.env.prod` to `.env.prod`.
-2.  Provide your `EODHD_API_KEY` in both files.
-3.  Configure your database credentials and Prefect API URLs as defined in the templates.
+1.  Copy `template.dev.env` to `dev.env`.
+2.  Copy `template.prod.env` to `prod.env`.
+3.  Provide your `EODHD_API_KEY` in both files.
+4.  Configure your database credentials and Prefect API URLs as defined in the templates.
 
 ### Infrastructure Setup
-Start both development and production databases using Docker Compose:
+Start all development and production databases (App + Metadata) using Docker Compose:
 ```bash
 docker-compose up -d
 ```

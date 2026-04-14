@@ -1,7 +1,9 @@
-active = "ephemeral"
+active = "dev"
 
 [profiles.dev]
 PREFECT_API_URL = "http://127.0.0.1:4200/api"
+PREFECT_API_DATABASE_CONNECTION_URL = "sqlite+aiosqlite:///C:/Stav/Coding/enterprise-level-software/.worktrees/prod-env-setup/.prefect/dev/prefect.db"
 
 [profiles.prod]
 PREFECT_API_URL = "http://127.0.0.1:4201/api"
+PREFECT_API_DATABASE_CONNECTION_URL = "sqlite+aiosqlite:///C:/Stav/Coding/enterprise-level-software/.worktrees/prod-env-setup/.prefect/prod/prefect.db"

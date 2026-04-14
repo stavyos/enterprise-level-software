@@ -4,10 +4,10 @@
 This PR introduces a formal separation between "Development" and "Production" environments for both the Database (TimescaleDB) and the Orchestration layer (Prefect).
 
 ## Reviewer Reading Guide
-1. **Infrastructure**: Check `docker-compose.yaml` for the dual-database setup.
+1. **Infrastructure**: Check `docker-compose.yaml` for the dual-database setup (App DBs + Meta DBs).
 2. **Configuration**:
-    - Review `.env.dev` and `.env.prod` for environment-specific variables.
-    - Check `template.env.dev` and `template.env.prod` for variable definitions and documentation.
+    - Review `dev.env` and `prod.env` for environment-specific variables.
+    - Check `template.dev.env` and `template.prod.env` for variable definitions.
 3. **Application Logic**:
     - `apps/prefect-orchestrator/project.json`: New `run:dev/prod` and `worker:dev/prod` targets.
     - `apps/etl-service/project.json`: New `deploy:dev/prod` targets.
@@ -15,22 +15,21 @@ This PR introduces a formal separation between "Development" and "Production" en
 5. **Documentation**: Comprehensive updates across `docs/` to reflect the new architecture.
 
 ## Key Changes
-- **Docker**: Added `docker-compose.yaml` in the root to manage `timescaledb-dev` (port 5434) and `timescaledb-prod` (port 5435).
+- **Docker**: Added `docker-compose.yaml` to manage 4 isolated databases:
+    - **App DBs**: `timescaledb-dev` (5434), `timescaledb-prod` (5435).
+    - **Meta DBs**: `prefect-db-dev` (5436), `prefect-db-prod` (5437).
 - **Security & Isolation**:
-    - Unique database credentials for each environment (`dev_user`/`dev_pass` vs `prod_user`/`prod_pass`).
-    - **Metadata Isolation**: Individual `PREFECT_HOME` directories for Dev and Prod to ensure completely fresh clusters and prevent data bleed.
+    - Unique database credentials for each environment.
+    - **Absolute Metadata Isolation**: Each Prefect cluster uses its own dedicated PostgreSQL database for metadata.
 - **Environment Management**:
-    - Created `.env.dev` and `.env.prod`.
-    - Added `template.env.dev` and `template.env.prod` to provide documentation for required variables.
+    - Created `dev.env` and `prod.env` (ignored by git).
+    - Added `template.dev.env` and `template.prod.env` for documentation.
     - Integrated `python-dotenv` CLI for reliable environment variable loading in Nx targets.
 - **Prefect Orchestration**:
     - Separate Prefect API URLs (4200 for dev, 4201 for prod).
     - Separate K8s Work Pools (`dev-k8s-pool`, `prod-k8s-pool`).
-- **Documentation**:
-    - Updated `GEMINI.md` with environment isolation rules.
-    - Updated `docs/infrastructure/docker.md` and `docs/infrastructure/kubernetes.md`.
-    - Updated `docs/orchestration/prefect.md` and `docs/orchestration/setup-guide.md`.
-    - Updated `docs/tooling/nx-uv.md` with `python-dotenv` details.
+- **Nx Workflow**:
+    - Added granular targets: `start:dev`, `start:prod`, `deploy:dev`, `deploy:prod`.
 
 ## Architecture Diagram
 ```mermaid
@@ -39,14 +38,14 @@ graph TD
         D_DB[(TimescaleDB Dev:5434)]
         D_P[Prefect Server Dev:4200]
         D_W[Prefect Worker: dev-k8s-pool]
-        D_META[(Dev Metadata)]
+        D_META[(Dev Metadata DB:5436)]
     end
 
     subgraph Production
         P_DB[(TimescaleDB Prod:5435)]
         P_P[Prefect Server Prod:4201]
         P_W[Prefect Worker: prod-k8s-pool]
-        P_META[(Prod Metadata)]
+        P_META[(Prod Metadata DB:5437)]
     end
 
     ETL[ETL Service] -->|Deploys to| D_P
@@ -58,4 +57,4 @@ graph TD
 ```
 
 ## Date
-Tuesday, April 14, 2026
+Wednesday, April 15, 2026

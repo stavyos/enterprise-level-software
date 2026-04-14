@@ -18,12 +18,12 @@ Management layer for the Prefect 3.x control plane and Kubernetes execution envi
 
 ## Environment Configuration
 This application uses `python-dotenv` to manage environment-specific configurations.
-- Use `.env.dev` for development.
-- Use `.env.prod` for production.
+- Use `dev.env` for development.
+- Use `prod.env` for production.
 
 To run a single command with specific environment:
 ```bash
-uv run dotenv -f ../../.env.prod run -- prefect server start
+uv run dotenv -f ../../prod.env run -- prefect server start
 ```
 
 ## Development
