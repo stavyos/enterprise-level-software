@@ -18,6 +18,7 @@ This PR introduces a formal separation between "Development" and "Production" en
 - **Docker**: Added `docker-compose.yaml` in the root to manage `timescaledb-dev` (port 5434) and `timescaledb-prod` (port 5435).
 - **Security & Isolation**:
     - Unique database credentials for each environment (`dev_user`/`dev_pass` vs `prod_user`/`prod_pass`).
+    - **Metadata Isolation**: Individual `PREFECT_HOME` directories for Dev and Prod to ensure completely fresh clusters and prevent data bleed.
 - **Environment Management**:
     - Created `.env.dev` and `.env.prod`.
     - Added `template.env.dev` and `template.env.prod` to provide documentation for required variables.
@@ -38,18 +39,22 @@ graph TD
         D_DB[(TimescaleDB Dev:5434)]
         D_P[Prefect Server Dev:4200]
         D_W[Prefect Worker: dev-k8s-pool]
+        D_META[(Dev Metadata)]
     end
 
     subgraph Production
         P_DB[(TimescaleDB Prod:5435)]
         P_P[Prefect Server Prod:4201]
         P_W[Prefect Worker: prod-k8s-pool]
+        P_META[(Prod Metadata)]
     end
 
     ETL[ETL Service] -->|Deploys to| D_P
     ETL -->|Deploys to| P_P
     D_W -->|Writes to| D_DB
     P_W -->|Writes to| P_DB
+    D_P --> D_META
+    P_P --> P_META
 ```
 
 ## Date

@@ -15,9 +15,7 @@
 - **Prefect Orchestration:**
     - **Dev Server**: Runs on port `4200` with `dev-k8s-pool`.
     - **Prod Server**: Runs on port `4201` with `prod-k8s-pool`.
-- **Nx Targets:** ALWAYS use environment-specific targets for server operations and deployments:
-    - **Dev**: `nx run prefect-orchestrator:start:dev`, `nx run etl-service:deploy:dev`.
-    - **Prod**: `nx run prefect-orchestrator:start:prod`, `nx run etl-service:deploy:prod`.
+    - **Metadata Isolation**: Use separate `PREFECT_HOME` directories (e.g., `../../.prefect/dev` vs `../../.prefect/prod`) to prevent metadata bleed between environments.
 
 ## Configuration Management
 - **Environment Files:** Use `.env.dev` and `.env.prod` for environment-specific variables.
