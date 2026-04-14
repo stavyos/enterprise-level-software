@@ -1,5 +1,4 @@
 services:
-  # Application Databases
   timescaledb-dev:
     image: timescale/timescaledb:latest-pg16
     container_name: timescaledb-dev
@@ -22,29 +21,6 @@ services:
       - "5435:5432"
     volumes:
       - timescaledb_data_prod:/var/lib/postgresql/data
-    restart: always
-
-  # Prefect Metadata Databases
-  prefect-db-dev:
-    image: postgres:16-alpine
-    container_name: prefect-db-dev
-    environment:
-      - POSTGRES_USER=prefect
-      - POSTGRES_PASSWORD=prefect
-      - POSTGRES_DB=prefect_dev
-    ports:
-      - "5436:5432"
-    restart: always
-
-  prefect-db-prod:
-    image: postgres:16-alpine
-    container_name: prefect-db-prod
-    environment:
-      - POSTGRES_USER=prefect
-      - POSTGRES_PASSWORD=prefect
-      - POSTGRES_DB=prefect_prod
-    ports:
-      - "5437:5432"
     restart: always
 
 volumes:

@@ -7,15 +7,17 @@
 - **Workflow:** All changes must be performed in a feature branch and isolated within a git worktree as per global instructions. When creating a new worktree, you MUST also copy relevant environment files from the root or parent directory to the new worktree to ensure consistent local configuration. Final merging and pushing to the primary branch must be handled by the user.
 
 ## Environment & Infrastructure Management
-- **Environment Isolation:** This project maintains strict separation between **Development (dev)** and **Production (prod)** environments.
-- **Database (TimescaleDB):**
+- **Environment Isolation:** This project maintains strict separation between **Development (dev)** and **Production (prod)** data using isolated database instances.
+- **Databases (TimescaleDB):**
     - **Dev Instance**: Accessible on port `5434` (container: `timescaledb-dev`).
     - **Prod Instance**: Accessible on port `5435` (container: `timescaledb-prod`).
     - Use `docker-compose up -d` to start both instances.
 - **Prefect Orchestration:**
-    - **Dev Server**: Runs on port `4200` with `dev-k8s-pool`.
-    - **Prod Server**: Runs on port `4201` with `prod-k8s-pool`.
-    - **Metadata Isolation**: Use separate PostgreSQL databases (`prefect-db-dev` on 5436, `prefect-db-prod` on 5437) to prevent metadata bleed between environments.
+    - A **single Prefect cluster** is used for both environments.
+    - **Prefixed Deployments**: All Prefect deployments are prefixed with `dev-` or `prod-` (using the `ENV_PREFIX` variable) to distinguish between environments within the same cluster.
+- **Nx Targets:** ALWAYS use environment-specific targets for deployments to ensure correct prefixing and database routing:
+    - **Dev**: `nx run etl-service:deploy:dev`.
+    - **Prod**: `nx run etl-service:deploy:prod`.
 
 ## Configuration Management
 - **Environment Files:** Use `dev.env` and `prod.env` for environment-specific variables.
@@ -46,7 +48,7 @@
 - **Permission to Open PR:** You MUST ALWAYS ask the user for explicit permission before opening a new Pull Request on GitHub. Do not automate the creation of PRs without a direct confirmation.
 
 ## Operational Rules
-- **Prefect Orchestration:** When starting the Prefect server, always ensure the environment-specific work pool (e.g., `dev-k8s-pool` or `prod-k8s-pool`) is running to process Kubernetes-based flow runs.
+- **Prefect Orchestration:** When starting the Prefect server, always ensure the `my-k8s-pool` work pool worker is running to process Kubernetes-based flow runs.
 - **Prefect CLI Operations:**
     - **Context Awareness**: ALWAYS execute Prefect CLI commands from within the specific application directory (e.g., `apps/etl-service` or `apps/prefect-orchestrator`) where the virtual environment and `prefect` dependency reside.
     - **Querying Flow Runs**: Use `uv run prefect flow-run ls --limit <N>` to list recent runs. Note that `--sort` is often NOT supported in the local CLI version; rely on the default chronological order.

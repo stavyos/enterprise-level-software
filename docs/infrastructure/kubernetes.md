@@ -1,30 +1,15 @@
 # Kubernetes (K8s)
 
 ## Overview
-Kubernetes is an open-source container orchestration platform that automates the deployment, scaling, and management of containerized applications. In this project, it serves as the foundational infrastructure for executing distributed ETL flows.
+Kubernetes is used in this project as the foundational infrastructure for executing distributed ETL flows.
 
-## Why We Need It
-- **Scalability**: K8s allows us to scale our ETL workers horizontally based on the volume of data.
-- **Resilience**: If a node or a job fails, K8s automatically handles the lifecycle, and Prefect can leverage this to retry flows.
-- **Resource Management**: We can precisely define CPU and Memory requirements for each ETL task.
+## Environment Architecture
+We use a **single Kubernetes cluster** and work pool for both environments. Isolation is maintained at the application level through database separation and Prefect deployment prefixing.
 
-## Main Concepts
-| Concept | Description |
+| Component | Shared Resource |
 | :--- | :--- |
-| **Node** | A physical or virtual machine that runs containers. |
-| **Pod** | The smallest deployable unit in K8s. It contains one or more containers (e.g., our `etl-service` container). |
-| **Job** | A controller that creates one or more Pods and ensures they successfully terminate. **Our Prefect flows run as K8s Jobs.** |
-| **Work Pool** | (Prefect Specific) A bridge between Prefect and K8s that submits Job specifications to the cluster. |
-| **Namespace** | A logical isolation within a cluster. |
-
-## Environment Specific Infrastructure
-
-We use separate namespaces and work pools to ensure isolated execution between development and production environments.
-
-| Environment | Work Pool Name | Target Namespace | Target Cluster |
-| :--- | :--- | :--- | :--- |
-| **Development** | `dev-k8s-pool` | `dev` | `docker-desktop` |
-| **Production** | `prod-k8s-pool` | `prod` | `docker-desktop` |
+| **Work Pool Name** | `my-k8s-pool` |
+| **Target Cluster** | `docker-desktop` |
 
 ### Resource Mapping
 We define resources in `etl/deployments_settings/job_variables.py`:

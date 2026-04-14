@@ -1,5 +1,7 @@
 """Module for deploying Prefect flows for the ETL service."""
 
+import os
+
 from prefect.deployments.runner import RunnerDeployment
 from prefect.deployments.runner import deploy as prefect_deploy
 
@@ -29,6 +31,7 @@ def deploy_flow(
         list: A list of RunnerDeployment objects.
     """
     deployments = []
+    env_prefix = os.getenv("ENV_PREFIX")
 
     for dep_type in [PrefectDeploymentType.SAVER, PrefectDeploymentType.DISPATCHER]:
         is_available = deployment_settings.get_is_available(deployment_type=dep_type)
@@ -36,6 +39,12 @@ def deploy_flow(
             continue
 
         dep_name = deployment_settings.get_deployment_name(deployment_type=dep_type)
+        flow_name = deployment_settings.get_flow_name(deployment_type=dep_type)
+
+        if env_prefix:
+            dep_name = f"{env_prefix}-{dep_name}"
+            flow_name = f"{env_prefix}-{flow_name}"
+
         dep_run_name = deployment_settings.get_deployment_run_name(
             deployment_type=dep_type
         )
@@ -48,6 +57,8 @@ def deploy_flow(
 
         tags = [version_tag] if version_tag else []
         tags += ["etl", deployment_settings.deployment.value]
+        if env_prefix:
+            tags.append(env_prefix)
 
         concurrency_limit = deployment_settings.get_concurrency_limit(
             deployment_type=dep_type
@@ -65,7 +76,7 @@ def deploy_flow(
         d = RunnerDeployment.from_entrypoint(
             entrypoint=entrypoint,
             name=dep_name,
-            flow_name=deployment_settings.get_flow_name(deployment_type=dep_type),
+            flow_name=flow_name,
             tags=tags,
             concurrency_limit=concurrency_limit,
             job_variables=job_variables.to_dict(),
@@ -102,4 +113,8 @@ def deploy(image: str | None = None, version_tag: str | None = None) -> None:
 
 
 if __name__ == "__main__":
-    deploy(image="etl-service:local")
+    import sys
+
+    # Default to dev image if not provided
+    img = sys.argv[1] if len(sys.argv) > 1 else "etl-service:dev"
+    deploy(image=img)

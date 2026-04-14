@@ -1095,6 +1095,7 @@ name = "prefect-orchestrator"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "asyncpg" },
     { name = "prefect" },
     { name = "prefect-kubernetes" },
     { name = "python-dotenv", extra = ["cli"] },
@@ -1108,6 +1109,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "asyncpg", specifier = ">=0.29.0" },
     { name = "prefect", specifier = "==3.6.25" },
     { name = "prefect-kubernetes", specifier = "==0.7.7" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },

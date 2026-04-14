@@ -9,54 +9,28 @@
     "lint": {},
     "format": {},
     "build": {},
-    "run:dev": {
+    "run": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv -f ../../dev.env run -- prefect server start --host 0.0.0.0",
+        "command": "uv run prefect server start --host 0.0.0.0",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
     },
-    "run:prod": {
+    "worker": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv -f ../../prod.env run -- prefect server start --host 0.0.0.0 --port 4201",
+        "command": "uv run prefect worker start --pool my-k8s-pool",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
     },
-    "worker:dev": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "uv run dotenv -f ../../dev.env run -- prefect worker start --pool dev-k8s-pool",
-        "cwd": "{projectRoot}"
-      },
-      "dependsOn": ["install"]
-    },
-    "worker:prod": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "uv run dotenv -f ../../prod.env run -- prefect worker start --pool prod-k8s-pool",
-        "cwd": "{projectRoot}"
-      },
-      "dependsOn": ["install"]
-    },
-    "start:dev": {
+    "start": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "nx run prefect-orchestrator:run:dev",
-          "nx run prefect-orchestrator:worker:dev"
-        ],
-        "parallel": true
-      }
-    },
-    "start:prod": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "nx run prefect-orchestrator:run:prod",
-          "nx run prefect-orchestrator:worker:prod"
+          "nx run prefect-orchestrator:run",
+          "nx run prefect-orchestrator:worker"
         ],
         "parallel": true
       }

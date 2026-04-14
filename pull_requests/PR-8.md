@@ -1,59 +1,45 @@
-# PR-8: Environment Separation (Dev & Prod)
+# PR-8: Isolated Databases & Prefixed Deployments
 
 ## Purpose
-This PR introduces a formal separation between "Development" and "Production" environments for both the Database (TimescaleDB) and the Orchestration layer (Prefect).
+This PR implements a robust data isolation strategy by using separate database instances for "Development" and "Production", while simplifying the orchestration layer to a single Prefect cluster with environment-specific deployment prefixing.
 
 ## Reviewer Reading Guide
-1. **Infrastructure**: Check `docker-compose.yaml` for the dual-database setup (App DBs + Meta DBs).
+1. **Infrastructure**: Check `docker-compose.yaml` for the dual-database setup.
 2. **Configuration**:
-    - Review `dev.env` and `prod.env` for environment-specific variables.
-    - Check `template.dev.env` and `template.prod.env` for variable definitions.
+    - Review `dev.env` and `prod.env` for the new `ENV_PREFIX` variable.
+    - Check `template.dev.env` and `template.prod.env`.
 3. **Application Logic**:
-    - `apps/prefect-orchestrator/project.json`: New `run:dev/prod` and `worker:dev/prod` targets.
-    - `apps/etl-service/project.json`: New `deploy:dev/prod` targets.
-4. **Dependencies**: `pyproject.toml` updates to include `python-dotenv[cli]`.
-5. **Documentation**: Comprehensive updates across `docs/` to reflect the new architecture.
+    - `apps/etl-service/src/etl_service/etl/deploy_etls.py`: New logic to prepend `ENV_PREFIX` to flow and deployment names.
+    - `apps/etl-service/project.json`: Updated `deploy:dev/prod` targets.
+    - `apps/prefect-orchestrator/project.json`: Simplified targets for a single cluster.
 
 ## Key Changes
-- **Docker**: Added `docker-compose.yaml` to manage 4 isolated databases:
-    - **App DBs**: `timescaledb-dev` (5434), `timescaledb-prod` (5435).
-    - **Meta DBs**: `prefect-db-dev` (5436), `prefect-db-prod` (5437).
-- **Security & Isolation**:
-    - Unique database credentials for each environment.
-    - **Absolute Metadata Isolation**: Each Prefect cluster uses its own dedicated PostgreSQL database for metadata.
-- **Environment Management**:
-    - Created `dev.env` and `prod.env` (ignored by git).
-    - Added `template.dev.env` and `template.prod.env` for documentation.
-    - Integrated `python-dotenv` CLI for reliable environment variable loading in Nx targets.
-- **Prefect Orchestration**:
-    - Separate Prefect API URLs (4200 for dev, 4201 for prod).
-    - Separate K8s Work Pools (`dev-k8s-pool`, `prod-k8s-pool`).
+- **Database Isolation**: Managed via Docker Compose with `timescaledb-dev` (port 5434) and `timescaledb-prod` (port 5435).
+- **Environment Prefixing**:
+    - Introduced `ENV_PREFIX` environment variable.
+    - Automated prefixing (`dev-` or `prod-`) for all Prefect flows and deployments.
+- **Simplified Orchestration**: Transitioned to a single shared Prefect cluster to reduce local resource overhead while maintaining logical separation.
 - **Nx Workflow**:
-    - Added granular targets: `start:dev`, `start:prod`, `deploy:dev`, `deploy:prod`.
+    - Added `deploy:dev` and `deploy:prod` targets to `etl-service`.
+    - Integrated `python-dotenv` for reliable environment loading.
 
 ## Architecture Diagram
 ```mermaid
 graph TD
-    subgraph Development
-        D_DB[(TimescaleDB Dev:5434)]
-        D_P[Prefect Server Dev:4200]
-        D_W[Prefect Worker: dev-k8s-pool]
-        D_META[(Dev Metadata DB:5436)]
+    subgraph Local Infrastructure
+        DB_DEV[(TimescaleDB Dev:5434)]
+        DB_PROD[(TimescaleDB Prod:5435)]
+        P_SERVER[Prefect Server:4200]
+        P_WORKER[Prefect Worker]
     end
 
-    subgraph Production
-        P_DB[(TimescaleDB Prod:5435)]
-        P_P[Prefect Server Prod:4201]
-        P_W[Prefect Worker: prod-k8s-pool]
-        P_META[(Prod Metadata DB:5437)]
-    end
+    ETL[ETL Service] -->|Registers| P_SERVER
+    P_SERVER -->|Dispatches| P_WORKER
+    P_WORKER -->|Writes to| DB_DEV
+    P_WORKER -->|Writes to| DB_PROD
 
-    ETL[ETL Service] -->|Deploys to| D_P
-    ETL -->|Deploys to| P_P
-    D_W -->|Writes to| D_DB
-    P_W -->|Writes to| P_DB
-    D_P --> D_META
-    P_P --> P_META
+    style DB_DEV fill:#f9f,stroke:#333
+    style DB_PROD fill:#ccf,stroke:#333
 ```
 
 ## Date

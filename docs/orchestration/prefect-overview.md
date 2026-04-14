@@ -1,45 +1,35 @@
 # Prefect Orchestration
 
 ## Overview
-We use **Prefect 3.x** as our workflow orchestration engine to manage, schedule, and monitor our ETL flows. Prefect provides a distributed system for executing Python tasks with built-in observability and error handling.
+We use **Prefect 3.x** as our workflow orchestration engine to manage, schedule, and monitor our ETL flows.
 
 ## Environment Architecture
 
-We maintain strict separation between environments to ensure stable production runs while allowing experimental development.
+We use a **single Prefect cluster** for both Development and Production. Isolation is achieved by:
+1.  **Deployment Prefixing**: Deployments are named `dev-flow-name` or `prod-flow-name`.
+2.  **Database Routing**: The workers connect to different TimescaleDB instances based on the environment variables.
 
-| Feature | Development (Dev) | Production (Prod) |
-| :--- | :--- | :--- |
-| **API URL** | `http://127.0.0.1:4200/api` | `http://127.0.0.1:4201/api` |
-| **Work Pool** | `dev-k8s-pool` | `prod-k8s-pool` |
-| **Config File** | `dev.env` | `prod.env` |
-| **Meta DB Port** | `5436` | `5437` |
+| Feature | Shared Value |
+| :--- | :--- |
+| **API URL** | `http://127.0.0.1:4200/api` |
+| **Work Pool** | `my-k8s-pool` |
 
 ## Infrastructure
-- **Orchestrator Application**: Located in `apps/prefect-orchestrator`, this component manages the Prefect server and environment-specific workers.
-- **Flow Implementation**: Flows are defined within the `etl-service` application in the `etl/flows` module.
-- **Worker Infrastructure**: Flows are deployed as **Kubernetes Jobs** (managed via `prefect-kubernetes`), ensuring isolated and scalable execution.
+- **Orchestrator Application**: Manages the single Prefect control plane and Kubernetes worker.
+- **Flow Implementation**: Defined within the `etl-service` application.
+- **Deployment logic**: The `deploy_etls.py` script automatically reads the `ENV_PREFIX` and configures the deployment names.
 
 ## Execution
 
-### Development (Dev)
-To start the Dev cluster:
+To start the cluster:
 ```bash
-npx nx run prefect-orchestrator:start:dev
-```
-
-### Production (Prod)
-To start the Prod cluster:
-```bash
-npx nx run prefect-orchestrator:start:prod
+npx nx run prefect-orchestrator:start
 ```
 
 ## Configuration Management
-This project uses **`python-dotenv`** to load environment variables for Nx targets. This ensures that the correct `PREFECT_API_DATABASE_CONNECTION_URL` and database credentials are set before any Prefect command is executed.
+This project uses **`python-dotenv`** to load environment variables for Nx targets. This ensures that the correct database credentials and environment prefix are set before any command is executed.
 
-Example for manual execution:
+Example for manual registration:
 ```bash
-uv run dotenv -f prod.env run -- prefect server start
+uv run dotenv -f prod.env run -- python -m etl_service.etl.deploy_etls
 ```
-
-## Getting Started
-For a step-by-step guide to setting up your environment, see the [Setup Guide](./setup-guide.md).
