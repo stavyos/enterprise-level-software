@@ -34,14 +34,14 @@
     "docker-build:dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --env-file dev.env run -- powershell -Command \"docker build -t etl-service:dev -f Dockerfile.etl --build-arg DB_HOST=$env:DB_HOST --build-arg DB_PORT=$env:DB_PORT --build-arg DB_USER=$env:DB_USER --build-arg DB_PASSWORD=$env:DB_PASSWORD --build-arg DB_NAME=$env:DB_NAME --build-arg EODHD_API_KEY=$env:EODHD_API_KEY --build-arg PREFECT_API_URL=$env:PREFECT_API_URL --build-arg ENV_PREFIX=$env:ENV_PREFIX .\"",
+        "command": "uv run --env-file dev.env powershell -Command \"docker build -t etl-service:dev -f Dockerfile.etl --build-arg DB_HOST=$env:DB_HOST --build-arg DB_PORT=$env:DB_PORT --build-arg DB_USER=$env:DB_USER --build-arg DB_PASSWORD=$env:DB_PASSWORD --build-arg DB_NAME=$env:DB_NAME --build-arg EODHD_API_KEY=$env:EODHD_API_KEY --build-arg PREFECT_API_URL=$env:PREFECT_API_URL --build-arg ENV_PREFIX=$env:ENV_PREFIX .\"",
         "cwd": "{workspaceRoot}"
       }
     },
     "docker-build:prod": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --env-file prod.env run -- powershell -Command \"docker build -t etl-service:prod -f Dockerfile.etl --build-arg DB_HOST=$env:DB_HOST --build-arg DB_PORT=$env:DB_PORT --build-arg DB_USER=$env:DB_USER --build-arg DB_PASSWORD=$env:DB_PASSWORD --build-arg DB_NAME=$env:DB_NAME --build-arg EODHD_API_KEY=$env:EODHD_API_KEY --build-arg PREFECT_API_URL=$env:PREFECT_API_URL --build-arg ENV_PREFIX=$env:ENV_PREFIX .\"",
+        "command": "uv run --env-file prod.env powershell -Command \"docker build -t etl-service:prod -f Dockerfile.etl --build-arg DB_HOST=$env:DB_HOST --build-arg DB_PORT=$env:DB_PORT --build-arg DB_USER=$env:DB_USER --build-arg DB_PASSWORD=$env:DB_PASSWORD --build-arg DB_NAME=$env:DB_NAME --build-arg EODHD_API_KEY=$env:EODHD_API_KEY --build-arg PREFECT_API_URL=$env:PREFECT_API_URL --build-arg ENV_PREFIX=$env:ENV_PREFIX .\"",
         "cwd": "{workspaceRoot}"
       }
     }
