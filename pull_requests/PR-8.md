@@ -1,45 +1,44 @@
-# PR-8: Isolated Databases & Prefixed Deployments
+# PR-8: Production Environment Setup and Security Hardening
 
 ## Purpose
-This PR implements a robust data isolation strategy by using separate database instances for "Development" and "Production", while simplifying the orchestration layer to a single Prefect cluster with environment-specific deployment prefixing and isolated Docker images.
-
-## Architectural Decision: Single Unified Cluster
-We decided to use a **single unified Prefect cluster** for simplicity and resource efficiency, while achieving absolute isolation through:
-1.  **Deployment Naming**: Deployments are named `Flow-Name/dev` and `Flow-Name/prod`.
-2.  **Docker Isolation**: We use two distinct Docker images (`etl-service:dev` and `etl-service:prod`) where the specific database credentials and environment prefix are baked into the image at build time.
-3.  **Database isolation**: Each image is configured to talk only to its respective TimescaleDB instance.
+This PR establishes a robust, environment-aware configuration for the ETL service, ensures security by removing environment files from source control, and implements environment-specific Docker image baking for isolated deployments.
 
 ## Reviewer Reading Guide
-1. **Infrastructure**: Check `docker-compose.yaml` for the dual-database setup.
-2. **Docker**: Review `Dockerfile.etl` for the new `ARG` and `ENV` configuration mapping.
-3. **Application Logic**:
-    - `apps/etl-service/src/etl_service/etl/deploy_etls.py`: Logic to use `ENV_PREFIX` for the deployment name.
-    - `apps/etl-service/project.json`: Updated `docker-build:dev/prod` targets using `--build-arg`.
+1. **Security**: `.gitignore` and git removal of `dev.env` and `prod.env`.
+2. **Settings**: `apps/etl-service/src/etl_service/etl/deployments_settings/settings.py` for `ENV_PREFIX` loading.
+3. **Naming Logic**: `apps/etl-service/src/etl_service/etl/deployments_settings/deps_utils.py` for prefixed flow and deployment names.
+4. **Infrastructure**: `Dockerfile.etl` for image baking (ensure consistent environment across K8s/Docker).
+5. **Validation**: `apps/etl-service/tests/test_etl_service.py` for prefix verification.
 
 ## Key Changes
-- **Database Isolation**: Managed via Docker Compose with `timescaledb-dev` (5434) and `timescaledb-prod` (5435).
-- **Environment-Specific Images**:
-    - Build arguments in `Dockerfile.etl` allow baking configuration directly into the image.
-    - `etl-service:dev` and `etl-service:prod` now exist as isolated units of execution.
-- **Simplified Orchestration**: Transitioned to a single shared Prefect cluster to reduce overhead while maintaining logical separation via deployment names (e.g., `EOD-Saver/dev`).
+- **Security**:
+    - Stopped tracking `dev.env` and `prod.env` in Git.
+    - Verified `.gitignore` properly excludes all `.env` and `*.env` files.
+- **Environment-Aware Deployments**:
+    - Added `ENV_PREFIX` to Pydantic settings.
+    - Updated deployment naming utility to prefix flow names with `{prefix}/` and deployment names with `{prefix}-`.
+    - This ensures a single Prefect cluster can host both `dev` and `prd` deployments without name collisions.
+- **Docker Isolation**:
+    - Implemented `ARG` and `ENV` in `Dockerfile.etl` to bake environment variables directly into images during build time.
+- **Testing**:
+    - Added unit tests to verify that deployment names are correctly generated based on the `ENV_PREFIX` configuration.
+- **Documentation (Tech Learning Center)**:
+    - Updated `setup-guide.md`, `docker.md`, `prefect.md`, and `git.md` with environment-specific instructions.
+    - Added new high-impact topics:
+        - `multi-tenancy.md`: Explaining our single-cluster isolation strategy.
+        - `environment-parity.md`: Documenting Twelve-Factor App compliance.
+        - `secret-management.md`: Outlining our current and future security roadmap.
+        - `pydantic-settings.md`: Technical guide for type-safe environment configuration.
+        - `ADR-001`: Formalizing the architectural decision for the single Prefect cluster.
 
-## Architecture Diagram
+## Architecture
 ```mermaid
 graph TD
-    subgraph Local Infrastructure
-        DB_DEV[(TimescaleDB Dev:5434)]
-        DB_PROD[(TimescaleDB Prod:5435)]
-        P_SERVER[Prefect Server:4200]
-        P_WORKER[Prefect Worker]
-    end
-
-    ETL_DEV[etl-service:dev] -->|Writes to| DB_DEV
-    ETL_PROD[etl-service:prod] -->|Writes to| DB_PROD
-
-    P_SERVER -->|Dispatches to| P_WORKER
-    P_WORKER -->|Runs Image| ETL_DEV
-    P_WORKER -->|Runs Image| ETL_PROD
+    A[.env Files] --> B[Pydantic Settings]
+    B --> C[Deployment Utility]
+    C --> D[Prefect Deployments]
+    D -->|Prefix: dev| E[dev/STOCKS-EOD]
+    D -->|Prefix: prod| F[prod/STOCKS-EOD]
 ```
 
-## Date
-Wednesday, April 15, 2026
+**Date**: 2026-04-15

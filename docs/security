@@ -1,0 +1,37 @@
+# Secret Management Strategy
+
+## Overview
+Secure management of API keys, database credentials, and infrastructure tokens is critical for the integrity and security of our system. This document outlines our current strategy and the roadmap for the future.
+
+## Current Strategy (Development)
+
+### 1. Local .env Files
+We use `.env` files (e.g., `dev.env`, `prod.env`) for local development configuration.
+- **Rule**: These files must **never be committed** to source control.
+- **Enforcement**: Our `.gitignore` is configured to exclude `*.env` and `.env` files.
+
+### 2. Template Files
+To communicate the required configuration to the team without sharing secrets, we maintain template files (`template.dev.env` and `template.prd.env`).
+- **Use Case**: These templates serve as documentation and a starting point for developers setting up their local environments.
+- **Hardening**: They include descriptive placeholders (`your_api_key`) and helpful defaults (`ENV_PREFIX=dev`) but contain no real secrets.
+
+### 3. Git Worktrees
+When using Git worktrees, developers must manually copy their active `.env` files to the new worktree directory. This ensures the isolated environment has the necessary secrets without risk of leakage.
+
+## Current Strategy (Production)
+
+### 1. Docker Image Baking (CI/CD)
+To ensure production environments are secure, we "bake" non-sensitive configuration into the Docker image tags. Sensitive production secrets (like API keys) are injected at runtime through the CI/CD pipeline.
+
+### 2. Environment Variable Injection
+When running in Kubernetes, we leverage **Kubernetes Secrets** to inject sensitive values into the pods as environment variables. This prevents secrets from being logged or stored in clear text on the file system.
+
+## Security Best Practices
+1.  **Never commit secrets**: Check your `git status` before committing.
+2.  **No hardcoded values**: Use Pydantic's `BaseSettings` to load everything from the environment.
+3.  **Rotation**: API keys (like EODHD) should be rotated periodically.
+4.  **Least Privilege**: Ensure the database users (`dev_user`, `prod_user`) only have the permissions necessary for their tasks.
+
+## Future Roadmap
+- **HashiCorp Vault**: We plan to integrate Vault for centralized, dynamic secret management and audit logging.
+- **AWS Secrets Manager**: If we migrate to AWS, we will use Secrets Manager for native integration with Kubernetes via the External Secrets Operator.

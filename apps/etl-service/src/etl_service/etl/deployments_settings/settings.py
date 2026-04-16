@@ -16,26 +16,27 @@ class Settings(BaseSettings):
 
     # Prefect Settings
     prefect_api_url: str = Field(
-        default="http://host.docker.internal:4200/api", env="PREFECT_API_URL"
+        default="http://host.docker.internal:4200/api",
+        validation_alias="PREFECT_API_URL",
     )
 
     # EODHD Settings
-    eodhd_api_key: str = Field(..., env="EODHD_API_KEY")
+    eodhd_api_key: str = Field(..., validation_alias="EODHD_API_KEY")
 
     # Database Settings
-    db_host: str = Field(default="host.docker.internal", env="DB_HOST")
-    db_port: int = Field(default=5432, env="DB_PORT")
-    db_user: str = Field(..., env="DB_USER")
-    db_password: str = Field(..., env="DB_PASSWORD")
-    db_name: str = Field(..., env="DB_NAME")
+    db_host: str = Field(default="host.docker.internal", validation_alias="DB_HOST")
+    db_port: int = Field(default=5432, validation_alias="DB_PORT")
+    db_user: str = Field(..., validation_alias="DB_USER")
+    db_password: str = Field(..., validation_alias="DB_PASSWORD")
+    db_name: str = Field(..., validation_alias="DB_NAME")
 
     # App Settings
     job_pythonpath: str = Field(
         default="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/apps/etl-service/src",
-        env="JOB_PYTHONPATH",
+        validation_alias="JOB_PYTHONPATH",
     )
-    env_prefix: str = Field(default="", env="ENV_PREFIX")
-    is_local: bool = Field(default=False, env="IS_LOCAL")
+    env_prefix: str = Field(default="", validation_alias="ENV_PREFIX")
+    is_local: bool = Field(default=False, validation_alias="IS_LOCAL")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -47,29 +48,54 @@ class Settings(BaseSettings):
     @property
     def effective_db_host(self) -> str:
         """Returns the effective database host."""
-        if self.db_host == "localhost" and not self.is_local:
+        if self.db_host in ("localhost", "127.0.0.1") and not self.is_local:
             return "host.docker.internal"
         return self.db_host
 
+    @property
+    def effective_prefect_api_url(self) -> str:
+        """Returns the effective Prefect API URL."""
+        if (
+            "localhost" in self.prefect_api_url or "127.0.0.1" in self.prefect_api_url
+        ) and not self.is_local:
+            return self.prefect_api_url.replace(
+                "localhost", "host.docker.internal"
+            ).replace("127.0.0.1", "host.docker.internal")
+        return self.prefect_api_url
+
     def reload(self) -> None:
         """Reload settings from environment variables."""
-        # Manually refresh each field from environment
-        for field_name, field in self.model_fields.items():
-            # Get env key from validation_alias or similar if present,
-            # but we use simple Field(env=...) which might not be directly in model_fields easily
-            # We'll use a mapping or just uppercase
-            env_key = field_name.upper()
-            if field_name == "prefect_api_url":
-                env_key = "PREFECT_API_URL"
-            if field_name == "eodhd_api_key":
-                env_key = "EODHD_API_KEY"
+        # Try to find a .env file to force-load (prioritize file over process env)
+        env_files = ["dev.env", "prod.env", ".env"]
+        # Check parent dirs too since we often run from apps/etl-service
+        search_dirs = [".", "..", "../.."]
 
-            val = os.getenv(env_key)
+        file_values = {}
+        for d in search_dirs:
+            for f in env_files:
+                path = os.path.abspath(os.path.join(d, f))
+                if os.path.exists(path):
+                    from dotenv import dotenv_values
+
+                    loaded = dotenv_values(path)
+                    file_values.update(loaded)
+
+        # Manually refresh each field
+        for field_name, field in self.model_fields.items():
+            env_key = field_name.upper()
+            if field.validation_alias and isinstance(field.validation_alias, str):
+                env_key = field.validation_alias
+
+            # Priority: 1. Value in .env file, 2. Process environment variable
+            f_val = file_values.get(env_key)
+            e_val = os.getenv(env_key)
+            val = f_val if f_val is not None else e_val
+
             if val is not None:
                 if field.annotation == int:
                     val = int(val)
                 elif field.annotation == bool:
-                    val = val.lower() in ("true", "1")
+                    val = str(val).lower() in ("true", "1")
                 setattr(self, field_name, val)
 
         # Re-run init logic for is_local

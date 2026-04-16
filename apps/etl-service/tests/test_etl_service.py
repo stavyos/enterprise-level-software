@@ -17,26 +17,27 @@ def test_deployment_naming_with_prefix():
         settings.env_prefix = "test-env"
 
         flow_name = get_deployment_flow_name(
-            PrefectDeployment.STOCKS_EOD, PrefectDeploymentType.SAVER
+            PrefectDeployment.EOD, PrefectDeploymentType.SAVER
         )
-        assert flow_name == "test-env-STOCKS-EOD-SAVER"
+        assert flow_name == "test-env-EOD-Saver"
 
         dep_name = get_deployment_name(
-            PrefectDeployment.STOCKS_EOD, PrefectDeploymentType.SAVER
+            PrefectDeployment.EOD, PrefectDeploymentType.SAVER
         )
-        assert dep_name == "test-env-stocks_eod-saver-deployment"
+        assert dep_name == "test-env-eod-saver-deployment"
 
         # Test without prefix
         settings.env_prefix = ""
+
         flow_name_no_prefix = get_deployment_flow_name(
-            PrefectDeployment.STOCKS_EOD, PrefectDeploymentType.SAVER
+            PrefectDeployment.EOD, PrefectDeploymentType.SAVER
         )
-        assert flow_name_no_prefix == "STOCKS-EOD-SAVER"
+        assert flow_name_no_prefix == "EOD-Saver"
 
         dep_name_no_prefix = get_deployment_name(
-            PrefectDeployment.STOCKS_EOD, PrefectDeploymentType.SAVER
+            PrefectDeployment.EOD, PrefectDeploymentType.SAVER
         )
-        assert dep_name_no_prefix == "stocks_eod-saver-deployment"
+        assert dep_name_no_prefix == "eod-saver-deployment"
 
     finally:
         # Restore original prefix
