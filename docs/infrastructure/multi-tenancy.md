@@ -30,6 +30,11 @@ Each environment targets a dedicated database instance:
 ### 4. Kubernetes Resources
 By leveraging Prefect's `job_variables`, we can define different resource limits per environment (e.g., production savers get more CPU/Memory than development ones).
 
+## The Work Pool Job Template Guard
+A critical discovery during our implementation was that Prefect **Work Pools** (specifically Docker/K8s types) come with a "Base Job Template."
+
+> **Important**: If the Work Pool template has hardcoded environment variables (e.g., `DB_PORT=5430`), these will override any variables provided in the deployment's `job_variables`. We ensure our work pools are created with clean templates to allow our dynamic, environment-aware settings to take precedence.
+
 ## Twelve-Factor App Principles
 Our multi-tenancy strategy aligns with several "Twelve-Factor App" principles:
 - **Config**: Strict separation of config from code (stored in environment variables).

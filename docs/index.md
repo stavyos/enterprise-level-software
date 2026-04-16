@@ -16,8 +16,13 @@ The project is built as a **Python Monorepo** managed by **Nx**, utilizing a dis
 
 ## Core Documentation
 
-### 🛠️ Tooling & Infrastructure
+### 🏛️ Architecture & Decisions
+- [**ADR-001: Unified Cluster**](./architecture/adr-001-single-prefect-cluster.md): The decision to use a single Prefect server for multiple environments.
+- [**Multi-Tenancy**](./infrastructure/multi-tenancy.md): Our strategy for environment isolation within shared infrastructure.
+
+### 🛠️ Tooling & Config
 - [**Nx & UV**](./tooling/nx-uv.md): How we manage the monorepo and Python dependencies.
+- [**Pydantic Settings**](./tooling/pydantic-settings.md): Type-safe, environment-aware application configuration.
 - [**Docker**](./infrastructure/docker.md): Containerization of our persistent storage.
 - [**Kubernetes**](./infrastructure/kubernetes.md): The execution environment for our ETL workers.
 
@@ -31,5 +36,9 @@ The project is built as a **Python Monorepo** managed by **Nx**, utilizing a dis
 - [**EODHD Client**](./api/eodhd-client.md): Documentation for our custom API client.
 
 ### 🧪 Quality & Standards
+- [**Environment Parity**](./quality/environment-parity.md): Twelve-Factor App compliance and host-to-container bridging.
 - [**Testing**](./quality/testing.md): Our strategy for ensuring data integrity and system reliability.
+
+### 🔒 Security & Source Control
+- [**Secret Management**](./security/secret-management.md): Securely handling credentials across environments.
 - [**Source Control**](./source-control/git.md): Branching and Pull Request workflows.
