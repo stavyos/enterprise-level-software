@@ -1,4 +1,4 @@
-node {
+﻿node {
     def DEPLOY_ENV = ''
     def agentImage = null
     def appImage = null
