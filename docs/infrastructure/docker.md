@@ -28,3 +28,14 @@ We build environment-specific images using the same `Dockerfile.etl`. By using b
 **Build Commands**:
 - **Dev**: `npx nx run etl-service:docker-build:dev`
 - **Prod**: `npx nx run etl-service:docker-build:prod`
+
+## CI/CD Orchestration & Networking
+
+### Shared Network
+A dedicated Docker network, `enterprise-network`, facilitates secure communication between services:
+- **Jenkins**: Performs builds and triggers deployments on this network.
+- **Prefect Server**: Accessible at `http://prefect-server:4200/api` within the network.
+- **Agent Containers**: Dynamic build agents (custom Node/Python images) join this network to register flows.
+
+### Advanced: Docker-in-Docker
+The Jenkins container has access to the host's Docker engine via a socket mount (`/var/run/docker.sock`). This allows it to build, tag, and run the ETL images as part of the automated pipeline.

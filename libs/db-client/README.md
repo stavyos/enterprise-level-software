@@ -33,6 +33,11 @@ data = [StockEOD(symbol="MSFT.US", ...), StockEOD(symbol="TSLA.US", ...)]
 db.bulk_upsert(data)
 ```
 
+## CI/CD
+This library is a core dependency for the system. The **Jenkins CI/CD** pipeline ensures its stability by:
+- **Mandatory Testing**: Running all unit tests on every commit.
+- **Dependency Validation**: Verifying compatibility with applications before deployment.
+
 ## Development
 
 This project follows the monorepo's unified linting and formatting standards using **Ruff**.

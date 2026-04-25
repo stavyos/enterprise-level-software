@@ -23,6 +23,40 @@ We use a **unified Prefect cluster** with strictly isolated data layers:
     *   **Dev**: Registered with `dev-` prefix in `dev-k8s-pool`.
     *   **Prod**: Registered with `prod-` prefix in `prod-k8s-pool`.
 
+## Architecture & Dependency Graph
+
+```mermaid
+graph TD
+    subgraph "External"
+        GH[GitHub]
+        API[EODHD API]
+    end
+
+    subgraph "CI/CD (Jenkins)"
+        JK[Jenkins]
+    end
+
+    subgraph "Monorepo Apps"
+        ETL[etl-service]
+        ORCH[prefect-orchestrator]
+    end
+
+    subgraph "Monorepo Libs"
+        EOD[eodhd-client]
+        DB[db-client]
+    end
+
+    GH -- "Push/PR" --> JK
+    JK -- "Deploy" --> ETL
+
+    ETL --> EOD
+    ETL --> DB
+    ORCH -.-> ETL
+
+    EOD -- "Fetch" --> API
+    DB -- "Store" --> TDB[(TimescaleDB)]
+```
+
 ## Getting Started
 
 ### Prerequisites
@@ -62,6 +96,14 @@ You can trigger flows via the Prefect UI or the CLI. When using the CLI, ensure 
 # Example: Triggering the Main Dispatcher for AAPL and MSFT in Dev
 uv run prefect deployment run "dev-Main-Saver Dispatcher/dev-main-saver dispatcher-deployment" --param 'tickers=["AAPL","MSFT"]'
 ```
+
+### CI/CD
+This project uses **Jenkins** for continuous integration and deployment:
+- **Automated Pipelines**: Scripted `Jenkinsfile` handles Setup, Tests, Build, and Deploy.
+- **GitHub Integration**: Real-time build triggers via Webhooks (Ngrok tunnel) and **Automated PR Checks** (Success/Failure reporting).
+- **Environment Isolation**: Automatic branch detection (using regex `^(.*/)?master$`) maps to `dev` or `prod` environments.
+- **Dockerized CI**: All pipeline stages run inside custom agent containers for 100% parity.
+- **Prefect Integration**: Automated flow registration on every successful build.
 
 ## Documentation
 For detailed architecture and setup guides, visit the [Tech Learning Center](docs/index.md).
