@@ -20,3 +20,6 @@ __pycache__/
 .gemini
 todos
 .idea/
+
+.env.dev
+.env.prod
