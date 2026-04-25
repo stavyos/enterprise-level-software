@@ -8,8 +8,7 @@ node {
             checkout scm
         }
 
-        // Notify GitHub that the build is starting using the Default context source
-        // This is more compatible across different GitHub plugin versions
+        // Notify GitHub that the build is starting
         step([
             $class: 'GitHubCommitStatusSetter',
             contextSource: [$class: 'DefaultCommitContextSource'],
@@ -17,11 +16,20 @@ node {
         ])
 
         stage('Set Environment') {
-            echo "BRANCH_NAME: ${env.BRANCH_NAME}"
-            echo "GIT_BRANCH: ${env.GIT_BRANCH}"
+            // Get branch name from various possible sources
+            def branch = env.BRANCH_NAME ?: env.GIT_BRANCH ?: ""
 
+            // If still null, try to get it from git directly
+            if (!branch) {
+                branch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+            }
+
+            echo "Detected Branch: ${branch}"
+
+            // Robust environment detection using Regex
+            // Matches "master" or something ending in "/master"
             def masterRegex = /^(.*\/)?master$/
-            def isMaster = (env.BRANCH_NAME =~ masterRegex || env.GIT_BRANCH =~ masterRegex)
+            def isMaster = (branch =~ masterRegex)
 
             if (isMaster) {
                 DEPLOY_ENV = 'prod'
@@ -87,7 +95,7 @@ node {
         currentBuild.result = "FAILURE"
         throw e
     } finally {
-        // Notify GitHub of the final result using the Default context source
+        // Notify GitHub of the final result
         try {
             def statusState = (currentBuild.result == 'SUCCESS') ? 'SUCCESS' : 'FAILURE'
             def statusMsg = (currentBuild.result == 'SUCCESS') ? 'Build successful' : 'Build failed'
