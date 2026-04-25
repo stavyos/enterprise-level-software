@@ -8,8 +8,12 @@ node {
             checkout scm
         }
 
-        // Notify GitHub that the build is starting (moved after checkout so git metadata is available)
-        step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
+        // Notify GitHub that the build is starting with a fixed context name
+        step([
+            $class: 'GitHubCommitStatusSetter',
+            contextSource: [$class: 'ManuallyEnteredCommitStatusContextSource', context: 'jenkins/build'],
+            statusResultSource: [$class: 'DefaultStatusResultSource']
+        ])
 
         stage('Set Environment') {
             echo "BRANCH_NAME: ${env.BRANCH_NAME}"
@@ -81,9 +85,12 @@ node {
         throw e
     } finally {
         // Notify GitHub of the final result (Success or Failure)
-        // This will only work if the checkout was successful at some point
         try {
-            step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
+            step([
+                $class: 'GitHubCommitStatusSetter',
+                contextSource: [$class: 'ManuallyEnteredCommitStatusContextSource', context: 'jenkins/build'],
+                statusResultSource: [$class: 'DefaultStatusResultSource']
+            ])
         } catch (statusError) {
             echo "Failed to set GitHub status: ${statusError.message}"
         }
