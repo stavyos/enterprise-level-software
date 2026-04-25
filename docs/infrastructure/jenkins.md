@@ -54,11 +54,11 @@ To allow GitHub to trigger builds and display status checks from your local Jenk
 Since GitHub is on the public cloud, use **Ngrok** to create a secure tunnel:
 1.  **Auth**: Run `ngrok config add-authtoken <TOKEN>`.
 2.  **Start Tunnel**: Run `ngrok http 8080`.
-3.  **Forwarding URL**: Copy the forwarded URL (e.g., `https://automatic-poker-arrest.ngrok-free.dev`).
+3.  **Forwarding URL**: Copy the forwarded URL (e.g., `<NGROK_URL>`).
 
 ### 2. Configure GitHub Webhook
 1.  In your GitHub Repo: **Settings > Webhooks > Add Webhook**.
-2.  **Payload URL**: `https://automatic-poker-arrest.ngrok-free.dev/github-webhook/` (The `/github-webhook/` suffix is mandatory).
+2.  **Payload URL**: `<NGROK_URL>/github-webhook/` (The `/github-webhook/` suffix is mandatory).
 3.  **Content type**: `application/json`.
 4.  **Events**: Select **Let me select individual events** and check **Pushes** and **Pull requests**.
 
