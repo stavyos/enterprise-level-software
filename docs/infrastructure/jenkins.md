@@ -3,6 +3,8 @@
 ## Overview
 This project uses Jenkins for continuous integration and deployment. The pipeline is defined in a scripted `Jenkinsfile` at the root of the repository.
 
+**Automated Validation**: Every Pull Request is automatically verified through a full CI/CD loop—from environment setup and unit testing to a sandbox deployment in the `dev` environment.
+
 ## Automation Architecture
 ```mermaid
 graph TD
