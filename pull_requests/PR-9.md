@@ -20,6 +20,7 @@ Implement a robust, scripted Jenkins CI/CD pipeline that supports multiple envir
 ### 2. Infrastructure Documentation
 - Created `docs/infrastructure/jenkins.md` in the Tech Learning Center.
 - Documented pipeline stages, environment isolation strategy, and runner requirements.
+- **Setup Recommendation**: Added instructions to use **"Install suggested plugins"** during Jenkins initialization to ensure `Pipeline` and `Docker Pipeline` support are available.
 
 ## Architecture & Dependency Graph
 ```mermaid

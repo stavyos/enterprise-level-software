@@ -25,7 +25,11 @@ docker run -d `
 Once started:
 1.  Navigate to `http://localhost:8080`.
 2.  Retrieve the initial admin password: `docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword`.
-3.  Install suggested plugins and create your first admin user.
+3.  **Setup Wizard**: Select **"Install suggested plugins"**. This includes essential plugins for this project:
+    *   **Pipeline**: Core engine for `Jenkinsfile` execution.
+    *   **Git**: For source code management.
+    *   **Docker Pipeline**: Required for `docker.image().inside` and containerized stages.
+4.  Create your first admin user.
 
 ## Pipeline Structure
 The pipeline uses **Dockerized Stages** to ensure a consistent environment:
