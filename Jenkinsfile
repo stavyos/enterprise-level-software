@@ -1,6 +1,10 @@
 node {
     def DEPLOY_ENV = ''
 
+    stage('Checkout') {
+        checkout scm
+    }
+
     stage('Set Environment') {
         if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' || env.BRANCH_NAME == null) {
             DEPLOY_ENV = 'prod'
