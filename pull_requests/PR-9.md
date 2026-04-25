@@ -16,11 +16,12 @@ Implement a robust, scripted Jenkins CI/CD pipeline that supports multiple envir
 - Added **Tests** stage with dummy environment variables for Pydantic validation.
 - Implemented **Build** stage using environment-specific Docker tags and build-args.
 - Added **Deploy** stage that runs inside the newly built application image for 100% dependency consistency.
-- **GitHub Integration**: Configured webhook support for real-time build triggers.
+- **GitHub Integration**: Configured webhook support for real-time build triggers and automated **GitHub Checks** reporting (Success/Failure) directly to PRs.
 
 ### 2. Infrastructure Documentation
 - Created `docs/infrastructure/jenkins.md` in the Tech Learning Center.
 - Documented pipeline stages, environment isolation strategy, and runner requirements.
+- **GitHub Checks Guide**: Added steps for configuring Personal Access Tokens (PAT) and the Jenkins GitHub Server for automated status reporting.
 - **Connectivity Guide**: Added instructions for using **Ngrok** to connect local Jenkins to GitHub.
 - **Setup Recommendation**: Added instructions to use **"Install suggested plugins"** and Docker CLI installation.
 

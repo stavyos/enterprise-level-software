@@ -68,24 +68,26 @@ To allow Jenkins to listen for these webhooks:
 2.  **Job Trigger**: In your Pipeline job configuration, under **Build Triggers**, check **"GitHub hook trigger for GITScm polling"**.
 
 ### 4. Enable GitHub Status Checks
-To see build results on your PRs:
-1.  **Install Plugin**: Ensure the **GitHub Integration** plugin is installed.
+To see build results (Success/Failure) directly on your GitHub PRs:
+1.  **Install Plugin**: Ensure the **GitHub Integration** plugin is installed in Jenkins.
 2.  **Credentials**: Add a GitHub Personal Access Token (PAT) as a "Secret text" credential named `github-token`.
-3.  **Global Config**: In **Manage Jenkins > System**, add a GitHub Server and select the token.
+3.  **Global Config**: In **Manage Jenkins > System**, add a GitHub Server, select the `github-token`, and click "Test Connection".
+4.  **Pipeline Implementation**: The `Jenkinsfile` uses the `GitHubCommitStatusSetter` step to report status:
+    *   **Pending**: Reported after checkout.
+    *   **Final Result**: Reported in the `finally` block based on the build outcome (`SUCCESS` or `FAILURE`).
 
 ## Pipeline Structure
-The pipeline uses **Dockerized Stages** to ensure a consistent environment:
+The pipeline uses **Dockerized Stages** and **Automated Status Reporting**:
 
 1.  **Set Environment**: Runs on the host; determines `dev` or `prod` based on the branch.
     *   **Master Detection**: Uses a precise regex `^(.*/)?master$` to match only the `master` branch.
     *   **Fallback**: All other branches (PRs, features) default to the `dev` environment.
-2.  **Setup & Tests (Dockerized)**: These stages run inside a `node:20-slim` container.
-    *   Ensures that Node.js, npm, and Nx commands run in a Linux environment regardless of the host OS.
-    *   `npm install` and `npm run test:all` are executed using `sh`.
-3.  **Build**: Runs on the host to access the Docker daemon.
-    *   Builds and tags the environment-specific image.
-4.  **Deploy**: Runs on the host to register deployments with the Prefect server.
-
+2.  **Status Check (Universal)**: Reports a "Pending" status to GitHub once the build starts.
+3.  **Setup & Tests (Dockerized)**: These stages run inside a custom agent image (`jenkins-agent-python`).
+    *   Ensures that Node.js, npm, Nx, and `uv` commands run in a Linux environment.
+4.  **Build**: Builds the environment-specific application image on the host.
+5.  **Deploy**: Runs flow registration **inside** the newly built application image to ensure 100% dependency parity.
+6.  **Final Status**: Reports the final Success/Failure to GitHub.
 ## Environment Isolation
 Isolation between `dev` and `prod` is maintained through:
 *   **Docker Tags**: Environment-specific images (`etl-service:dev`, `etl-service:prod`).
