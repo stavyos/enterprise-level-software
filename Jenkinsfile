@@ -1,6 +1,7 @@
 node {
     def DEPLOY_ENV = ''
     def agentImage = null
+    def appImage = null
 
     stage('Checkout') {
         checkout scm
@@ -45,21 +46,17 @@ node {
 
     stage('Build') {
         echo "Building Application Docker Image for ${env.DEPLOY_ENV}..."
-        if (isUnix()) {
-            sh "docker build --build-arg ENV_PREFIX=${env.DEPLOY_ENV} -f Dockerfile.etl -t etl-service:${env.DEPLOY_ENV} ."
-        } else {
-            bat "docker build --build-arg ENV_PREFIX=${env.DEPLOY_ENV} -f Dockerfile.etl -t etl-service:${env.DEPLOY_ENV} ."
-        }
+        appImage = docker.build("etl-service:${env.DEPLOY_ENV}", "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} -f Dockerfile.etl .")
     }
 
     stage('Deploy') {
         echo "Deploying Prefect Flows to ${env.DEPLOY_ENV}..."
-        dir('apps/etl-service') {
-            withEnv(["ENV_PREFIX=${env.DEPLOY_ENV}"]) {
-                if (isUnix()) {
+        // Run the deployment command inside the newly built application image
+        // This ensures uv and all python dependencies are available
+        appImage.inside("-u root") {
+            dir('apps/etl-service') {
+                withEnv(["ENV_PREFIX=${env.DEPLOY_ENV}"]) {
                     sh "uv run python -c \"from etl_service.etl.deploy_etls import deploy; deploy(image='etl-service:${env.DEPLOY_ENV}')\""
-                } else {
-                    bat "uv run python -c \"from etl_service.etl.deploy_etls import deploy; deploy(image='etl-service:${env.DEPLOY_ENV}')\""
                 }
             }
         }
