@@ -8,11 +8,23 @@ node {
     }
 
     stage('Set Environment') {
-        if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' || env.BRANCH_NAME == null) {
+        // Log variables for debugging
+        echo "BRANCH_NAME: ${env.BRANCH_NAME}"
+        echo "GIT_BRANCH: ${env.GIT_BRANCH}"
+
+        // Robust environment detection
+        // 1. If BRANCH_NAME is master/main -> prod
+        // 2. If GIT_BRANCH (used in non-multibranch jobs) ends with master/main -> prod
+        // 3. Otherwise -> dev
+        def isMaster = (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' ||
+                        env.GIT_BRANCH?.endsWith('/master') || env.GIT_BRANCH?.endsWith('/main'))
+
+        if (isMaster) {
             DEPLOY_ENV = 'prod'
         } else {
             DEPLOY_ENV = 'dev'
         }
+
         env.DEPLOY_ENV = DEPLOY_ENV
         echo "Target Environment: ${env.DEPLOY_ENV}"
     }
