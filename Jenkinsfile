@@ -53,9 +53,13 @@ node {
         echo "Deploying Prefect Flows to ${env.DEPLOY_ENV}..."
         // Run the deployment command inside the newly built application image
         // This ensures uv and all python dependencies are available
-        appImage.inside("-u root") {
+        appImage.inside("-u root --add-host host.docker.internal:host-gateway") {
             dir('apps/etl-service') {
-                withEnv(["ENV_PREFIX=${env.DEPLOY_ENV}"]) {
+                // Use host.docker.internal to reach the Prefect server running on the host
+                withEnv([
+                    "ENV_PREFIX=${env.DEPLOY_ENV}",
+                    "PREFECT_API_URL=http://host.docker.internal:4200/api"
+                ]) {
                     sh "uv run python -c \"import asyncio; from etl_service.etl.deploy_etls import deploy; asyncio.run(deploy(image='etl-service:${env.DEPLOY_ENV}'))\""
                 }
             }
