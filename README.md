@@ -54,5 +54,14 @@ npx nx run prefect-orchestrator:start:prod
 | **Register Flows** | `npx nx run etl-service:deploy:dev` | `npx nx run etl-service:deploy:prod` |
 | **Run Worker** | `npx nx run prefect-orchestrator:worker` | `npx nx run prefect-orchestrator:worker:prod` |
 | **Run Tests** | `npx nx run-many -t test` | `npx nx run-many -t test` |
+
+### Triggering Flows
+You can trigger flows via the Prefect UI or the CLI. When using the CLI, ensure you use the correct quoting for array parameters:
+
+```bash
+# Example: Triggering the Main Dispatcher for AAPL and MSFT in Dev
+uv run prefect deployment run "dev-Main-Saver Dispatcher/dev-main-saver dispatcher-deployment" --param 'tickers=["AAPL","MSFT"]'
+```
+
 ## Documentation
 For detailed architecture and setup guides, visit the [Tech Learning Center](docs/index.md).
