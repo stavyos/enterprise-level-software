@@ -3,13 +3,13 @@ node {
     def agentImage = null
     def appImage = null
 
-    // Notify GitHub that the build is starting
-    step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
-
     try {
         stage('Checkout') {
             checkout scm
         }
+
+        // Notify GitHub that the build is starting (moved after checkout so git metadata is available)
+        step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
 
         stage('Set Environment') {
             echo "BRANCH_NAME: ${env.BRANCH_NAME}"
@@ -81,6 +81,11 @@ node {
         throw e
     } finally {
         // Notify GitHub of the final result (Success or Failure)
-        step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
+        // This will only work if the checkout was successful at some point
+        try {
+            step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
+        } catch (statusError) {
+            echo "Failed to set GitHub status: ${statusError.message}"
+        }
     }
 }
