@@ -32,3 +32,9 @@ To prevent stale metadata from overriding container settings, our `JobVariables`
 - **Zero Configuration Leakage**: Dev workers cannot accidentally connect to the Prod database because the connection logic is isolated within the image.
 - **Unified Observability**: View all environment runs in a single dashboard while keeping them logically separated.
 - **Path Portability**: The manual `RunnerDeployment` fix ensures that our Windows-based development environment can successfully trigger flows in Linux-based containers.
+
+## Automated Deployments (CI/CD)
+The entire registration process is automated via **Jenkins**:
+- **Branch Detection**: PRs automatically register flows with the `dev` prefix.
+- **Production Lifecycle**: Merges to `master` trigger the build and registration of `prod` deployments.
+- **Self-Healing**: The pipeline ensures work pools exist and deployment metadata is always in sync with the latest container image.

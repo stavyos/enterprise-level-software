@@ -24,6 +24,7 @@ The project is built as a **Python Monorepo** managed by **Nx**, utilizing a dis
 - [**Nx & UV**](./tooling/nx-uv.md): How we manage the monorepo and Python dependencies.
 - [**Pydantic Settings**](./tooling/pydantic-settings.md): Type-safe, environment-aware application configuration.
 - [**Docker**](./infrastructure/docker.md): Containerization of our persistent storage.
+- [**Jenkins CI/CD**](./infrastructure/jenkins.md): Automated multi-environment deployment pipeline.
 - [**Kubernetes**](./infrastructure/kubernetes.md): The execution environment for our ETL workers.
 
 ### 🎭 Orchestration

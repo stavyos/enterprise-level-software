@@ -63,5 +63,12 @@ You can trigger flows via the Prefect UI or the CLI. When using the CLI, ensure 
 uv run prefect deployment run "dev-Main-Saver Dispatcher/dev-main-saver dispatcher-deployment" --param 'tickers=["AAPL","MSFT"]'
 ```
 
+### CI/CD
+This project uses **Jenkins** for continuous integration and deployment:
+- **Automated Pipelines**: Scripted `Jenkinsfile` handles Setup, Tests, Build, and Deploy.
+- **Environment Isolation**: Automatic branch detection maps to `dev` or `prod` environments.
+- **Dockerized CI**: All pipeline stages run inside custom agent containers for 100% parity.
+- **Prefect Integration**: Automated flow registration on every successful build.
+
 ## Documentation
 For detailed architecture and setup guides, visit the [Tech Learning Center](docs/index.md).

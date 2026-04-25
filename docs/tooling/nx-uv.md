@@ -36,6 +36,13 @@ We wrap our Nx targets with `dotenv run` to load the appropriate `.env` files (`
 }
 ```
 
+## Usage in CI/CD (Jenkins)
+
+The Jenkins pipeline leverages these tools to ensure consistency between developer machines and production:
+- **`npm install`**: Bootstraps the workspace within build containers.
+- **`nx run-many -t test`**: Validates all projects before any deployment is attempted.
+- **`uv run`**: Executes flow registration and Python scripts in a reproducible manner across all environments.
+
 ## Ruff: Fast & Unified Linting
 
 We use [Ruff](https://github.com/astral-sh/ruff) as our single tool for both linting and formatting — it replaces Flake8, isort, and Black.
