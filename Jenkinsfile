@@ -56,7 +56,7 @@ node {
         appImage.inside("-u root") {
             dir('apps/etl-service') {
                 withEnv(["ENV_PREFIX=${env.DEPLOY_ENV}"]) {
-                    sh "uv run python -c \"from etl_service.etl.deploy_etls import deploy; deploy(image='etl-service:${env.DEPLOY_ENV}')\""
+                    sh "uv run python -c \"import asyncio; from etl_service.etl.deploy_etls import deploy; asyncio.run(deploy(image='etl-service:${env.DEPLOY_ENV}'))\""
                 }
             }
         }
