@@ -10,6 +10,8 @@ dependencies = [
     "loguru>=0.7.3",
     "prefect==3.6.25",
     "pydantic-settings>=2.8.1",
+    "python-dotenv[cli]>=1.0.1",
+    "asyncpg>=0.29.0"
 ]
 
 [project.optional-dependencies]

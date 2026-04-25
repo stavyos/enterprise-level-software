@@ -27,7 +27,6 @@ from etl_service.etl.deployments_settings.job_variables import (
     ResourceLimits,
     ResourceRequests,
 )
-from etl_service.etl.flows.locator import get_path
 
 
 class AbstractDeploymentSettings(ABC):
@@ -43,7 +42,7 @@ class AbstractDeploymentSettings(ABC):
 
     WP_QUEUE_DEFAULT = "default"
 
-    SOURCE_DEFAULT = str(get_path().absolute())
+    SOURCE_DEFAULT = None
     SAVER_RETRIES_DEFAULT = 3
     SAVER_RETRY_DELAY_DEFAULT = 60
     SAVER_TIMEOUT_SECONDS_DEFAULT = 15 * 60  # 15 minutes
@@ -69,7 +68,11 @@ class AbstractDeploymentSettings(ABC):
     @property
     def work_pool(self) -> str:
         """Work pool for the deployment."""
-        return f"{self.WORK_POOL}"
+        from etl_service.etl.deployments_settings.settings import settings
+
+        if settings.env_prefix == "prod":
+            return "prod-k8s-pool"
+        return "dev-k8s-pool"
 
     @property
     def work_pool_queue(self) -> str:
@@ -246,6 +249,17 @@ class AbstractDeploymentSettings(ABC):
             is_available=self.is_saver_dispatcher_available,
             function_name=self.saver_dispatcher_flow_function_name,
         )
+
+    def get_flow_function(self, deployment_type: PrefectDeploymentType) -> Flow | None:
+        """Get the flow function for a specific deployment type."""
+        # noinspection PyUnreachableCode
+        match deployment_type:
+            case PrefectDeploymentType.SAVER:
+                return self.saver_flow_function
+            case PrefectDeploymentType.DISPATCHER:
+                return self.saver_dispatcher_flow_function
+            case _:
+                raise NotImplementedError(f"Unknown deployment type: {deployment_type}")
 
     # endregion
 
