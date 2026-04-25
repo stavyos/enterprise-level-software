@@ -1,5 +1,6 @@
 node {
     def DEPLOY_ENV = ''
+    def agentImage = null
 
     stage('Checkout') {
         checkout scm
@@ -15,8 +16,13 @@ node {
         echo "Target Environment: ${env.DEPLOY_ENV}"
     }
 
-    // Use a Docker container for a consistent build environment
-    docker.image('node:20-slim').inside {
+    stage('Prepare Agent') {
+        echo "Building custom Jenkins agent image..."
+        agentImage = docker.build("jenkins-agent-python", "-f Dockerfile.jenkins-agent .")
+    }
+
+    // Use the custom agent for a consistent build environment
+    agentImage.inside {
         stage('Setup') {
             echo "Installing Dependencies inside Docker..."
             sh "npm install"
