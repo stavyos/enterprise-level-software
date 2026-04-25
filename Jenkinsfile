@@ -31,7 +31,15 @@ node {
 
         stage('Tests') {
             echo "Running All Tests inside Docker..."
-            sh "npm run test:all"
+            // Provide dummy environment variables for Pydantic Settings validation during tests
+            withEnv([
+                'EODHD_API_KEY=dummy_key',
+                'DB_USER=dummy_user',
+                'DB_PASSWORD=dummy_pass',
+                'DB_NAME=dummy_db'
+            ]) {
+                sh "npm run test:all"
+            }
         }
     }
 
