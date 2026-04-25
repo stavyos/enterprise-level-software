@@ -47,6 +47,26 @@ Once logged in, follow these steps to link your repository to Jenkins:
 5.  **Save**: Click Save.
 6.  **Run**: Click **Build Now** on the left sidebar to trigger your first build!
 
+## Connecting Jenkins to GitHub (Local to Cloud)
+To allow GitHub to trigger builds and display status checks from your local Jenkins instance, follow these steps:
+
+### 1. Expose Jenkins via Tunnel
+Since GitHub is on the public cloud, use a tool like **Ngrok** to create a secure tunnel:
+1.  Run `ngrok http 8080`.
+2.  Copy the forwarded URL (e.g., `https://xyz.ngrok-free.app`).
+
+### 2. Configure GitHub Webhook
+1.  In your GitHub Repo: **Settings > Webhooks > Add Webhook**.
+2.  **Payload URL**: `[NGROK_URL]/github-webhook/`.
+3.  **Content type**: `application/json`.
+4.  **Events**: Select **Pushes** and **Pull requests**.
+
+### 3. Enable GitHub Status Checks
+To see the build results directly on your PRs:
+1.  **Install Plugin**: Install the **GitHub Integration** plugin in Jenkins.
+2.  **Credentials**: Add a GitHub Personal Access Token (PAT) as a "Secret text" credential named `github-token`.
+3.  **Global Config**: In **Manage Jenkins > System**, add a GitHub Server and select the token.
+
 ## Pipeline Structure
 The pipeline uses **Dockerized Stages** to ensure a consistent environment:
 
