@@ -23,6 +23,40 @@ We use a **unified Prefect cluster** with strictly isolated data layers:
     *   **Dev**: Registered with `dev-` prefix in `dev-k8s-pool`.
     *   **Prod**: Registered with `prod-` prefix in `prod-k8s-pool`.
 
+## Architecture & Dependency Graph
+
+```mermaid
+graph TD
+    subgraph "External"
+        GH[GitHub]
+        API[EODHD API]
+    end
+
+    subgraph "CI/CD (Jenkins)"
+        JK[Jenkins]
+    end
+
+    subgraph "Monorepo Apps"
+        ETL[etl-service]
+        ORCH[prefect-orchestrator]
+    end
+
+    subgraph "Monorepo Libs"
+        EOD[eodhd-client]
+        DB[db-client]
+    end
+
+    GH -- "Push/PR" --> JK
+    JK -- "Deploy" --> ETL
+
+    ETL --> EOD
+    ETL --> DB
+    ORCH -.-> ETL
+
+    EOD -- "Fetch" --> API
+    DB -- "Store" --> TDB[(TimescaleDB)]
+```
+
 ## Getting Started
 
 ### Prerequisites
