@@ -23,3 +23,5 @@ todos
 
 .env.dev
 .env.prod
+
+GEMINI.local.md
