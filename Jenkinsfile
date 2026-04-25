@@ -12,10 +12,10 @@ node {
         echo "BRANCH_NAME: ${env.BRANCH_NAME}"
         echo "GIT_BRANCH: ${env.GIT_BRANCH}"
 
-        // Robust environment detection
-        // 1. If branch is explicitly 'master' -> prod
-        // 2. Otherwise -> dev
-        def isMaster = (env.BRANCH_NAME == 'master' || env.GIT_BRANCH?.endsWith('/master'))
+        // Robust environment detection using Regex
+        // Matches "master" or something ending in "/master"
+        def masterRegex = /^(.*\/)?master$/
+        def isMaster = (env.BRANCH_NAME =~ masterRegex || env.GIT_BRANCH =~ masterRegex)
 
         if (isMaster) {
 
