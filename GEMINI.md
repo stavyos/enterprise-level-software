@@ -43,4 +43,7 @@
 - **Deployment Registration**:
     - Use `RunnerDeployment.from_entrypoint` in `deploy_etls.py` to ensure Prefect correctly infers and populates the `parameter_openapi_schema`.
     - This is critical for deployments that accept parameters (like `tickers` in `Main` dispatcher).
+- **Environment Detection**: Avoid checking `sys.argv[0]` or the full script path for environment strings (like "prod"), as worktree directory names can cause false positives. Always slice `sys.argv[1:]` or use `ENV_PREFIX`.
+- **Network Connectivity**: Flow runs inside Docker containers must use `host.docker.internal` to reach the TimescaleDB instances running on the host machine.
+- **CLI Parameter Syntax**: When passing arrays via CLI (e.g., `tickers`), use the format `--param 'tickers=["AAPL","MSFT"]'`. If parsing fails, use a JSON file with `--params file.json`.
 - **CLI Context**: Execute Prefect commands from the specific application directory where dependencies reside.
