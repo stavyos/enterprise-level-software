@@ -23,7 +23,12 @@ node {
     }
 
     // Use the custom agent for a consistent build environment
-    agentImage.inside {
+    agentImage.inside("-u root") {
+        stage('Cleanup') {
+            echo "Cleaning up existing virtual environments..."
+            sh "find . -name '.venv' -type d -exec rm -rf {} +"
+        }
+
         stage('Setup') {
             echo "Installing Dependencies inside Docker..."
             sh "npm install"
