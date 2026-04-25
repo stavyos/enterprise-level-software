@@ -3,23 +3,21 @@
 ## Overview
 This project uses Jenkins for continuous integration and deployment. The pipeline is defined in a scripted `Jenkinsfile` at the root of the repository.
 
-## Pipeline Structure
-The pipeline consists of the following stages:
+## Jenkins UI
+Jenkins provides a web-based interface for managing builds and visualizing pipelines.
+*   **Standard View**: Accessible via the main Jenkins URL (e.g., `http://localhost:8080`).
+*   **Blue Ocean**: A modern, interactive visualization of the pipeline stages and logs.
 
-1.  **Set Environment**: Determines the target environment (`dev` or `prod`) based on the branch name.
-    *   `master` or `main` branches deploy to `prod`.
-    *   All other branches (including Pull Requests) deploy to `dev`.
-2.  **Setup**: Installs project dependencies.
-    *   `npm install`: Installs Node.js dependencies and Nx.
-    *   `npm run install:all`: Uses Nx to install Python dependencies via `uv` for all applications and libraries.
-3.  **Tests**: Executes all tests across the monorepo using `npm run test:all`.
-4.  **Build**: Builds a Docker image for the ETL service.
-    *   Uses `Dockerfile.etl`.
-    *   Tags the image with the environment name (e.g., `etl-service:dev`).
-    *   Passes `ENV_PREFIX` as a build argument.
-5.  **Deploy**: Registers flows with the Prefect server.
-    *   Uses the environment-specific Docker image.
-    *   Sets `ENV_PREFIX` environment variable during registration.
+## Pipeline Structure
+The pipeline uses **Dockerized Stages** to ensure a consistent environment:
+
+1.  **Set Environment**: Runs on the host; determines `dev` or `prod` based on the branch.
+2.  **Setup & Tests (Dockerized)**: These stages run inside a `node:20-slim` container.
+    *   Ensures that Node.js, npm, and Nx commands run in a Linux environment regardless of the host OS.
+    *   `npm install` and `npm run test:all` are executed using `sh`.
+3.  **Build**: Runs on the host to access the Docker daemon.
+    *   Builds and tags the environment-specific image.
+4.  **Deploy**: Runs on the host to register deployments with the Prefect server.
 
 ## Environment Isolation
 Isolation between `dev` and `prod` is maintained through:
