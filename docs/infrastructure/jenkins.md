@@ -31,6 +31,22 @@ Once started:
     *   **Docker Pipeline**: Required for `docker.image().inside` and containerized stages.
 4.  Create your first admin user.
 
+## Configuring the Pipeline Job
+Once logged in, follow these steps to link your repository to Jenkins:
+
+1.  **Create New Item**: Click "New Item" on the sidebar.
+2.  **Item Name**: Enter a name (e.g., `enterprise-level-software`).
+3.  **Type**: Select **Pipeline** and click OK.
+4.  **Pipeline Configuration**:
+    *   Scroll down to the **Pipeline** section.
+    *   **Definition**: Select **Pipeline script from SCM**.
+    *   **SCM**: Select **Git**.
+    *   **Repository URL**: Enter your local path or GitHub URL.
+    *   **Branch Specifier**: Use `*/master` for production or `*/sy/jenkins-cicd` to test this PR.
+    *   **Script Path**: Ensure it is set to `Jenkinsfile`.
+5.  **Save**: Click Save.
+6.  **Run**: Click **Build Now** on the left sidebar to trigger your first build!
+
 ## Pipeline Structure
 The pipeline uses **Dockerized Stages** to ensure a consistent environment:
 
