@@ -81,11 +81,11 @@ async def deploy(
                     f"etl_service.etl.flows.etl.{module_path}:{flow_function_name}"
                 )
 
-                # Create deployment specification
-                d = RunnerDeployment(
+                # Create deployment specification using from_entrypoint to capture schema
+                d = RunnerDeployment.from_entrypoint(
+                    entrypoint=entrypoint,
                     name=dep_name,
                     flow_name=flow_name,
-                    entrypoint=entrypoint,
                     tags=tags,
                     job_variables=job_variables,
                 )
@@ -110,9 +110,9 @@ if __name__ == "__main__":
 
     # Determine env file from environment or defaults
     env_file = None
-    # Priority: 1. ENV_PREFIX from process env, 2. "prod" in image name/args
+    # Priority: 1. ENV_PREFIX from process env, 2. "prod" in arguments (excluding script path)
     is_prod = os.environ.get("ENV_PREFIX") == "prod" or any(
-        "prod" in arg for arg in sys.argv
+        "prod" in arg for arg in sys.argv[1:]
     )
 
     if is_prod:

@@ -40,4 +40,7 @@
     - Workers MUST be started with the `docker` type (requires `prefect-docker` package).
     - Example: `uv run prefect worker start --pool dev-k8s-pool --type docker`.
 - **Flow Execution**: Prefer triggering `Dispatcher` deployments over `Saver` deployments for manual runs, as they handle default parameters (like `bus_date`) and orchestration.
+- **Deployment Registration**:
+    - Use `RunnerDeployment.from_entrypoint` in `deploy_etls.py` to ensure Prefect correctly infers and populates the `parameter_openapi_schema`.
+    - This is critical for deployments that accept parameters (like `tickers` in `Main` dispatcher).
 - **CLI Context**: Execute Prefect commands from the specific application directory where dependencies reside.
