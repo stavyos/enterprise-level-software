@@ -11,7 +11,7 @@ node {
         // Notify GitHub that the build is starting with a fixed context name
         step([
             $class: 'GitHubCommitStatusSetter',
-            contextSource: [$class: 'ManuallyEnteredCommitStatusContextSource', context: 'jenkins/build'],
+            contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: 'jenkins/build'],
             statusResultSource: [$class: 'DefaultStatusResultSource']
         ])
 
@@ -88,7 +88,7 @@ node {
         try {
             step([
                 $class: 'GitHubCommitStatusSetter',
-                contextSource: [$class: 'ManuallyEnteredCommitStatusContextSource', context: 'jenkins/build'],
+                contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: 'jenkins/build'],
                 statusResultSource: [$class: 'DefaultStatusResultSource']
             ])
         } catch (statusError) {
