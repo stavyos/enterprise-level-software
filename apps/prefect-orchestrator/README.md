@@ -14,6 +14,11 @@ Management layer for the Prefect 3.x control plane.
 This application manages a **single unified Prefect cluster**. Environment isolation (Dev/Prod) is achieved at the `etl-service` layer through prefixed deployments, isolated Docker images, and separate work pools (`dev-k8s-pool` vs `prod-k8s-pool`).
 
 
+## CI/CD
+The orchestration layer is integrated into the **Jenkins** pipeline:
+- **Work Pool Validation**: The pipeline ensures the required environment-specific pools exist before deployment.
+- **Server Health**: Monitors the health of the containerized Prefect server on the shared network.
+
 ## Development
 - **Lint**: `npx nx run prefect-orchestrator:lint`
 - **Format**: `npx nx run prefect-orchestrator:format`
