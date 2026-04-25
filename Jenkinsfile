@@ -11,23 +11,17 @@ node {
         echo "Target Environment: ${env.DEPLOY_ENV}"
     }
 
-    stage('Setup') {
-        echo "Installing Dependencies..."
-        if (isUnix()) {
+    // Use a Docker container for a consistent build environment
+    docker.image('node:20-slim').inside {
+        stage('Setup') {
+            echo "Installing Dependencies inside Docker..."
             sh "npm install"
             sh "npm run install:all"
-        } else {
-            bat "npm install"
-            bat "npm run install:all"
         }
-    }
 
-    stage('Tests') {
-        echo "Running All Tests..."
-        if (isUnix()) {
+        stage('Tests') {
+            echo "Running All Tests inside Docker..."
             sh "npm run test:all"
-        } else {
-            bat "npm run test:all"
         }
     }
 
