@@ -26,6 +26,7 @@ Isolation between `dev` and `prod` is maintained through:
 *   **Docker Tags**: Environment-specific images (`etl-service:dev`, `etl-service:prod`).
 *   **Env Prefix**: Used to distinguish deployments and flows in the Prefect UI.
 *   **Configuration**: Environment-specific `.env` files (loaded during runtime in the container or via `ENV_PREFIX` during deployment).
+*   **Templates**: `template.dev.env` and `template.prod.env` provide the structure for environment-specific configuration.
 
 ## Requirements
 *   Jenkins with `Pipeline` plugin.
