@@ -11,6 +11,26 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     UV_SYSTEM_PYTHON=1
 
+# --- Build Arguments for Environment Configuration ---
+ARG DB_HOST=localhost
+ARG DB_PORT=5432
+ARG DB_USER=postgres
+ARG DB_PASSWORD=postgres
+ARG DB_NAME=postgres
+ARG EODHD_API_KEY
+ARG PREFECT_API_URL=http://localhost:4200/api
+ARG ENV_PREFIX
+
+# --- Set baked-in Environment Variables ---
+ENV DB_HOST=$DB_HOST \
+    DB_PORT=$DB_PORT \
+    DB_USER=$DB_USER \
+    DB_PASSWORD=$DB_PASSWORD \
+    DB_NAME=$DB_NAME \
+    EODHD_API_KEY=$EODHD_API_KEY \
+    PREFECT_API_URL=$PREFECT_API_URL \
+    ENV_PREFIX=$ENV_PREFIX
+
 # Copy shared tools and library definitions first for dependency resolution
 COPY libs/db-client/pyproject.toml /app/libs/db-client/
 COPY libs/eodhd-client/pyproject.toml /app/libs/eodhd-client/

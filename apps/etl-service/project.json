@@ -12,7 +12,7 @@
     "deploy:dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv -f ../../.env.dev run -- python -m etl_service.etl.deploy_etls",
+        "command": "uv run --env-file ../../dev.env python -m etl_service.etl.deploy_etls etl-service:dev",
         "cwd": "{projectRoot}",
         "env": {
           "PYTHONPATH": "../../libs/db-client/src;../../libs/eodhd-client/src;src"
@@ -23,7 +23,7 @@
     "deploy:prod": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run dotenv -f ../../.env.prod run -- python -m etl_service.etl.deploy_etls",
+        "command": "uv run --env-file ../../prod.env python -m etl_service.etl.deploy_etls etl-service:prod",
         "cwd": "{projectRoot}",
         "env": {
           "PYTHONPATH": "../../libs/db-client/src;../../libs/eodhd-client/src;src"
@@ -34,14 +34,14 @@
     "docker-build:dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker build -t etl-service:dev -f Dockerfile.etl .",
+        "command": "uv run --env-file dev.env powershell -Command \"docker build -t etl-service:dev -f Dockerfile.etl --build-arg DB_HOST=$env:DB_HOST --build-arg DB_PORT=$env:DB_PORT --build-arg DB_USER=$env:DB_USER --build-arg DB_PASSWORD=$env:DB_PASSWORD --build-arg DB_NAME=$env:DB_NAME --build-arg EODHD_API_KEY=$env:EODHD_API_KEY --build-arg PREFECT_API_URL=$env:PREFECT_API_URL --build-arg ENV_PREFIX=$env:ENV_PREFIX .\"",
         "cwd": "{workspaceRoot}"
       }
     },
     "docker-build:prod": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker build -t etl-service:prod -f Dockerfile.etl .",
+        "command": "uv run --env-file prod.env powershell -Command \"docker build -t etl-service:prod -f Dockerfile.etl --build-arg DB_HOST=$env:DB_HOST --build-arg DB_PORT=$env:DB_PORT --build-arg DB_USER=$env:DB_USER --build-arg DB_PASSWORD=$env:DB_PASSWORD --build-arg DB_NAME=$env:DB_NAME --build-arg EODHD_API_KEY=$env:EODHD_API_KEY --build-arg PREFECT_API_URL=$env:PREFECT_API_URL --build-arg ENV_PREFIX=$env:ENV_PREFIX .\"",
         "cwd": "{workspaceRoot}"
       }
     }

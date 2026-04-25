@@ -1,33 +1,53 @@
-# PR-9: Implement Multi-Environment Jenkins CI/CD Plan
+# PR-9: Multi-Environment Jenkins CI/CD Implementation
 
 ## Purpose
-This PR introduces a parameterized `Jenkinsfile` to automate the CI/CD pipeline for both development and production environments. It provides a flexible way to run linting, tests, builds, and deployments for Prefect flows across different clusters and databases.
+Implement a robust, scripted Jenkins CI/CD pipeline that supports multiple environments (Dev/Prod). This PR introduces automated branch detection, environment-specific Docker builds, and Prefect flow registration, ensuring that every commit and PR is verified and deployed correctly.
 
 ## Reviewer Reading Guide
-1. `Jenkinsfile`: The main pipeline configuration with `ENVIRONMENT` parameter.
-2. `docs/infrastructure/jenkins.md`: Updated documentation for the multi-environment Jenkins setup.
+1. **`Jenkinsfile`**: Review the scripted pipeline logic, especially the environment detection and stage definitions.
+2. **`docs/infrastructure/jenkins.md`**: Check the new documentation for clarity and completeness.
 
 ## Key Changes
-- Added a parameterized `Jenkinsfile` in the root directory.
-- Support for `DEV` and `PROD` environments through a selection parameter in the Jenkins UI.
-- Configured stages for:
-    - **Setup**: Environment initialization and code quality checks with `ruff`.
-    - **Tests**: Running project tests for each app in the monorepo.
-    - **Build**: Building the `etl-service` Docker image with environment-specific tags (`dev` or `prod`).
-    - **Publish**: Placeholder stage for pushing images to a remote ECR repository.
-    - **Deploy**: Registering Prefect deployments using the correct environment configuration via `python-dotenv`.
-- Environment-specific targeting for Prefect API URLs and database connections.
 
-## Architecture & Dependencies
+### 1. Scripted Jenkins Pipeline
+- Implemented `Jenkinsfile` using Groovy scripting.
+- Added **Set Environment** stage for automatic branch-to-environment mapping (`master`/`main` -> `prod`, others -> `dev`).
+- Integrated **Setup** stage using `npm` and `uv` for monorepo-wide dependency management.
+- Added **Tests** stage executing `nx run-many -t test`.
+- Implemented **Build** stage using environment-specific Docker tags and build-args.
+- Added **Deploy** stage for automated Prefect flow registration with environment isolation.
+
+### 2. Infrastructure Documentation
+- Created `docs/infrastructure/jenkins.md` in the Tech Learning Center.
+- Documented pipeline stages, environment isolation strategy, and runner requirements.
+
+## Architecture & Dependency Graph
 ```mermaid
 graph TD
-    A[Jenkins UI] -->|Select ENV: DEV/PROD| B[Set Environment]
-    B --> C[Setup: npm install, uv sync, ruff]
-    C --> D[Tests: nx run-many -t test]
-    D --> E[Build: docker build with tag]
-    E --> F[Publish: ECR Placeholder]
-    F --> G[Deploy: Register Prefect Flows]
+    subgraph Jenkins
+        P[Pipeline]
+    end
+    subgraph Environments
+        D[Dev Environment]
+        PR[Prod Environment]
+    end
+    P -- "Branch != master" --> D
+    P -- "Branch == master" --> PR
+
+    subgraph Stages
+        S1[Set Environment]
+        S2[Setup]
+        S3[Tests]
+        S4[Build Docker]
+        S5[Deploy Prefect]
+    end
+
+    P --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
 ```
 
 ## Date
-2026-04-15
+Saturday, April 25, 2026

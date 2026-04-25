@@ -7,7 +7,9 @@ requires-python = "==3.13.1"
 dependencies = [
     "prefect==3.6.25",
     "prefect-kubernetes==0.7.7",
-    "python-dotenv[cli]>=1.0.1"
+    "prefect-docker==0.7.1",
+    "python-dotenv[cli]>=1.0.1",
+    "asyncpg>=0.29.0"
 ]
 
 [project.optional-dependencies]

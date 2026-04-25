@@ -1,55 +1,34 @@
-# Workflow Orchestration with Prefect 3.x
+# Workflow Orchestration Strategy
 
-Our system uses **Prefect 3.x** to manage, schedule, and observe complex ETL pipelines. Prefect allows us to transform local Python functions into distributed, production-ready workflows.
+Our system uses a two-tier architecture (Dispatcher/Saver) to handle high-volume financial data acquisition.
 
-## Environment Separation
+## The Image-Baking Pattern
+To maintain environment isolation within a single cluster, we use the **Image-Baking** pattern.
 
-We maintain strict isolation between **Development** and **Production** orchestration layers.
+### 1. Build Phase
+We use Docker build arguments (`--build-arg`) to inject environment-specific database credentials and prefixes into the image.
+- `etl-service:dev`: Baked with Port 5434.
+- `etl-service:prod`: Baked with Port 5435.
 
-| Environment | UI Port | Work Pool | Database Port |
-| :--- | :--- | :--- | :--- |
-| **Development** | `4200` | `dev-k8s-pool` | `5434` |
-| **Production** | `4201` | `prod-k8s-pool` | `5435` |
+### 2. Registration Phase
+Deployment registration is handled in `apps/etl-service/src/etl_service/etl/deploy_etls.py`.
 
-## The Dispatcher/Saver Pattern
+> **Crucial Implementation Note**: To ensure compatibility between a Windows host and a Linux Docker container, we use the `RunnerDeployment` constructor directly rather than `from_entrypoint()`. This allows us to manually specify the `entrypoint` and set `path="/app"`. Failure to do this causes Prefect to capture absolute Windows host paths, which leads to `FileNotFoundError` inside the container.
 
-To handle enterprise-scale data (e.g., fetching 20 years of intraday data for 5,000 tickers), we use a two-tier architecture:
+### 3. Execution Phase
+When a flow is triggered, the Prefect worker pulls the specific image. Because the database configuration is already inside the container (baked into environment variables), the worker automatically connects to the correct database instance.
 
-### 1. The Dispatcher Flow
-The Dispatcher accepts high-level parameters, splits the workload into smaller "chunks", and dispatches multiple parallel **Saver** flow runs.
+## Deployment Partitioning
+We use the `ENV_PREFIX` variable to logically and physically separate our environments:
+- **Naming**: Both flow names and deployment names are prefixed with `{prefix}-` (e.g., `prod-Exchanges-Saver`).
+- **Work Pools**:
+    - `dev-k8s-pool`: Processes all flows with the `dev-` prefix.
+    - `prod-k8s-pool`: Processes all flows with the `prod-` prefix.
 
-### 2. The Saver Flow
-The Saver executes the actual API calls for a small chunk of data and persists the data to TimescaleDB.
+## Job Variables & Environment Hardening
+To prevent stale metadata from overriding container settings, our `JobVariables` logic explicitly retrieves values from our Pydantic `Settings`. We call `settings.reload()` during the deployment entry point to ensure that the variables stored on the Prefect server (and subsequently passed to the worker) match the current environment (dev vs. prod).
 
-## Configuration Management
-
-We use **Prefect Profiles** combined with **`python-dotenv`** to manage environment-specific configurations.
-
-- **Dev Profile**: Connected to `http://127.0.0.1:4200/api`.
-- **Prod Profile**: Connected to `http://127.0.0.1:4201/api`.
-
-### Automatic Variable Loading
-Our Nx targets use `dotenv` to load the correct `.env.dev` or `.env.prod` file before executing any Prefect command.
-
-## Kubernetes Integration
-
-All flows are registered as **Deployments** using the Prefect Kubernetes worker model.
-
-### Job Variables
-We define resource requirements in `deployments_settings/`. This allows us to scale savers horizontally:
-- **CPU Request**: Ensuring enough compute for data processing.
-- **Memory Request**: Tailored to the specific data type.
-
-## Deployment Commands
-
-### Development (Dev)
-To register all flows with the Dev Prefect server:
-```bash
-npx nx run etl-service:deploy:dev
-```
-
-### Production (Prod)
-To register all flows with the Prod Prefect server:
-```bash
-npx nx run etl-service:deploy:prod
-```
+## Key Benefits
+- **Zero Configuration Leakage**: Dev workers cannot accidentally connect to the Prod database because the connection logic is isolated within the image.
+- **Unified Observability**: View all environment runs in a single dashboard while keeping them logically separated.
+- **Path Portability**: The manual `RunnerDeployment` fix ensures that our Windows-based development environment can successfully trigger flows in Linux-based containers.

@@ -1,55 +1,34 @@
 # Database Architecture
 
-Our data persistence layer is designed for high-performance storage and retrieval of financial time-series data.
-
-## TimescaleDB
-We use **TimescaleDB**, an open-source database designed to make SQL scalable for time-series data. It is built as an extension of **PostgreSQL**.
-
-### Key Features used in this project:
-- **Hypertables**: We partition our stock data (EOD, Intraday) into "Hypertables". These automatically partition data by time, ensuring that as our dataset grows into millions of rows, performance remains consistent.
-- **Full SQL Support**: Since it's built on Postgres, we can use all standard SQL features and the SQLAlchemy ORM.
+Our system uses **TimescaleDB**, an open-source extension of PostgreSQL, optimized for storing and querying financial time-series data at scale.
 
 ## Environment Separation
-
 We maintain strict isolation between **Development** and **Production** data using separate containerized instances.
 
-### Infrastructure Setup
-The databases are managed via Docker Compose. From the project root, run:
+### Setup Mapping
+
+| Environment | Port | Container Name | User | Volume |
+| :--- | :--- | :--- | :--- | :--- |
+| **Development** | `5434` | `timescaledb-dev` | `dev_user` | `timescaledb_data_dev` |
+| **Production** | `5435` | `timescaledb-prod` | `prod_user` | `timescaledb_data_prod` |
+
+### Infrastructure Management
+The databases are managed through Docker Compose from the project root:
 ```bash
+# Start instances
 docker-compose up -d
+
+# Stop instances
+docker-compose down
 ```
 
-### Instance Configuration
+## Optimization Features
 
-| Environment | Host | Port | Container Name | User | Password |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Development** | `localhost` | `5434` | `timescaledb-dev` | `dev_user` | `dev_pass` |
-| **Production** | `localhost` | `5435` | `timescaledb-prod` | `prod_user` | `prod_pass` |
+### Hypertables
+We use Hypertables to automatically partition our `stock_eod` and `stock_intraday` data by time. This ensures that as our history grows into millions of records, query performance remains high and predictable.
 
-## Setup & Maintenance
+### Bulk Upserts
+To maximize write throughput, all ETL flows implement a **Bulk Upsert** pattern. Instead of row-by-row inserts, data is collected in memory and persisted in large batches within a single database transaction.
 
-### Schema Generation
-Instead of writing SQL by hand, we use SQLAlchemy models to generate our schema.
-- **Script**: `libs/db-client/src/db_client/models/create_tables.py`
-- **Output**: Generates a `stocks.sql` file that includes both table definitions and the commands to transform them into Hypertables.
-
-## Data Models
-We maintain several core tables:
-1. `stock_eod`: Standard daily historical data.
-2. `stock_intraday`: High-frequency data partitioned by timestamp.
-3. `stock_dividends` & `stock_splits`: Corporate actions.
-4. `stock_adjusted`: Pre-calculated adjusted pricing for research.
-5. `market_news`: Financial articles, tags, and sentiment data (Hypertable).
-
-## Performance Optimization
-
-### Bulk Loading
-To take full advantage of TimescaleDB's write performance, this project implements a **Bulk Upsert** pattern. Instead of committing every row individually, our ETL scripts collect thousands of data points and insert them in a single database transaction.
-
-This approach:
-- Minimizes overhead from frequent `COMMIT` operations.
-- Optimizes disk I/O for Hypertable chunking.
-- Ensures data consistency across batch updates.
-
-### Schema Auto-Creation
-To simplify deployment, the `DBClient` automatically ensures all required tables and hypertables exist upon initialization using `Base.metadata.create_all()`.
+## Schema Creation
+The `DBClient` automatically handles schema generation. If a table or hypertable does not exist upon initialization, the client will create it using the SQLAlchemy models defined in `libs/db-client`.

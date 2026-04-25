@@ -2,40 +2,20 @@
 
 The core data acquisition and processing engine powered by Prefect 3.x.
 
-## Architecture: Dispatcher/Saver Pattern
-To handle massive data requests (e.g., fetching years of intraday data for thousands of tickers), the service uses a two-tier flow architecture:
+## Environment Isolation: Baked-in Configuration
+To ensure absolute data isolation within a shared Prefect cluster, we use environment-specific Docker images and partitioned work pools.
 
-1.  **Dispatcher**: Orchestrates the work by splitting large requests into smaller, manageable chunks.
-2.  **Saver**: Parallel worker jobs that perform the actual API calls and database persistence for a specific chunk.
-
-### Performance Optimizations
-- **Bulk Upserts**: All flows use batch processing to minimize database round-trips and optimize performance.
-- **Smart Logging**: Standardized log levels (`INFO` for summaries, `DEBUG` for individual rows) ensure observability without overwhelming the Prefect dashboard.
-
-## Available Flows
-- `main_saver_dispatcher`: Sequential tiered orchestration of all core ETLs.
-- `exchanges_saver`: Global stock exchange data collection.
-- `eod_saver_dispatcher`: Daily EOD data collection.
-- `intraday_saver_dispatcher`: High-frequency data collection.
-- `market_news_saver_dispatcher`: Financial news ingestion.
-- `bulk_data_saver_dispatcher`: National bulk data updates (EOD, Splits, Dividends).
-
-## Environment Specific Commands
+1.  **Build Phase**: Configuration (DB host, port, credentials) is baked into the image using `--build-arg`.
+2.  **Registration Phase**:
+    *   **Dev**: Deployments are prefixed with `dev-` and assigned to `dev-k8s-pool`.
+    *   **Prod**: Deployments are prefixed with `prod-` and assigned to `prod-k8s-pool`.
+3.  **Execution Phase**: When a worker runs `etl-service:prod`, it automatically connects to the production database without requiring external environment variables.
+## Key Commands
 
 | Task | Development (Dev) | Production (Prod) |
 | :--- | :--- | :--- |
+| **Build Image** | `npx nx run etl-service:docker-build:dev` | `npx nx run etl-service:docker-build:prod` |
 | **Register Flows** | `npx nx run etl-service:deploy:dev` | `npx nx run etl-service:deploy:prod` |
-| **Docker Build** | `npx nx run etl-service:docker-build:dev` | `npx nx run etl-service:docker-build:prod` |
-
-## Configuration
-This application uses `python-dotenv` to manage environment-specific configurations.
-- Use `.env.dev` for development.
-- Use `.env.prod` for production.
-
-To run a single command with specific environment:
-```bash
-uv run dotenv -f ../../.env.prod run -- python -m etl_service.etl.deploy_etls
-```
 
 ## Development
 

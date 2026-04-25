@@ -11,15 +11,6 @@ While [Nx](https://nx.dev) is traditionally associated with JavaScript/TypeScrip
 - **`project.json`**: Every project has this file defining its "targets" (commands like `test`, `lint`, `deploy`).
 - **Task Orchestration**: Nx allows us to run commands across multiple projects efficiently.
 
-**Example: Running all tests**
-```bash
-npx nx run-many -t test
-```
-
-### Why Nx?
-- **Consistency**: All projects, regardless of their internal logic, are managed with the same set of commands.
-- **Dependency Graph**: Nx understands which libs are used by which apps, allowing for optimized CI/CD.
-
 ## UV: Modern Python Dependency Management
 
 We use [uv](https://github.com/astral-sh/uv) for all Python-related tasks. It is a blazing-fast Python package installer and resolver written in Rust.
@@ -28,24 +19,19 @@ We use [uv](https://github.com/astral-sh/uv) for all Python-related tasks. It is
 - **Root `pyproject.toml`**: Manages workspace-wide settings and tools like **Ruff**.
 - **Project `pyproject.toml`**: Each app and lib defines its specific dependencies.
 
-**Common Commands:**
-- **Add a dependency**: `uv add <package>` (run within the project folder).
-- **Run a script**: `uv run python <script.py>`.
-- **Sync environments**: `uv sync`.
-
 ## Python-Dotenv: Environment Management
 
-To manage multiple environments (Dev/Prod) within the same monorepo, we use the **`python-dotenv`** CLI.
+To manage multiple environments (Dev/Prod) locally, we use the **`python-dotenv`** CLI.
 
 ### Integration with Nx
-We wrap our Nx targets with `dotenv run` to ensure the correct environment variables are loaded for each command.
+We wrap our Nx targets with `dotenv run` to load the appropriate `.env` files (`dev.env` or `prod.env`) for local registration and testing.
 
 **Example from `project.json`:**
 ```json
-"run:prod": {
+"deploy:prod": {
   "executor": "nx:run-commands",
   "options": {
-    "command": "uv run dotenv -f ../../.env.prod run -- prefect server start --port 4201"
+    "command": "uv run --env-file ../../prod.env python -m etl_service.etl.deploy_etls etl-service:prod"
   }
 }
 ```
@@ -57,9 +43,3 @@ We use [Ruff](https://github.com/astral-sh/ruff) as our single tool for both lin
 ## Pre-commit Hooks
 
 To ensure consistency across the monorepo, we use [pre-commit](https://pre-commit.com/) to run Ruff and other checks automatically during `git commit`.
-
-### Setup
-Run the following command once to install the hooks in your local Git repository:
-```bash
-uvx pre-commit install
-```
