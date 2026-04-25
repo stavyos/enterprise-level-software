@@ -5,8 +5,27 @@ This project uses Jenkins for continuous integration and deployment. The pipelin
 
 ## Jenkins UI
 Jenkins provides a web-based interface for managing builds and visualizing pipelines.
-*   **Standard View**: Accessible via the main Jenkins URL (e.g., `http://localhost:8080`).
+*   **Standard View**: Accessible via the main Jenkins URL (default: `http://localhost:8080`).
 *   **Blue Ocean**: A modern, interactive visualization of the pipeline stages and logs.
+
+## How to Start Jenkins (Docker)
+To run Jenkins locally using Docker, use the following command. This version includes the Docker CLI inside Jenkins so it can build your project images:
+
+```bash
+docker run -d `
+  --name jenkins `
+  -p 8080:8080 -p 50000:50000 `
+  -v jenkins_home:/var/jenkins_home `
+  -v /var/run/docker.sock:/var/run/docker.sock `
+  jenkins/jenkins:lts
+```
+
+**Note for Windows users**: Ensure Docker Desktop is running and "Expose daemon on tcp://localhost:2375 without TLS" is enabled, or use the WSL2 backend.
+
+Once started:
+1.  Navigate to `http://localhost:8080`.
+2.  Retrieve the initial admin password: `docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword`.
+3.  Install suggested plugins and create your first admin user.
 
 ## Pipeline Structure
 The pipeline uses **Dockerized Stages** to ensure a consistent environment:
