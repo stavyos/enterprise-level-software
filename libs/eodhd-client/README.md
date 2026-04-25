@@ -23,6 +23,11 @@ eod_data = client.stocks_etf.get_eod_data("AAPL", "US")
 bulk_eod = client.bulk.get_bulk_eod(country="US")
 ```
 
+## CI/CD
+Stability of this client is critical for data acquisition. The **Jenkins CI/CD** pipeline enforces:
+- **Test Coverage**: Automated execution of all unit tests.
+- **Linting Standards**: Strict enforcement of **Ruff** rules to maintain code quality.
+
 ## Development
 
 This project follows the monorepo's unified linting and formatting standards using **Ruff**.
