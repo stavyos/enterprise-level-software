@@ -3,6 +3,37 @@
 ## Overview
 This project uses Jenkins for continuous integration and deployment. The pipeline is defined in a scripted `Jenkinsfile` at the root of the repository.
 
+## Automation Architecture
+```mermaid
+graph TD
+    subgraph GitHub
+        G[Repository]
+        PR[Pull Request]
+        CH[Status Checks]
+    end
+
+    subgraph "Local Network (via Ngrok)"
+        subgraph "Jenkins (Docker Container)"
+            JK[Pipeline]
+            BL[Build Docker]
+            DP[Deploy]
+        end
+
+        subgraph "Docker Shared Network"
+            PS[Prefect Server]
+            AG[Custom Build Agent]
+        end
+    end
+
+    G -- "Push/PR Webhook" --> JK
+    JK -- "Start Agent" --> AG
+    AG -- "Tests & Setup" --> AG
+    JK -- "Build ETL Image" --> BL
+    BL -- "Register Flows" --> DP
+    DP -- "API Calls" --> PS
+    JK -- "Report Results" --> CH
+```
+
 ## Jenkins UI
 Jenkins provides a web-based interface for managing builds and visualizing pipelines.
 *   **Standard View**: Accessible via the main Jenkins URL (default: `http://localhost:8080`).

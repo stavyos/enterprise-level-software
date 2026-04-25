@@ -28,29 +28,40 @@ Implement a robust, scripted Jenkins CI/CD pipeline that supports multiple envir
 ## Architecture & Dependency Graph
 ```mermaid
 graph TD
-    subgraph Jenkins
-        P[Pipeline]
-    end
-    subgraph Environments
-        D[Dev Environment]
-        PR[Prod Environment]
-    end
-    P -- "Branch != master" --> D
-    P -- "Branch == master" --> PR
-
-    subgraph Stages
-        S1[Set Environment]
-        S2[Setup]
-        S3[Tests]
-        S4[Build Docker]
-        S5[Deploy Prefect]
+    subgraph GitHub
+        G[Repository]
+        PR[Pull Request]
+        CH[Status Checks]
     end
 
-    P --> S1
-    S1 --> S2
-    S2 --> S3
-    S3 --> S4
-    S4 --> S5
+    subgraph "Local Network (via Ngrok)"
+        subgraph "Jenkins (Docker Container)"
+            JK[Pipeline]
+            SC[Set Environment]
+            SP[Setup]
+            TS[Tests]
+            BL[Build Docker]
+            DP[Deploy]
+        end
+
+        subgraph "Docker Shared Network"
+            PS[Prefect Server]
+            AG[Custom Build Agent]
+        end
+    end
+
+    G -- "Push/PR Webhook" --> JK
+    JK -- "1. Detect Branch" --> SC
+
+    JK -- "2. Start Agent" --> AG
+    AG -- "3. npm & uv install" --> SP
+    SP -- "4. nx test" --> TS
+
+    JK -- "5. Build ETL Image" --> BL
+    BL -- "6. Register Flows" --> DP
+    DP -- "http://prefect-server" --> PS
+
+    JK -- "7. Notify Status" --> CH
 ```
 
 ## Date
