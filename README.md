@@ -17,9 +17,11 @@ This workspace is managed using [Nx](https://nx.dev) and is organized into appli
 ## Environment Isolation Strategy
 
 We use a **unified Prefect cluster** with strictly isolated data layers:
-1.  **Isolated Databases**: Separate TimescaleDB containers for Dev and Prod.
-2.  **Isolated Images**: Environment-specific Docker images with baked-in configuration.
-3.  **Deployment Suffixing**: Deployments are registered as `Flow-Name/dev` and `Flow-Name/prod`.
+1.  **Isolated Databases**: Separate TimescaleDB containers for Dev (port 5434) and Prod (port 5435).
+2.  **Isolated Images**: Environment-specific Docker images (`etl-service:dev` and `etl-service:prod`) with baked-in configuration.
+3.  **Deployment Partitioning**:
+    *   **Dev**: Registered with `dev-` prefix in `dev-k8s-pool`.
+    *   **Prod**: Registered with `prod-` prefix in `prod-k8s-pool`.
 
 ## Getting Started
 
@@ -37,8 +39,11 @@ We use a **unified Prefect cluster** with strictly isolated data layers:
 # Start isolated databases
 docker-compose up -d
 
-# Start Prefect Cluster
+# Start Prefect Cluster with Dev Worker
 npx nx run prefect-orchestrator:start
+
+# Start Prefect Cluster with Prod Worker
+npx nx run prefect-orchestrator:start:prod
 ```
 
 ### Key Commands
@@ -47,7 +52,7 @@ npx nx run prefect-orchestrator:start
 | :--- | :--- | :--- |
 | **Docker Build** | `npx nx run etl-service:docker-build:dev` | `npx nx run etl-service:docker-build:prod` |
 | **Register Flows** | `npx nx run etl-service:deploy:dev` | `npx nx run etl-service:deploy:prod` |
+| **Run Worker** | `npx nx run prefect-orchestrator:worker` | `npx nx run prefect-orchestrator:worker:prod` |
 | **Run Tests** | `npx nx run-many -t test` | `npx nx run-many -t test` |
-
 ## Documentation
 For detailed architecture and setup guides, visit the [Tech Learning Center](docs/index.md).

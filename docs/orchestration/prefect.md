@@ -18,13 +18,15 @@ Deployment registration is handled in `apps/etl-service/src/etl_service/etl/depl
 ### 3. Execution Phase
 When a flow is triggered, the Prefect worker pulls the specific image. Because the database configuration is already inside the container (baked into environment variables), the worker automatically connects to the correct database instance.
 
-## Deployment Suffixes
-We use the `ENV_PREFIX` variable to distinguish our deployments:
-- **Flow Names**: Prefixed with `{prefix}/` (e.g., `dev/STOCKS-EOD`).
-- **Deployment Names**: Prefixed with `{prefix}-` (e.g., `dev-stocks_eod-saver-deployment`).
+## Deployment Partitioning
+We use the `ENV_PREFIX` variable to logically and physically separate our environments:
+- **Naming**: Both flow names and deployment names are prefixed with `{prefix}-` (e.g., `prod-Exchanges-Saver`).
+- **Work Pools**:
+    - `dev-k8s-pool`: Processes all flows with the `dev-` prefix.
+    - `prod-k8s-pool`: Processes all flows with the `prod-` prefix.
 
 ## Job Variables & Environment Hardening
-To prevent stale metadata from overriding container settings, our `JobVariables` logic explicitly retrieves values from our Pydantic `Settings`. We call `settings.reload()` during the deployment phase to ensure that the variables stored on the Prefect server match the current environment (dev vs. prod).
+To prevent stale metadata from overriding container settings, our `JobVariables` logic explicitly retrieves values from our Pydantic `Settings`. We call `settings.reload()` during the deployment entry point to ensure that the variables stored on the Prefect server (and subsequently passed to the worker) match the current environment (dev vs. prod).
 
 ## Key Benefits
 - **Zero Configuration Leakage**: Dev workers cannot accidentally connect to the Prod database because the connection logic is isolated within the image.

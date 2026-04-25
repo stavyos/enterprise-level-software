@@ -3,13 +3,16 @@
 Management layer for the Prefect 3.x control plane.
 
 ## Key Commands
-- **Start All**: `npx nx run prefect-orchestrator:start` (Starts both server and worker).
+- **Start Dev Stack**: `npx nx run prefect-orchestrator:start` (Starts server and dev worker).
+- **Start Prod Stack**: `npx nx run prefect-orchestrator:start:prod` (Starts server and prod worker).
 - **Start Server**: `npx nx run prefect-orchestrator:run`
-- **Start Worker**: `npx nx run prefect-orchestrator:worker`
+- **Start Dev Worker**: `npx nx run prefect-orchestrator:worker`
+- **Start Prod Worker**: `npx nx run prefect-orchestrator:worker:prod`
 - **View Dashboard**: [http://localhost:4200](http://localhost:4200)
 
 ## Architecture
-This application manages a **single unified Prefect cluster**. Environment isolation (Dev/Prod) is achieved at the `etl-service` layer through prefixed deployments and isolated Docker images.
+This application manages a **single unified Prefect cluster**. Environment isolation (Dev/Prod) is achieved at the `etl-service` layer through prefixed deployments, isolated Docker images, and separate work pools (`dev-k8s-pool` vs `prod-k8s-pool`).
+
 
 ## Development
 - **Lint**: `npx nx run prefect-orchestrator:lint`

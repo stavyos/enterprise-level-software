@@ -6,7 +6,6 @@ from etl_service.etl.deployments_settings.enums import (
     PrefectDeployment,
     PrefectDeploymentType,
 )
-from etl_service.etl.deployments_settings.settings import settings
 
 
 class ResourceLimits:
@@ -275,8 +274,7 @@ class JobVariables:
         Returns:
             dict[str, Any]: Configuration dictionary for the K8s worker.
         """
-
-        settings.reload()
+        from etl_service.etl.deployments_settings.settings import settings
 
         return {
             "active_deadline_seconds": int(self.job_ttl_sec),

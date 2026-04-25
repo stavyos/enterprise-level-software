@@ -34,5 +34,10 @@
 - **Content**: Include Purpose, Reviewer Reading Guide, Key Changes, and an Architecture Diagram if applicable.
 
 ## Operational Rules
-- **Prefect Worker**: Ensure the `my-k8s-pool` is created in the Prefect UI to process flows.
+- **Prefect Server**: Always run the Prefect server in the background to ensure availability for workers and deployments.
+- **Prefect Worker**:
+    - Use environment-specific work pools: `dev-k8s-pool` and `prod-k8s-pool`.
+    - Workers MUST be started with the `docker` type (requires `prefect-docker` package).
+    - Example: `uv run prefect worker start --pool dev-k8s-pool --type docker`.
+- **Flow Execution**: Prefer triggering `Dispatcher` deployments over `Saver` deployments for manual runs, as they handle default parameters (like `bus_date`) and orchestration.
 - **CLI Context**: Execute Prefect commands from the specific application directory where dependencies reside.

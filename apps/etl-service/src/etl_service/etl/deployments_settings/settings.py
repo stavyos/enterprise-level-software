@@ -63,22 +63,31 @@ class Settings(BaseSettings):
             ).replace("127.0.0.1", "host.docker.internal")
         return self.prefect_api_url
 
-    def reload(self) -> None:
+    def reload(self, env_file: str | None = None) -> None:
         """Reload settings from environment variables."""
-        # Try to find a .env file to force-load (prioritize file over process env)
-        env_files = ["dev.env", "prod.env", ".env"]
-        # Check parent dirs too since we often run from apps/etl-service
-        search_dirs = [".", "..", "../.."]
+        # Priority 1: Explicitly provided env_file
+        # Priority 2: Standard env files (dev.env, prod.env, .env) in search dirs
 
         file_values = {}
-        for d in search_dirs:
-            for f in env_files:
-                path = os.path.abspath(os.path.join(d, f))
-                if os.path.exists(path):
-                    from dotenv import dotenv_values
 
-                    loaded = dotenv_values(path)
-                    file_values.update(loaded)
+        if env_file and os.path.exists(env_file):
+            from dotenv import dotenv_values
+
+            file_values.update(dotenv_values(env_file))
+        else:
+            # Try to find a .env file to force-load (prioritize file over process env)
+            env_files = ["dev.env", "prod.env", ".env"]
+            # Check parent dirs too since we often run from apps/etl-service
+            search_dirs = [".", "..", "../.."]
+
+            for d in search_dirs:
+                for f in env_files:
+                    path = os.path.abspath(os.path.join(d, f))
+                    if os.path.exists(path):
+                        from dotenv import dotenv_values
+
+                        loaded = dotenv_values(path)
+                        file_values.update(loaded)
 
         # Manually refresh each field
         for field_name, field in self.model_fields.items():

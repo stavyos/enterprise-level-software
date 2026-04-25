@@ -14,11 +14,21 @@ docker-compose up -d
 | **Prod** | `5435` | `timescaledb-prod` |
 
 ## 2. Prefect Cluster
-Start the unified Prefect server and worker:
+Start the unified Prefect server and the relevant environment worker:
+
+### Dev Stack
 ```bash
 npx nx run prefect-orchestrator:start
 ```
-*Note: Ensure you have created the `my-k8s-pool` in the UI at http://localhost:4200/work-pools.*
+
+### Prod Stack
+```bash
+npx nx run prefect-orchestrator:start:prod
+```
+
+*Note: You must create the work pools in the UI (or CLI) if they don't exist:*
+- `dev-k8s-pool` (Type: `docker`)
+- `prod-k8s-pool` (Type: `docker`)
 
 ## 3. Image Isolation
 We bake environment settings into Docker images to ensure data isolation.
@@ -34,7 +44,7 @@ npx nx run etl-service:docker-build:prod
 ```
 
 ## 4. Deployment Registration
-Register your flows with the cluster. Each deployment will be suffixed with `/dev` or `/prod`.
+Register your flows with the cluster. Each deployment will be prefixed with `dev-` or `prod-`.
 
 ### Register Dev Deployments
 ```bash
@@ -48,5 +58,5 @@ npx nx run etl-service:deploy:prod
 
 ## 5. Running Flows
 1. Open the [Prefect Dashboard](http://localhost:4200/deployments).
-2. You will see deployments like `EOD-Saver/dev` and `EOD-Saver/prod`.
-3. Triggering a `/dev` deployment will run the `:dev` image, which is hardcoded to use the `dev` database.
+2. You will see deployments like `dev-EOD-Saver` and `prod-EOD-Saver`.
+3. Triggering a `dev-` deployment will run the `:dev` image in the `dev-k8s-pool`, which is hardcoded to use the `dev` database.

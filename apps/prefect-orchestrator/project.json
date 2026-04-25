@@ -20,7 +20,15 @@
     "worker": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run prefect worker start --pool my-k8s-pool",
+        "command": "uv run prefect worker start --pool dev-k8s-pool --type docker",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["install"]
+    },
+    "worker:prod": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run prefect worker start --pool prod-k8s-pool --type docker",
         "cwd": "{projectRoot}"
       },
       "dependsOn": ["install"]
@@ -31,6 +39,16 @@
         "commands": [
           "nx run prefect-orchestrator:run",
           "nx run prefect-orchestrator:worker"
+        ],
+        "parallel": true
+      }
+    },
+    "start:prod": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run prefect-orchestrator:run",
+          "nx run prefect-orchestrator:worker:prod"
         ],
         "parallel": true
       }

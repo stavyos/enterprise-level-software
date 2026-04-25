@@ -16,21 +16,19 @@ This PR establishes a robust, environment-aware configuration for the ETL servic
     - Verified `.gitignore` properly excludes all `.env` and `*.env` files.
 - **Environment-Aware Deployments**:
     - Added `ENV_PREFIX` to Pydantic settings.
-    - Updated deployment naming utility to prefix flow names with `{prefix}/` and deployment names with `{prefix}-`.
-    - This ensures a single Prefect cluster can host both `dev` and `prd` deployments without name collisions.
+    - Updated deployment naming utility to prefix both flow and deployment names with `{prefix}-`.
+    - **Fix**: Implemented robust `settings.reload()` logic in `deploy_etls.py` to prevent stale `dev` configuration from being used during production deployments.
+    - **Fix**: Refactored `mapper.py` and `base.py` to use dynamic property-based settings, ensuring the correct `work_pool` is assigned based on `ENV_PREFIX`.
+- **Infrastructure**:
+    - **Prefect**: Created `prod-k8s-pool` (Type: `docker`) to isolate production flow runs.
+    - **Orchestrator**: Added `worker:prod` and `start:prod` targets to `prefect-orchestrator` project for easier environment management.
+    - **Dependencies**: Added `prefect-docker` as a core dependency to automate worker infrastructure management.
 - **Docker Isolation**:
     - Implemented `ARG` and `ENV` in `Dockerfile.etl` to bake environment variables directly into images during build time.
 - **Testing**:
-    - Added unit tests to verify that deployment names are correctly generated based on the `ENV_PREFIX` configuration.
+    - Verified full production parity by building `etl-service:prod`, registering deployments to `prod-k8s-pool`, and executing a test flow run using the production database.
 - **Documentation (Tech Learning Center)**:
-    - Updated `setup-guide.md`, `docker.md`, `prefect.md`, and `git.md` with environment-specific instructions.
-    - Added new high-impact topics:
-        - `multi-tenancy.md`: Explaining our single-cluster isolation strategy.
-        - `environment-parity.md`: Documenting Twelve-Factor App compliance.
-        - `secret-management.md`: Outlining our current and future security roadmap.
-        - `pydantic-settings.md`: Technical guide for type-safe environment configuration.
-        - `ADR-001`: Formalizing the architectural decision for the single Prefect cluster.
-
+    - Updated `setup-guide.md`, `docker.md`, `prefect.md`, and `git.md` with environment-specific instructions and partitioned work pool details.
 ## Architecture
 ```mermaid
 graph TD
