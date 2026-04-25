@@ -8,10 +8,11 @@ node {
             checkout scm
         }
 
-        // Notify GitHub that the build is starting
+        // Notify GitHub that the build is starting using the Default context source
+        // This is more compatible across different GitHub plugin versions
         step([
             $class: 'GitHubCommitStatusSetter',
-            contextSource: [$class: 'ManuallyEnteredCommitStatusContextSource', context: 'jenkins/build'],
+            contextSource: [$class: 'DefaultCommitContextSource'],
             statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: 'Build in progress', state: 'PENDING']]]
         ])
 
@@ -86,14 +87,14 @@ node {
         currentBuild.result = "FAILURE"
         throw e
     } finally {
-        // Notify GitHub of the final result
+        // Notify GitHub of the final result using the Default context source
         try {
             def statusState = (currentBuild.result == 'SUCCESS') ? 'SUCCESS' : 'FAILURE'
             def statusMsg = (currentBuild.result == 'SUCCESS') ? 'Build successful' : 'Build failed'
 
             step([
                 $class: 'GitHubCommitStatusSetter',
-                contextSource: [$class: 'ManuallyEnteredCommitStatusContextSource', context: 'jenkins/build'],
+                contextSource: [$class: 'DefaultCommitContextSource'],
                 statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: statusMsg, state: statusState]]]
             ])
         } catch (statusError) {
