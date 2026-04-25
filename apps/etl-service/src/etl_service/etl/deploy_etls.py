@@ -109,11 +109,13 @@ if __name__ == "__main__":
     from etl_service.etl.deployments_settings.settings import settings
 
     # Determine env file from environment or defaults
-    # When running via Nx, we often have --env-file passed to uv run
-    # but it doesn't always reflect in sys.argv.
-    # We can check the image name or other args.
     env_file = None
-    if any("prod" in arg for arg in sys.argv):
+    # Priority: 1. ENV_PREFIX from process env, 2. "prod" in image name/args
+    is_prod = os.environ.get("ENV_PREFIX") == "prod" or any(
+        "prod" in arg for arg in sys.argv
+    )
+
+    if is_prod:
         if os.path.exists("../../prod.env"):
             env_file = "../../prod.env"
         elif os.path.exists("prod.env"):
