@@ -17,6 +17,11 @@ To ensure absolute data isolation within a shared Prefect cluster, we use enviro
 | **Build Image** | `npx nx run etl-service:docker-build:dev` | `npx nx run etl-service:docker-build:prod` |
 | **Register Flows** | `npx nx run etl-service:deploy:dev` | `npx nx run etl-service:deploy:prod` |
 
+## CI/CD
+This service is automatically deployed via **Jenkins**:
+- **Automated Registration**: Every push to `master` or a PR branch triggers an automated build and registration of flows with Prefect.
+- **Dockerized Environment**: The deployment script runs within the specific environment's Docker image to ensure dependency parity.
+
 ## Development
 
 This project follows the monorepo's unified linting and formatting standards using **Ruff**.

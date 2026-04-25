@@ -6,6 +6,39 @@ Welcome to the central documentation hub for our enterprise-grade financial data
 
 The project is built as a **Python Monorepo** managed by **Nx**, utilizing a dispatcher/saver pattern for scalable ETL operations.
 
+```mermaid
+graph TD
+    subgraph "External"
+        GH[GitHub]
+        API[EODHD API]
+    end
+
+    subgraph "CI/CD Infrastructure"
+        JK[Jenkins]
+        NG[Ngrok Tunnel]
+    end
+
+    subgraph "Orchestration & Data"
+        PS[Prefect Server]
+        DB[TimescaleDB]
+    end
+
+    subgraph "Execution"
+        KW[K8s Worker]
+        ETL[ETL Service Image]
+    end
+
+    GH -- "Webhook" --> NG
+    NG -- "Trigger" --> JK
+    JK -- "Build/Deploy" --> ETL
+    ETL -- "Register" --> PS
+
+    PS -- "Schedule" --> KW
+    KW -- "Run" --> ETL
+    ETL -- "Fetch" --> API
+    ETL -- "Store" --> DB
+```
+
 ### High-Level Flow
 1.  **Orchestration**: A unified **Prefect 3.x** cluster manages all scheduled and manual runs.
 2.  **Environment Isolation**: Development and Production environments are isolated through:
@@ -24,6 +57,7 @@ The project is built as a **Python Monorepo** managed by **Nx**, utilizing a dis
 - [**Nx & UV**](./tooling/nx-uv.md): How we manage the monorepo and Python dependencies.
 - [**Pydantic Settings**](./tooling/pydantic-settings.md): Type-safe, environment-aware application configuration.
 - [**Docker**](./infrastructure/docker.md): Containerization of our persistent storage.
+- [**Jenkins CI/CD**](./infrastructure/jenkins.md): Automated multi-environment deployment pipeline.
 - [**Kubernetes**](./infrastructure/kubernetes.md): The execution environment for our ETL workers.
 
 ### 🎭 Orchestration
