@@ -50,20 +50,26 @@ Once logged in, follow these steps to link your repository to Jenkins:
 ## Connecting Jenkins to GitHub (Local to Cloud)
 To allow GitHub to trigger builds and display status checks from your local Jenkins instance, follow these steps:
 
-### 1. Expose Jenkins via Tunnel
-Since GitHub is on the public cloud, use a tool like **Ngrok** to create a secure tunnel:
-1.  Run `ngrok http 8080`.
-2.  Copy the forwarded URL (e.g., `https://xyz.ngrok-free.app`).
+### 1. Expose Jenkins via Ngrok Tunnel
+Since GitHub is on the public cloud, use **Ngrok** to create a secure tunnel:
+1.  **Auth**: Run `ngrok config add-authtoken <TOKEN>`.
+2.  **Start Tunnel**: Run `ngrok http 8080`.
+3.  **Forwarding URL**: Copy the forwarded URL (e.g., `https://automatic-poker-arrest.ngrok-free.dev`).
 
 ### 2. Configure GitHub Webhook
 1.  In your GitHub Repo: **Settings > Webhooks > Add Webhook**.
-2.  **Payload URL**: `[NGROK_URL]/github-webhook/`.
+2.  **Payload URL**: `https://automatic-poker-arrest.ngrok-free.dev/github-webhook/` (The `/github-webhook/` suffix is mandatory).
 3.  **Content type**: `application/json`.
-4.  **Events**: Select **Pushes** and **Pull requests**.
+4.  **Events**: Select **Let me select individual events** and check **Pushes** and **Pull requests**.
 
-### 3. Enable GitHub Status Checks
-To see the build results directly on your PRs:
-1.  **Install Plugin**: Install the **GitHub Integration** plugin in Jenkins.
+### 3. Enable Jenkins Triggers
+To allow Jenkins to listen for these webhooks:
+1.  **Jenkins URL**: In **Manage Jenkins > System**, set the **Jenkins URL** to your Ngrok URL.
+2.  **Job Trigger**: In your Pipeline job configuration, under **Build Triggers**, check **"GitHub hook trigger for GITScm polling"**.
+
+### 4. Enable GitHub Status Checks
+To see build results on your PRs:
+1.  **Install Plugin**: Ensure the **GitHub Integration** plugin is installed.
 2.  **Credentials**: Add a GitHub Personal Access Token (PAT) as a "Secret text" credential named `github-token`.
 3.  **Global Config**: In **Manage Jenkins > System**, add a GitHub Server and select the token.
 
