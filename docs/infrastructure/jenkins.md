@@ -77,6 +77,8 @@ To see build results on your PRs:
 The pipeline uses **Dockerized Stages** to ensure a consistent environment:
 
 1.  **Set Environment**: Runs on the host; determines `dev` or `prod` based on the branch.
+    *   **Master Detection**: Uses a precise regex `^(.*/)?master$` to match only the `master` branch.
+    *   **Fallback**: All other branches (PRs, features) default to the `dev` environment.
 2.  **Setup & Tests (Dockerized)**: These stages run inside a `node:20-slim` container.
     *   Ensures that Node.js, npm, and Nx commands run in a Linux environment regardless of the host OS.
     *   `npm install` and `npm run test:all` are executed using `sh`.
