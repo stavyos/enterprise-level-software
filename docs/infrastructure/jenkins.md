@@ -1,51 +1,35 @@
-# Multi-Environment Jenkins CI/CD Documentation
+# Jenkins CI/CD
 
-This document describes the automated multi-environment CI/CD pipeline for the enterprise-level software project.
+## Overview
+This project uses Jenkins for continuous integration and deployment. The pipeline is defined in a scripted `Jenkinsfile` at the root of the repository.
 
-## CI/CD Workflow
+## Pipeline Structure
+The pipeline consists of the following stages:
 
-The Jenkins pipeline is defined in the root `Jenkinsfile` and uses a parameterized approach to support both `DEV` and `PROD` environments.
+1.  **Set Environment**: Determines the target environment (`dev` or `prod`) based on the branch name.
+    *   `master` or `main` branches deploy to `prod`.
+    *   All other branches (including Pull Requests) deploy to `dev`.
+2.  **Setup**: Installs project dependencies.
+    *   `npm install`: Installs Node.js dependencies and Nx.
+    *   `npm run install:all`: Uses Nx to install Python dependencies via `uv` for all applications and libraries.
+3.  **Tests**: Executes all tests across the monorepo using `npm run test:all`.
+4.  **Build**: Builds a Docker image for the ETL service.
+    *   Uses `Dockerfile.etl`.
+    *   Tags the image with the environment name (e.g., `etl-service:dev`).
+    *   Passes `ENV_PREFIX` as a build argument.
+5.  **Deploy**: Registers flows with the Prefect server.
+    *   Uses the environment-specific Docker image.
+    *   Sets `ENV_PREFIX` environment variable during registration.
 
-### Environment Selection
+## Environment Isolation
+Isolation between `dev` and `prod` is maintained through:
+*   **Docker Tags**: Environment-specific images (`etl-service:dev`, `etl-service:prod`).
+*   **Env Prefix**: Used to distinguish deployments and flows in the Prefect UI.
+*   **Configuration**: Environment-specific `.env` files (loaded during runtime in the container or via `ENV_PREFIX` during deployment).
 
-When triggering a build from the Jenkins UI, users can select the `ENVIRONMENT` parameter:
--   **DEV**: Targets the development Prefect cluster (port 4200) and uses `.env.dev`. Tags Docker images with `dev`.
--   **PROD**: Targets the production Prefect cluster (port 4201) and uses `.env.prod`. Tags Docker images with `prod`.
-
-### Pipeline Stages
-
-1.  **Set Environment**: Configures environment variables based on the selected `ENVIRONMENT` parameter.
-2.  **Setup**:
-    -   Installs Node.js dependencies (`npm install`).
-    -   Installs project dependencies (`npx nx run-many -t install`).
-    -   Runs code quality checks using `ruff` (`uv run ruff check .`).
-3.  **Tests**: Executes automated tests for all apps and libs in the monorepo (`npx nx run-many -t test`).
-4.  **Build**:
-    -   Builds the Docker image for the `etl-service`.
-    -   Tags the image based on the environment (`etl-service:dev` or `etl-service:prod`).
-5.  **Publish**:
-    -   **Placeholder Stage**: Intended for pushing the built Docker image to a remote repository such as AWS ECR.
-6.  **Deploy**:
-    -   Uses `python-dotenv` to load the correct environment file (`.env.dev` or `.env.prod`).
-    -   Registers the Prefect flows as deployments using `npx nx run etl-service:deploy`.
-
-### Prerequisites for Jenkins Nodes
-
-To run this pipeline, the Jenkins build node must have:
--   **Node.js & npm**: For Nx and dependency management.
--   **Python & uv**: For managing Python virtual environments.
--   **Docker**: For building and tagging container images.
--   **Git**: For code checkout.
--   **python-dotenv CLI**: For loading environment variables from `.env` files.
-
-## Environment Variables
-
--   `PREFECT_API_URL`: Dynamically set based on the environment.
--   `DOCKER_TAG`: Dynamically set to `dev` or `prod`.
--   `ENV_FILE`: Path to the environment configuration file.
-
-## Usage
-1.  Open the Jenkins job.
-2.  Click **Build with Parameters**.
-3.  Select `DEV` or `PROD` from the `ENVIRONMENT` dropdown.
-4.  Click **Build**.
+## Requirements
+*   Jenkins with `Pipeline` plugin.
+*   Node.js and npm installed on the Jenkins runner.
+*   `uv` installed and available in the PATH.
+*   Docker installed and accessible by the Jenkins user.
+*   Prefect server accessible from the Jenkins runner.
