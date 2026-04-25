@@ -3,82 +3,84 @@ node {
     def agentImage = null
     def appImage = null
 
-    stage('Checkout') {
-        checkout scm
-    }
+    // Notify GitHub that the build is starting
+    step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
 
-    stage('Set Environment') {
-        // Log variables for debugging
-        echo "BRANCH_NAME: ${env.BRANCH_NAME}"
-        echo "GIT_BRANCH: ${env.GIT_BRANCH}"
-
-        // Robust environment detection using Regex
-        // Matches "master" or something ending in "/master"
-        def masterRegex = /^(.*\/)?master$/
-        def isMaster = (env.BRANCH_NAME =~ masterRegex || env.GIT_BRANCH =~ masterRegex)
-
-        if (isMaster) {
-
-            DEPLOY_ENV = 'prod'
-        } else {
-            DEPLOY_ENV = 'dev'
+    try {
+        stage('Checkout') {
+            checkout scm
         }
 
-        env.DEPLOY_ENV = DEPLOY_ENV
-        echo "Target Environment: ${env.DEPLOY_ENV}"
-    }
+        stage('Set Environment') {
+            echo "BRANCH_NAME: ${env.BRANCH_NAME}"
+            echo "GIT_BRANCH: ${env.GIT_BRANCH}"
 
-    stage('Prepare Agent') {
-        echo "Building custom Jenkins agent image..."
-        agentImage = docker.build("jenkins-agent-python", "-f Dockerfile.jenkins-agent .")
-    }
+            def masterRegex = /^(.*\/)?master$/
+            def isMaster = (env.BRANCH_NAME =~ masterRegex || env.GIT_BRANCH =~ masterRegex)
 
-    // Use the custom agent for a consistent build environment
-    agentImage.inside("-u root") {
-        stage('Cleanup') {
-            echo "Cleaning up existing virtual environments..."
-            sh "find . -name '.venv' -type d -exec rm -rf {} +"
-        }
-
-        stage('Setup') {
-            echo "Installing Dependencies inside Docker..."
-            sh "npm install"
-            sh "npm run install:all"
-        }
-
-        stage('Tests') {
-            echo "Running All Tests inside Docker..."
-            // Provide dummy environment variables for Pydantic Settings validation during tests
-            withEnv([
-                'EODHD_API_KEY=dummy_key',
-                'DB_USER=dummy_user',
-                'DB_PASSWORD=dummy_pass',
-                'DB_NAME=dummy_db'
-            ]) {
-                sh "npm run test:all"
+            if (isMaster) {
+                DEPLOY_ENV = 'prod'
+            } else {
+                DEPLOY_ENV = 'dev'
             }
+
+            env.DEPLOY_ENV = DEPLOY_ENV
+            echo "Target Environment: ${env.DEPLOY_ENV}"
         }
-    }
 
-    stage('Build') {
-        echo "Building Application Docker Image for ${env.DEPLOY_ENV}..."
-        appImage = docker.build("etl-service:${env.DEPLOY_ENV}", "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} -f Dockerfile.etl .")
-    }
+        stage('Prepare Agent') {
+            echo "Building custom Jenkins agent image..."
+            agentImage = docker.build("jenkins-agent-python", "-f Dockerfile.jenkins-agent .")
+        }
 
-    stage('Deploy') {
-        echo "Deploying Prefect Flows to ${env.DEPLOY_ENV}..."
-        // Run the deployment command inside the newly built application image
-        // Join the shared network so it can reach the 'prefect-server' container
-        appImage.inside("-u root --network enterprise-network") {
-            dir('apps/etl-service') {
-                // Use the container name 'prefect-server' to reach the API
+        agentImage.inside("-u root") {
+            stage('Cleanup') {
+                echo "Cleaning up existing virtual environments..."
+                sh "find . -name '.venv' -type d -exec rm -rf {} +"
+            }
+
+            stage('Setup') {
+                echo "Installing Dependencies inside Docker..."
+                sh "npm install"
+                sh "npm run install:all"
+            }
+
+            stage('Tests') {
+                echo "Running All Tests inside Docker..."
                 withEnv([
-                    "ENV_PREFIX=${env.DEPLOY_ENV}",
-                    "PREFECT_API_URL=http://prefect-server:4200/api"
+                    'EODHD_API_KEY=dummy_key',
+                    'DB_USER=dummy_user',
+                    'DB_PASSWORD=dummy_pass',
+                    'DB_NAME=dummy_db'
                 ]) {
-                    sh "uv run python -c \"import asyncio; from etl_service.etl.deploy_etls import deploy; asyncio.run(deploy(image='etl-service:${env.DEPLOY_ENV}'))\""
+                    sh "npm run test:all"
                 }
             }
         }
+
+        stage('Build') {
+            echo "Building Application Docker Image for ${env.DEPLOY_ENV}..."
+            appImage = docker.build("etl-service:${env.DEPLOY_ENV}", "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} -f Dockerfile.etl .")
+        }
+
+        stage('Deploy') {
+            echo "Deploying Prefect Flows to ${env.DEPLOY_ENV}..."
+            appImage.inside("-u root --network enterprise-network") {
+                dir('apps/etl-service') {
+                    withEnv([
+                        "ENV_PREFIX=${env.DEPLOY_ENV}",
+                        "PREFECT_API_URL=http://prefect-server:4200/api"
+                    ]) {
+                        sh "uv run python -c \"import asyncio; from etl_service.etl.deploy_etls import deploy; asyncio.run(deploy(image='etl-service:${env.DEPLOY_ENV}'))\""
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        currentBuild.result = "FAILURE"
+        throw e
+    } finally {
+        // Notify GitHub of the final result (Success or Failure)
+        step([$class: 'GitHubCommitStatusSetter', statusResultSource: [$class: 'DefaultStatusResultSource']])
     }
 }
