@@ -281,6 +281,7 @@ class JobVariables:
             "pod_watch_timeout_seconds": self.pod_watch_timeout_seconds,
             "app_label": self.app_label,
             "job_resources": self.job_resources.to_dict(),
+            "network_mode": "enterprise-network",
             "env": {
                 "PREFECT_API_URL": settings.effective_prefect_api_url,
                 "EODHD_API_KEY": settings.eodhd_api_key,
