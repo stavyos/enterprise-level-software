@@ -85,10 +85,26 @@ Multibranch Pipelines provide isolation for each branch and PR, automatic discov
 7.  **Save**: Jenkins will automatically scan and create PR jobs named after the PR number (e.g., PR-17).
 
 ### Automated Job Creation (Current Setup)
-The job `enterprise-multibranch` has been automatically created and configured using a Groovy initialization script.
+The job `enterprise-multibranch` has been automatically created and configured using a series of Groovy initialization scripts.
 *   **Job URL**: `http://localhost:8080/job/enterprise-multibranch/`
 *   **Status**: Active and scanning for branches/PRs every 1 minute.
-*   **History**: Each PR now has its own isolated build history.
+*   **Authentication**: Securely configured with a GitHub Token (injected from local `gh` CLI).
+*   **API Strategy**: Configured to `ThrottleOnOver` to ensure immediate branch discovery even when near GitHub rate limits.
+
+### Troubleshooting & Maintenance
+
+#### 1. GitHub API Rate Limiting (Builds Stuck)
+If the "Branch Indexing" or builds appear stuck, Jenkins may be rate-limited by GitHub (especially for anonymous requests).
+*   **Symptom**: Logs show `Jenkins-Imposed API Limiter: ... Sleeping`.
+*   **Fix**: Ensure a valid `github-token` credential of type "Secret Text" exists and is associated with the Multibranch project.
+*   **Strategy**: In **Manage Jenkins > System > GitHub API usage**, set the rate limit strategy to **"Throttle at end"** or **"Throttle on over"** to prevent proactive sleeping.
+
+#### 2. Updating the GitHub Token
+If your local or injected token expires:
+1.  Generate a new PAT in GitHub.
+2.  In Jenkins, go to **Manage Credentials > Global > github-token**.
+3.  Update the "Secret" with your new PAT and save.
+4.  Trigger a "Scan Multibranch Pipeline Now" on the job to refresh branch indexing.
 
 ## Configuring the Pipeline Job
 Once logged in, follow these steps to link your repository to Jenkins:
