@@ -65,46 +65,27 @@ Once started:
 ## Advanced: Multibranch Pipelines (Automatic PR Jobs)
 Multibranch Pipelines provide isolation for each branch and PR, automatic discovery of new feature branches and pull requests, and automatic cleanup of jobs when branches are deleted.
 
-### Configuration
-1.  **Create New Item**: Click "New Item" on the sidebar.
-2.  **Item Name**: Enter a name (e.g., `enterprise-level-software-multibranch`).
-3.  **Type**: Select **Multibranch Pipeline** and click OK.
-4.  **Branch Sources**:
-    *   Click **Add source** and select **GitHub**.
-    *   **Credentials**: Select the `github-token` (Secret Text).
-    *   **Repository HTTPS URL**: `https://github.com/stavyos/enterprise-level-software.git` (or your repo URL).
-    *   **Behaviors**:
-        *   Enable **Discover branches**.
-        *   Enable **Discover pull requests from origin**.
-5.  **Build Configuration**:
-    *   **Mode**: by Jenkinsfile.
-    *   **Script Path**: `Jenkinsfile`.
-6.  **Scan Multibranch Pipeline Triggers**:
-    *   Check "Periodically if not otherwise run".
-    *   Set interval to **1 minute**.
-7.  **Save**: Jenkins will automatically scan and create PR jobs named after the PR number (e.g., PR-17).
+### Configuration (Final Stable Setup)
+To bypass GitHub API rate limits (60/hr anonymous) and ensure reliable discovery, this project uses the standard **Git** source type instead of the GitHub-specific source.
 
-### Manual Setup (Mandatory for Authentication)
-Due to GitHub API rate limits (60/hr anonymous vs 5000/hr authenticated), you **must** manually link your credentials in the Jenkins UI to ensure branch discovery works:
-
-1.  **Open Jenkins**: `http://localhost:8080/`
-2.  **Configure Global Server**:
-    *   Go to **Manage Jenkins > System**.
-    *   Scroll to **GitHub** and click **Add GitHub Server**.
-    *   **Name**: `GitHub`
-    *   **API URL**: `https://api.github.com`
+1.  **Create New Item**: Select **Multibranch Pipeline**.
+2.  **Branch Sources**:
+    *   Add source: **Git**.
+    *   **Project Repository**: `https://github.com/stavyos/enterprise-level-software.git`.
     *   **Credentials**: Select `github-token`.
-    *   Click **Test connection** (Must say "Credentials verified").
-    *   Click **Save**.
-3.  **Create the Job**:
-    *   Click **New Item** on the dashboard.
-    *   Enter `enterprise-multibranch` and select **Multibranch Pipeline**.
-    *   Under **Branch Sources**, click **Add source > GitHub**.
-    *   **Credentials**: Select `github-token`.
-    *   **Repository**: `stavyos/enterprise-level-software`.
-    *   Click **Save**.
+    *   **Traits**: Ensure **"Discover branches"** is added (required for the Git source to see branches).
+3.  **Scan Triggers**: Set to **1 minute**.
 
-Jenkins will immediately scan and you will see your PRs appear as separate jobs.
+### Concurrency Control (Single Build Only)
+To prevent build collisions and ensure stability in our local environment, Jenkins is configured to run only **one build at a time** across all projects.
+*   **Implementation**: The number of executors on the "Built-in Node" is set to **1**.
+*   **Effect**: If multiple PRs are pushed simultaneously, they will wait in the queue and run sequentially.
+
+### Manual Recovery/Setup
+If you need to recreate the job or fix authentication:
+1.  **Link Credentials**: Ensure your GitHub PAT is added as `github-token` (Secret Text) in **Manage Jenkins > Credentials**.
+2.  **Verify Git Plugin**: Ensure the "Git" plugin is installed and updated.
+3.  **Force Scan**: Click **"Scan Multibranch Pipeline Now"** inside the project to refresh the branch list.
 
 ### Troubleshooting & Maintenance
 
