@@ -89,6 +89,9 @@ async def deploy(
                     tags=tags,
                     job_variables=job_variables,
                 )
+                # Ensure the path is set to the container working directory
+                # to prevent capturing host-specific absolute paths
+                d.path = "/app/apps/etl-service"
 
                 work_pool = dep_settings.work_pool
                 if work_pool not in pool_deployments:

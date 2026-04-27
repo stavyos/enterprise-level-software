@@ -41,10 +41,6 @@ class Settings(BaseSettings):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Only force is_local if we are in a Prefect Runner process
-        # (NOT during deployment or general app use unless IS_LOCAL is env-set)
-        if os.getenv("PREFECT_RUNNER") == "true" or os.getenv("PREFECT__FLOW_RUN_ID"):
-            self.is_local = True
 
     @property
     def effective_db_host(self) -> str:
@@ -107,10 +103,6 @@ class Settings(BaseSettings):
                 elif field.annotation == bool:
                     val = str(val).lower() in ("true", "1")
                 setattr(self, field_name, val)
-
-        # Re-run init logic for is_local
-        if os.getenv("PREFECT_RUNNER") == "true" or os.getenv("PREFECT__FLOW_RUN_ID"):
-            self.is_local = True
 
     @contextmanager
     def override(self, **kwargs):
