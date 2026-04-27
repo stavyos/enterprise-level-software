@@ -87,6 +87,29 @@ If you need to recreate the job or fix authentication:
 2.  **Verify Git Plugin**: Ensure the "Git" plugin is installed and updated.
 3.  **Force Scan**: Click **"Scan Multibranch Pipeline Now"** inside the project to refresh the branch list.
 
+### Replication Guide: Setting up Stable PR Jobs
+If you need to set up this system in a new Jenkins instance, follow these exact steps to avoid the common pitfalls (like rate-limiting) we encountered:
+
+1.  **Inject Credentials**:
+    *   Retrieve your GitHub PAT.
+    *   Add it to Jenkins as a **Secret Text** credential with the ID `github-token`.
+2.  **Disable Parallelism**:
+    *   Go to **Manage Jenkins > Nodes**.
+    *   Click on **(built-in)** > **Configure**.
+    *   Set **Number of executors** to `1`. This ensures builds run sequentially and prevents Docker resource collisions.
+3.  **Create the Multibranch Job**:
+    *   **New Item** > **Multibranch Pipeline**.
+    *   **Branch Sources**: Choose **Git** (NOT GitHub).
+    *   **Project Repository**: `https://github.com/stavyos/enterprise-level-software.git`.
+    *   **Credentials**: Select `github-token`.
+    *   **Traits**: You MUST add **"Discover branches"** from the traits list, or the Git source will see nothing.
+4.  **Automatic Scanning**:
+    *   Under **Scan Multibranch Pipeline Triggers**, check "Periodically if not otherwise run" and set it to **1 minute**.
+5.  **Verification**:
+    *   Click **Save**.
+    *   Click **Scan Multibranch Pipeline Now** on the sidebar.
+    *   Check the **Scan Multibranch Pipeline Log**; it should show "Finished: SUCCESS" and list your branches.
+
 ### Troubleshooting & Maintenance
 
 #### 1. GitHub API Rate Limiting (Builds Stuck)
