@@ -1,9 +1,10 @@
 # Project Rules
 
 ## Source Control & Deployment
-- **No Direct Pushes**: You are STRICTLY PROHIBITED from pushing code directly to the `master` or `main` branches.
-- **Pull Request Only**: ALL changes MUST be performed in a feature branch (prefixed with `sy/`) and submitted via a Pull Request.
-- **Workflow**: All changes must be performed in a feature branch and isolated within a git worktree. When creating a new worktree, copy relevant environment files (`dev.env`, `prod.env`) to the new worktree.
+- **No Direct Pushes:** You are STRICTLY PROHIBITED from pushing code directly to the `master` or `main` branches. NEVER push to these branches.
+- **Pull Request Only:** ALL changes, including documentation and configuration updates, MUST be performed in a feature branch (prefixed with `sy/`) and submitted via a Pull Request.
+- **No Autonomous Merges:** You must never merge a Pull Request (PR) or perform a git merge into a protected branch on your own.
+- **Workflow**: All changes must be performed in a feature branch and isolated within a git worktree as per global instructions. When creating a new worktree, you MUST also copy relevant `.env` files (e.g., `dev.env`, `prod.env`) from the root or parent directory to the new worktree to ensure consistent local configuration. Final merging and pushing to the primary branch must be handled by the user.
 - **GEMINI Configuration**: When adding or updating information in `GEMINI.md` or `GEMINI.local.md`, you MUST do so in the **project root directory** and NOT within a git worktree to maintain a single source of truth for instructions and credentials.
 
 ## Environment & Infrastructure Management

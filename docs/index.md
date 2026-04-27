@@ -21,6 +21,7 @@ graph TD
     subgraph "Orchestration & Data"
         PS[Prefect Server]
         DB[TimescaleDB]
+        FS[(Local Filesystem / Parquet)]
     end
 
     subgraph "Execution"
@@ -36,27 +37,32 @@ graph TD
     PS -- "Schedule" --> KW
     KW -- "Run" --> ETL
     ETL -- "Fetch" --> API
-    ETL -- "Store" --> DB
+    ETL -- "Store (EOD/News)" --> DB
+    ETL -- "Store (Intraday)" --> FS
 ```
 
 ### High-Level Flow
 1.  **Orchestration**: A unified **Prefect 3.x** cluster manages all scheduled and manual runs.
 2.  **Environment Isolation**: Development and Production environments are isolated through:
     -   **Isolated Databases**: Separate TimescaleDB instances (`dev` on 5434, `prod` on 5435).
+    -   **Isolated Data Directories**: Environment-specific volumes for Parquet storage.
     -   **Deployment Prefixing**: Deployments are prefixed with `dev-` or `prod-` for logical separation.
 3.  **Data Acquisition**: The `etl-service` interacts with the **EODHD API** to fetch historical and real-time market data.
-4.  **Persistence**: Data is stored in **TimescaleDB**, optimized using hypertables for time-series performance.
+4.  **Hybrid Persistence**:
+    -   **TimescaleDB**: Stores metadata, EOD prices, and news, optimized using hypertables.
+    -   **Parquet**: Stores high-volume 1-minute intraday data, partitioned by symbol and date.
 
 ## Core Documentation
 
 ### 🏛️ Architecture & Decisions
 - [**ADR-001: Unified Cluster**](./architecture/adr-001-single-prefect-cluster.md): The decision to use a single Prefect server for multiple environments.
+- [**ADR-002: Hybrid Storage Strategy**](./architecture/adr-002-hybrid-storage-strategy.md): Why we use Parquet for intraday data.
 - [**Multi-Tenancy**](./infrastructure/multi-tenancy.md): Our strategy for environment isolation within shared infrastructure.
 
 ### 🛠️ Tooling & Config
 - [**Nx & UV**](./tooling/nx-uv.md): How we manage the monorepo and Python dependencies.
 - [**Pydantic Settings**](./tooling/pydantic-settings.md): Type-safe, environment-aware application configuration.
-- [**Docker**](./infrastructure/docker.md): Containerization of our persistent storage.
+- [**Docker Overview**](./infrastructure/docker.md): Containerization of our persistent storage and ETL services.
 - [**Jenkins CI/CD**](./infrastructure/jenkins.md): Automated multi-environment deployment pipeline.
 - [**Kubernetes**](./infrastructure/kubernetes.md): The execution environment for our ETL workers.
 

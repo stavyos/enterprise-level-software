@@ -25,10 +25,9 @@ docker-compose down
 ## Optimization Features
 
 ### Hypertables
-We use Hypertables to automatically partition our `stock_eod` and `stock_intraday` data by time. This ensures that as our history grows into millions of records, query performance remains high and predictable.
+We use Hypertables to automatically partition our `stock_eod` data by time. This ensures that as our history grows into millions of records, query performance remains high and predictable.
 
-### Bulk Upserts
-To maximize write throughput, all ETL flows implement a **Bulk Upsert** pattern. Instead of row-by-row inserts, data is collected in memory and persisted in large batches within a single database transaction.
+**Note on Intraday Data**: As of [ADR-002](../architecture/adr-002-hybrid-storage-strategy.md), 1-minute intraday data is no longer stored in TimescaleDB. Instead, it is persisted as partitioned Parquet files for better scalability and analytical performance.
 
 ## Schema Creation
 The `DBClient` automatically handles schema generation. If a table or hypertable does not exist upon initialization, the client will create it using the SQLAlchemy models defined in `libs/db-client`.

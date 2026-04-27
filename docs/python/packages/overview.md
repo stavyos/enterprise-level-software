@@ -21,4 +21,9 @@ This project leverages several industry-standard packages to handle database man
 These libraries are used for high-performance data manipulation.
 - **Pandas**: Used for structured data analysis (DataFrames).
 - **PyArrow**: A cross-language development platform for in-memory data that allows us to process large financial datasets extremely quickly.
-- **Usage**: Found in our data ingestion pipelines to clean and transform stock data before it hits the database.
+- **Usage**: Found in our data ingestion pipelines to clean and transform stock data.
+
+## 5. Storage Client (Custom)
+The `storage-client` is our internal library for handling file-based storage.
+- **Why we use it**: It provides a clean, abstract interface for saving heavy datasets to Parquet files, keeping our TimescaleDB instance lean.
+- **Location in project**: Check `libs/storage-client`.

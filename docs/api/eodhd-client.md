@@ -7,6 +7,7 @@ The `eodhd-client` library is designed for reliability, scalability, and strict 
 ### 1. Specialized Clients (Composition over Inheritance)
 Instead of a single massive class, the library is split into focused clients:
 - **`StocksETFClient`**: Basic OHLCV and corporate actions.
+    - **Intraday Restriction**: The `get_intraday_data` method is strictly limited to 1-minute (`1m`) intervals to support our [Hybrid Storage Strategy](../architecture/adr-002-hybrid-storage-strategy.md).
 - **`BulkClient`**: Optimized for national-scale daily downloads.
 - **`NewsClient`**: Financial news and sentiment.
 - **`TechnicalIndicatorClient`**: Pre-calculated technical functions.
