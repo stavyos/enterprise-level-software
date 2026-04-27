@@ -63,7 +63,7 @@ graph TD
 - [**Nx & UV**](./tooling/nx-uv.md): How we manage the monorepo and Python dependencies.
 - [**Pydantic Settings**](./tooling/pydantic-settings.md): Type-safe, environment-aware application configuration.
 - [**Docker Overview**](./infrastructure/docker.md): Containerization of our persistent storage and ETL services.
-- [**Jenkins CI/CD**](./infrastructure/jenkins.md): Automated multi-environment deployment pipeline.
+- [**Jenkins CI/CD**](./infrastructure/jenkins.md): Automated multi-environment deployment pipeline with **Multibranch** support for automatic PR isolation.
 - [**Kubernetes**](./infrastructure/kubernetes.md): The execution environment for our ETL workers.
 
 ### 🎭 Orchestration
