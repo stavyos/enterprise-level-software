@@ -133,3 +133,27 @@ Isolation between `dev` and `prod` is maintained through:
 *   `uv` installed and available in the PATH.
 *   Docker installed and accessible by the Jenkins user.
 *   Prefect server accessible from the Jenkins runner.
+
+## Advanced: Multibranch Pipelines (Automatic PR Jobs)
+Instead of a single "Pipeline" job, you can use a **Multibranch Pipeline**. This automatically creates a separate job for every branch and Pull Request in your repository.
+
+### Benefits
+1.  **Isolation**: Each PR has its own build history and logs.
+2.  **Automatic Discovery**: Jenkins automatically creates a job when a new branch is pushed or a PR is opened.
+3.  **Automatic Cleanup**: Jenkins deletes the job when the branch is deleted or the PR is merged.
+
+### Configuration
+1.  **Create New Item**: Select **Multibranch Pipeline**.
+2.  **Branch Sources**:
+    - Add **GitHub**.
+    - **Repository HTTPS URL**: `https://github.com/your-user/your-repo.git`.
+    - **Credentials**: Select your `github-token`.
+    - **Behaviors**:
+        - **Discover branches**: Detects all branches.
+        - **Discover pull requests from origin**: Detects PRs.
+3.  **Build Configuration**:
+    - **Mode**: by Jenkinsfile.
+    - **Script Path**: `Jenkinsfile`.
+4.  **Scan Multibranch Pipeline Triggers**: Check "Periodically if not otherwise run" and set it to 1 minute for rapid discovery.
+
+Once saved, Jenkins will scan the repository and create a folder structure where each branch/PR is a sub-job. PRs are typically named `PR-17`, `PR-18`, etc.

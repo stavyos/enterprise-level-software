@@ -32,8 +32,8 @@ We use **Docker Compose** to run two independent **TimescaleDB** instances on di
 
 | Environment | Port | Container Name | Persistent Volume |
 | :--- | :--- | :--- | :--- |
-| **Development** | `5434` | `timescaledb-dev` | `timescaledb_data_dev` |
-| **Production** | `5435` | `timescaledb-prod` | `timescaledb_data_prod` |
+| **Development** | `5434` | `timescaledb-dev` | `timescaledb_data_dev`, `parquet_data_dev` |
+| **Production** | `5435` | `timescaledb-prod` | `timescaledb_data_prod`, `parquet_data_prod` |
 
 **Startup Command**:
 ```bash

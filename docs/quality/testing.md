@@ -16,7 +16,12 @@ ETL flows in `apps/etl-service` are tested to ensure the **Dispatcher/Saver** pa
 - We test that the Dispatcher correctly chunks ticker lists.
 - We test that the Saver correctly calls the DB client methods.
 
-## 3. Running Tests with Nx
+## 3. Storage Testing
+For our Parquet storage layer, we test that data is correctly partitioned and compressed.
+- **Verification**: We verify that the folder structure follows the `symbol=.../bus_date=...` pattern.
+- **Integrity**: We use `pyarrow` to read back the generated files and compare them against the input DataFrames.
+
+## 4. Running Tests with Nx
 Instead of navigating into each folder, we use Nx to run tests globally or per project.
 
 **Run specific project tests:**

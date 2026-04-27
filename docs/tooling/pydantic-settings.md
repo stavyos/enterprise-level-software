@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # Database Settings
     db_host: str = Field(default="host.docker.internal", validation_alias="DB_HOST")
     db_port: int = Field(default=5432, validation_alias="DB_PORT")
+
+    # App Settings
+    data_dir: str = Field(default="data", validation_alias="DATA_DIR")
+    is_local: bool = Field(default=False, validation_alias="IS_LOCAL")
 ```
 
 ### Key Features (Pydantic V2)
