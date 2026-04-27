@@ -14,6 +14,7 @@ GitHub acts as the "Single Source of Truth" for our project. It allows us to kee
 The most powerful feature of GitHub. A Pull Request is a way to propose changes to the codebase. It allows other developers to:
 - Review the code line-by-line.
 - Discuss implementation details.
+- **Automated CI**: Our Jenkins infrastructure automatically creates a dedicated job for every open Pull Request, providing isolated build history and real-time status checks directly on the PR page.
 - Run automated tests before the code is merged into `master`.
 
 ### 3. Issue Tracking

@@ -63,6 +63,69 @@ Once started:
     *   **Docker Pipeline**: Required for `docker.image().inside` and containerized stages.
 4.  Create your first admin user.
 
+## Advanced: Multibranch Pipelines (Automatic PR Jobs)
+Multibranch Pipelines provide isolation for each branch and PR, automatic discovery of new feature branches and pull requests, and automatic cleanup of jobs when branches are deleted.
+
+### Configuration (Final Stable Setup)
+To bypass GitHub API rate limits (60/hr anonymous) and ensure reliable discovery, this project uses the standard **Git** source type instead of the GitHub-specific source.
+
+1.  **Create New Item**: Select **Multibranch Pipeline**.
+2.  **Branch Sources**:
+    *   Add source: **Git**.
+    *   **Project Repository**: `https://github.com/stavyos/enterprise-level-software.git`.
+    *   **Credentials**: Select `github-token`.
+    *   **Traits**: Ensure **"Discover branches"** is added (required for the Git source to see branches).
+3.  **Scan Triggers**: Set to **1 minute**.
+
+### Concurrency Control (Single Build Only)
+To prevent build collisions and ensure stability in our local environment, Jenkins is configured to run only **one build at a time** across all projects.
+*   **Implementation**: The number of executors on the "Built-in Node" is set to **1**.
+*   **Effect**: If multiple PRs are pushed simultaneously, they will wait in the queue and run sequentially.
+
+### Manual Recovery/Setup
+If you need to recreate the job or fix authentication:
+1.  **Link Credentials**: Ensure your GitHub PAT is added as `github-token` (Secret Text) in **Manage Jenkins > Credentials**.
+2.  **Verify Git Plugin**: Ensure the "Git" plugin is installed and updated.
+3.  **Force Scan**: Click **"Scan Multibranch Pipeline Now"** inside the project to refresh the branch list.
+
+### Replication Guide: Setting up Stable PR Jobs
+If you need to set up this system in a new Jenkins instance, follow these exact steps to avoid the common pitfalls (like rate-limiting) we encountered:
+
+1.  **Inject Credentials**:
+    *   Retrieve your GitHub PAT.
+    *   Add it to Jenkins as a **Secret Text** credential with the ID `github-token`.
+2.  **Disable Parallelism**:
+    *   Go to **Manage Jenkins > Nodes**.
+    *   Click on **(built-in)** > **Configure**.
+    *   Set **Number of executors** to `1`. This ensures builds run sequentially and prevents Docker resource collisions.
+3.  **Create the Multibranch Job**:
+    *   **New Item** > **Multibranch Pipeline**.
+    *   **Branch Sources**: Choose **Git** (NOT GitHub).
+    *   **Project Repository**: `https://github.com/stavyos/enterprise-level-software.git`.
+    *   **Credentials**: Select `github-token`.
+    *   **Traits**: You MUST add **"Discover branches"** from the traits list, or the Git source will see nothing.
+4.  **Automatic Scanning**:
+    *   Under **Scan Multibranch Pipeline Triggers**, check "Periodically if not otherwise run" and set it to **1 minute**.
+5.  **Verification**:
+    *   Click **Save**.
+    *   Click **Scan Multibranch Pipeline Now** on the sidebar.
+    *   Check the **Scan Multibranch Pipeline Log**; it should show "Finished: SUCCESS" and list your branches.
+
+### Troubleshooting & Maintenance
+
+#### 1. GitHub API Rate Limiting (Builds Stuck)
+If the "Branch Indexing" or builds appear stuck, Jenkins may be rate-limited by GitHub (especially for anonymous requests).
+*   **Symptom**: Logs show `Jenkins-Imposed API Limiter: ... Sleeping`.
+*   **Fix**: Ensure a valid `github-token` credential of type "Secret Text" exists and is associated with the Multibranch project.
+*   **Strategy**: In **Manage Jenkins > System > GitHub API usage**, set the rate limit strategy to **"Throttle at end"** or **"Throttle on over"** to prevent proactive sleeping.
+
+#### 2. Updating the GitHub Token
+If your local or injected token expires:
+1.  Generate a new PAT in GitHub.
+2.  In Jenkins, go to **Manage Credentials > Global > github-token**.
+3.  Update the "Secret" with your new PAT and save.
+4.  Trigger a "Scan Multibranch Pipeline Now" on the job to refresh branch indexing.
+
 ## Configuring the Pipeline Job
 Once logged in, follow these steps to link your repository to Jenkins:
 
