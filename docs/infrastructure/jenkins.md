@@ -39,19 +39,20 @@ Jenkins provides a web-based interface for managing builds and visualizing pipel
 *   **Standard View**: Accessible via the main Jenkins URL (default: `http://localhost:8080`).
 *   **Blue Ocean**: A modern, interactive visualization of the pipeline stages and logs.
 
-## How to Start Jenkins (Docker)
-To run Jenkins locally using Docker, use the following command. This version includes the Docker CLI inside Jenkins so it can build your project images:
+## How to Start Jenkins (Docker Compose)
+The project includes a `docker-compose.yaml` file that orchestrates Jenkins along with the TimescaleDB instances. This ensures all services are on the same `enterprise-network` and can communicate easily.
 
+To start Jenkins and the databases:
 ```bash
-docker run -d `
-  --name jenkins `
-  -p 8080:8080 -p 50000:50000 `
-  -v jenkins_home:/var/jenkins_home `
-  -v /var/run/docker.sock:/var/run/docker.sock `
-  jenkins/jenkins:lts
+docker-compose up -d
 ```
 
-**Note for Windows users**: Ensure Docker Desktop is running and "Expose daemon on tcp://localhost:2375 without TLS" is enabled, or use the WSL2 backend.
+This configuration includes:
+*   **Docker-in-Docker**: The Docker socket is mounted (`/var/run/docker.sock`) so Jenkins can build and run project-specific images.
+*   **Persistence**: A volume named `jenkins_home` preserves your jobs, plugins, and configuration.
+*   **Networking**: All services share the `enterprise-network`.
+
+**Note for Windows users**: Ensure Docker Desktop is running.
 
 Once started:
 1.  Navigate to `http://localhost:8080`.
