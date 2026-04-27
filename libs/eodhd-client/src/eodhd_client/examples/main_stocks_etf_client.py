@@ -64,7 +64,6 @@ def run_stocks_etf_examples():
         five_days_ago = today - timedelta(days=5)
         date_from_str = five_days_ago.strftime("%Y-%m-%d")
         date_to_str = today.strftime("%Y-%m-%d")
-        interval = "1h"  # For intraday data
 
         # For intraday data, 'from' and 'to' parameters expect Unix timestamps
         date_from_timestamp = int(five_days_ago.timestamp())
@@ -96,13 +95,13 @@ def run_stocks_etf_examples():
                 volume=entry["volume"],
             )
 
-        # 2. get_intraday_data(symbol, exchange, interval, date_from, date_to)
+        # 2. get_intraday_data(symbol, exchange, date_from, date_to)
         logger.info(
             f"\nFetching Intraday data for {symbol}.{exchange} "
-            f"(interval: {interval}) from {date_from_timestamp} to {date_to_timestamp}..."
+            f"from {date_from_timestamp} to {date_to_timestamp}..."
         )
         aapl_intraday = stocks_etf_client.get_intraday_data(
-            symbol, exchange, interval, date_from_timestamp, date_to_timestamp
+            symbol, exchange, date_from_timestamp, date_to_timestamp
         )
         logger.info(
             f"{symbol}.{exchange} Intraday data (first 2 entries): {aapl_intraday[:2]}"

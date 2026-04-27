@@ -3,31 +3,26 @@
 import datetime
 
 from loguru import logger
+import pandas as pd
+from storage_client import LocalParquetStorage
 
-from db_client.client import DBClient
-from db_client.models import StockIntraday
 from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
 
-def intraday_saver(
-    bus_date: datetime.date, tickers: list[str], interval: str = "1m"
-) -> None:
+def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
     """Core logic for saving Intraday data.
 
     Args:
         bus_date (datetime.date): The business date.
         tickers (list[str]): List of stock tickers.
-        interval (str): Time interval (e.g. '1m', '5m', '1h').
     """
     client = EODHDClientBase(settings.eodhd_api_key).stocks_etf
 
-    db_client = DBClient(
-        dbname=settings.db_name,
-        user=settings.db_user,
-        password=settings.db_password,
-        host=settings.effective_db_host,
-        port=settings.db_port,
+    parquet_storage = (
+        LocalParquetStorage(base_path=settings.data_dir)
+        if hasattr(settings, "data_dir")
+        else LocalParquetStorage(base_path="data")
     )
 
     # Convert bus_date to timestamps for EODHD API
@@ -47,35 +42,30 @@ def intraday_saver(
             data = client.get_intraday_data(
                 symbol=symbol,
                 exchange=exchange,
-                interval=interval,
                 date_from=timestamp_from,
                 date_to=timestamp_to,
             )
 
             if data and isinstance(data, list):
-                objects_to_upsert = []
+                # Add symbol and bus_date to data for partitioning
                 for item in data:
-                    stock_intraday = StockIntraday(
-                        timestamp=item.get("timestamp"),
-                        symbol=ticker_symbol,
-                        bus_date=bus_date,
-                        gmt_offset=item.get("gmtoffset"),
-                        open=item.get("open"),
-                        high=item.get("high"),
-                        low=item.get("low"),
-                        close=item.get("close"),
-                        volume=item.get("volume"),
-                    )
-                    objects_to_upsert.append(stock_intraday)
+                    item["symbol"] = ticker_symbol
+                    item["bus_date"] = str(bus_date)
 
-                success = db_client.bulk_upsert(objects_to_upsert)
+                df = pd.DataFrame(data)
+                success = parquet_storage.save_partitioned(
+                    df=df,
+                    dataset_name="intraday",
+                    partition_cols=["symbol", "bus_date"],
+                )
+
                 if success:
-                    total_inserted_count += len(objects_to_upsert)
+                    total_inserted_count += len(df)
                     logger.info(
-                        f"Saved {len(objects_to_upsert)} records for {ticker_symbol} at {bus_date}"
+                        f"Saved {len(df)} records for {ticker_symbol} at {bus_date} to Parquet"
                     )
                 else:
-                    logger.error(f"Failed to bulk upsert data for {ticker_symbol}")
+                    logger.error(f"Failed to save Parquet data for {ticker_symbol}")
             else:
                 logger.warning(
                     f"No intraday data found for {ticker_symbol} at {bus_date}"
@@ -84,6 +74,4 @@ def intraday_saver(
         except Exception as e:
             logger.error(f"Error processing Intraday for {ticker_symbol}: {e}")
 
-    logger.info(
-        f"Successfully inserted {total_inserted_count} intraday rows into the database."
-    )
+    logger.info(f"Successfully saved {total_inserted_count} intraday rows to Parquet.")

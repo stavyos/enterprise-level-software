@@ -36,6 +36,7 @@ class Settings(BaseSettings):
         validation_alias="JOB_PYTHONPATH",
     )
     env_prefix: str = Field(default="", validation_alias="ENV_PREFIX")
+    data_dir: str = Field(default="data", validation_alias="DATA_DIR")
     is_local: bool = Field(default=False, validation_alias="IS_LOCAL")
 
     def __init__(self, **kwargs):
