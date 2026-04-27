@@ -62,6 +62,28 @@ Once started:
     *   **Docker Pipeline**: Required for `docker.image().inside` and containerized stages.
 4.  Create your first admin user.
 
+## Advanced: Multibranch Pipelines (Automatic PR Jobs)
+Multibranch Pipelines provide isolation for each branch and PR, automatic discovery of new feature branches and pull requests, and automatic cleanup of jobs when branches are deleted.
+
+### Configuration
+1.  **Create New Item**: Click "New Item" on the sidebar.
+2.  **Item Name**: Enter a name (e.g., `enterprise-level-software-multibranch`).
+3.  **Type**: Select **Multibranch Pipeline** and click OK.
+4.  **Branch Sources**:
+    *   Click **Add source** and select **GitHub**.
+    *   **Credentials**: Select the `github-token` (Secret Text).
+    *   **Repository HTTPS URL**: `https://github.com/stavyos/enterprise-level-software.git` (or your repo URL).
+    *   **Behaviors**:
+        *   Enable **Discover branches**.
+        *   Enable **Discover pull requests from origin**.
+5.  **Build Configuration**:
+    *   **Mode**: by Jenkinsfile.
+    *   **Script Path**: `Jenkinsfile`.
+6.  **Scan Multibranch Pipeline Triggers**:
+    *   Check "Periodically if not otherwise run".
+    *   Set interval to **1 minute**.
+7.  **Save**: Jenkins will automatically scan and create PR jobs named after the PR number (e.g., PR-17).
+
 ## Configuring the Pipeline Job
 Once logged in, follow these steps to link your repository to Jenkins:
 
