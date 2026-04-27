@@ -84,6 +84,12 @@ Multibranch Pipelines provide isolation for each branch and PR, automatic discov
     *   Set interval to **1 minute**.
 7.  **Save**: Jenkins will automatically scan and create PR jobs named after the PR number (e.g., PR-17).
 
+### Automated Job Creation (Current Setup)
+The job `enterprise-multibranch` has been automatically created and configured using a Groovy initialization script.
+*   **Job URL**: `http://localhost:8080/job/enterprise-multibranch/`
+*   **Status**: Active and scanning for branches/PRs every 1 minute.
+*   **History**: Each PR now has its own isolated build history.
+
 ## Configuring the Pipeline Job
 Once logged in, follow these steps to link your repository to Jenkins:
 
