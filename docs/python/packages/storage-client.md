@@ -14,10 +14,14 @@ The `LocalParquetStorage` class abstracts away the complexities of `pyarrow` and
 The client supports native Parquet partitioning. By default, our intraday data is partitioned by `symbol` and `bus_date`:
 ```
 data/
-└── intraday/
-    └── symbol=AAPL/
-        └── bus_date=2026-04-27/
-            └── part-0.parquet
+├── dev/
+│   └── intraday/
+│       └── symbol=AAPL/
+│           └── bus_date=2026-04-27/
+└── prd/
+    └── intraday/
+        └── symbol=AAPL/
+            └── bus_date=2026-04-27/
 ```
 This structure allows for extremely fast data skipping during analytical queries.
 
