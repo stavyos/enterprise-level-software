@@ -84,12 +84,27 @@ Multibranch Pipelines provide isolation for each branch and PR, automatic discov
     *   Set interval to **1 minute**.
 7.  **Save**: Jenkins will automatically scan and create PR jobs named after the PR number (e.g., PR-17).
 
-### Automated Job Creation (Current Setup)
-The job `enterprise-multibranch` has been automatically created and configured using a series of Groovy initialization scripts.
-*   **Job URL**: `http://localhost:8080/job/enterprise-multibranch/`
-*   **Status**: Active and scanning for branches/PRs every 1 minute.
-*   **Authentication**: Securely configured with a GitHub Token (injected from local `gh` CLI).
-*   **API Strategy**: Configured to `ThrottleOnOver` to ensure immediate branch discovery even when near GitHub rate limits.
+### Manual Setup (Mandatory for Authentication)
+Due to GitHub API rate limits (60/hr anonymous vs 5000/hr authenticated), you **must** manually link your credentials in the Jenkins UI to ensure branch discovery works:
+
+1.  **Open Jenkins**: `http://localhost:8080/`
+2.  **Configure Global Server**:
+    *   Go to **Manage Jenkins > System**.
+    *   Scroll to **GitHub** and click **Add GitHub Server**.
+    *   **Name**: `GitHub`
+    *   **API URL**: `https://api.github.com`
+    *   **Credentials**: Select `github-token`.
+    *   Click **Test connection** (Must say "Credentials verified").
+    *   Click **Save**.
+3.  **Create the Job**:
+    *   Click **New Item** on the dashboard.
+    *   Enter `enterprise-multibranch` and select **Multibranch Pipeline**.
+    *   Under **Branch Sources**, click **Add source > GitHub**.
+    *   **Credentials**: Select `github-token`.
+    *   **Repository**: `stavyos/enterprise-level-software`.
+    *   Click **Save**.
+
+Jenkins will immediately scan and you will see your PRs appear as separate jobs.
 
 ### Troubleshooting & Maintenance
 
