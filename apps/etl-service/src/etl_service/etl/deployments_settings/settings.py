@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     # App Settings
     job_pythonpath: str = Field(
-        default="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/apps/etl-service/src",
+        default="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/libs/storage-client/src:/app/apps/etl-service/src",
         validation_alias="JOB_PYTHONPATH",
     )
     env_prefix: str = Field(default="", validation_alias="ENV_PREFIX")
