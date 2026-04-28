@@ -3,9 +3,6 @@
 import asyncio
 import os
 
-from prefect.deployments.runner import RunnerDeployment
-from prefect.deployments.runner import deploy as prefect_deploy
-
 from etl_service.etl.deployments_settings.enums import (
     PrefectDeployment,
     PrefectDeploymentType,
@@ -24,11 +21,6 @@ async def deploy(
         version_tag (str | None, optional): A version tag for all deployments. Defaults to None.
         env_file (str | None, optional): The environment file to load settings from. Defaults to None.
     """
-    # Group deployments by work pool
-    pool_deployments = {}
-
-    from etl_service.etl.deployments_settings.settings import settings
-
     # Reload settings to ensure we pick up environment-specific variables
     # (especially ENV_PREFIX from .env files or process env)
     settings.reload(env_file=env_file)
@@ -81,29 +73,37 @@ async def deploy(
                     f"etl_service.etl.flows.etl.{module_path}:{flow_function_name}"
                 )
 
-                # Create deployment specification using from_entrypoint to capture schema
-                d = RunnerDeployment.from_entrypoint(
-                    entrypoint=entrypoint,
+                # Use the modern flow.deploy() API. This is the recommended way in Prefect 3.x
+                # to register deployments to a work pool while ensuring that the code is
+                # loaded from the baked-in image rather than being pulled from the host.
+                from prefect.flows import load_flow_from_entrypoint
+
+                flow = load_flow_from_entrypoint(entrypoint)
+
+                print(f"Registering flow: {flow_name} -> {dep_name}")
+                deployment_id = await flow.deploy(
                     name=dep_name,
-                    flow_name=flow_name,
+                    work_pool_name=dep_settings.work_pool,
+                    image=image,
                     tags=tags,
                     job_variables=job_variables,
+                    build=False,
+                    push=False,
                 )
-                # Ensure the path is set to the container working directory
-                # to prevent capturing host-specific absolute paths
-                d.path = "/app/apps/etl-service"
 
-                work_pool = dep_settings.work_pool
-                if work_pool not in pool_deployments:
-                    pool_deployments[work_pool] = []
-                pool_deployments[work_pool].append(d)
+                # CRITICAL: Clear pull_steps and path to force the worker to use the code
+                # baked into the image. This prevents FileNotFoundError when registered from CI.
+                from prefect.client import get_client
+                from prefect.client.schemas.actions import DeploymentUpdate
 
-    # Register each pool's deployments
-    for pool_name, deployments in pool_deployments.items():
-        print(f"Deploying {len(deployments)} flows to pool: {pool_name}")
-        await prefect_deploy(
-            *deployments, work_pool_name=pool_name, image=image, build=False, push=False
-        )
+                async with get_client() as client:
+                    await client.update_deployment(
+                        deployment_id,
+                        deployment=DeploymentUpdate(
+                            path=None,
+                            pull_steps=[],
+                        ),
+                    )
 
 
 if __name__ == "__main__":
