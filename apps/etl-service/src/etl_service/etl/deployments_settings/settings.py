@@ -32,18 +32,15 @@ class Settings(BaseSettings):
 
     # App Settings
     job_pythonpath: str = Field(
-        default="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/apps/etl-service/src",
+        default="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/libs/storage-client/src:/app/apps/etl-service/src",
         validation_alias="JOB_PYTHONPATH",
     )
     env_prefix: str = Field(default="", validation_alias="ENV_PREFIX")
+    data_dir: str = Field(default="data", validation_alias="DATA_DIR")
     is_local: bool = Field(default=False, validation_alias="IS_LOCAL")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Only force is_local if we are in a Prefect Runner process
-        # (NOT during deployment or general app use unless IS_LOCAL is env-set)
-        if os.getenv("PREFECT_RUNNER") == "true" or os.getenv("PREFECT__FLOW_RUN_ID"):
-            self.is_local = True
 
     @property
     def effective_db_host(self) -> str:
@@ -106,10 +103,6 @@ class Settings(BaseSettings):
                 elif field.annotation == bool:
                     val = str(val).lower() in ("true", "1")
                 setattr(self, field_name, val)
-
-        # Re-run init logic for is_local
-        if os.getenv("PREFECT_RUNNER") == "true" or os.getenv("PREFECT__FLOW_RUN_ID"):
-            self.is_local = True
 
     @contextmanager
     def override(self, **kwargs):

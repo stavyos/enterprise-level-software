@@ -6,6 +6,7 @@ authors = [{ name = "Stav Yosef" }]
 requires-python = "==3.13.1"
 dependencies = [
     "db-client",
+    "storage-client",
     "eodhd-client",
     "loguru>=0.7.3",
     "prefect==3.6.25",
@@ -34,3 +35,4 @@ pythonpath = ["src"]
 [tool.uv.sources]
 db-client = {path = "../../libs/db-client", editable = true}
 eodhd-client = {path = "../../libs/eodhd-client", editable = true}
+storage-client = {path = "../../libs/storage-client", editable = true}

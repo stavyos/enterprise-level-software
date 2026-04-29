@@ -27,7 +27,12 @@ Each environment targets a dedicated database instance:
 - **Dev**: `timescaledb-dev` on port 5434
 - **Prod**: `timescaledb-prod` on port 5435
 
-### 4. Kubernetes Resources
+### 4. File Storage Isolation (Parquet)
+For high-volume intraday data, we isolate storage directories via the `DATA_DIR` setting:
+- **Dev**: `data/dev`
+- **Prod**: `data/prd`
+
+### 5. Kubernetes Resources
 By leveraging Prefect's `job_variables`, we can define different resource limits per environment (e.g., production savers get more CPU/Memory than development ones).
 
 ## The Work Pool Job Template Guard

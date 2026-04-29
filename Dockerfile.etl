@@ -34,6 +34,7 @@ ENV DB_HOST=$DB_HOST \
 # Copy shared tools and library definitions first for dependency resolution
 COPY libs/db-client/pyproject.toml /app/libs/db-client/
 COPY libs/eodhd-client/pyproject.toml /app/libs/eodhd-client/
+COPY libs/storage-client/pyproject.toml /app/libs/storage-client/
 
 # Copy the ETL service requirements
 COPY apps/etl-service/pyproject.toml apps/etl-service/uv.lock /app/apps/etl-service/
@@ -46,12 +47,13 @@ RUN uv sync --frozen --no-dev
 COPY apps/etl-service/src /app/apps/etl-service/src
 COPY libs/db-client/src /app/libs/db-client/src
 COPY libs/eodhd-client/src /app/libs/eodhd-client/src
+COPY libs/storage-client/src /app/libs/storage-client/src
 
 # Force reinstall of local libs to pick up source changes
-RUN uv pip install --system --no-cache-dir -e /app/libs/db-client -e /app/libs/eodhd-client -e /app/apps/etl-service
+RUN uv pip install --system --no-cache-dir -e /app/libs/db-client -e /app/libs/eodhd-client -e /app/libs/storage-client -e /app/apps/etl-service
 
 # Set the PYTHONPATH so the container can find all modules
-ENV PYTHONPATH="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/apps/etl-service/src"
+ENV PYTHONPATH="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/libs/storage-client/src:/app/apps/etl-service/src"
 
 # Update PATH to include the virtual environment's bin directory
 ENV PATH="/app/apps/etl-service/.venv/bin:$PATH"

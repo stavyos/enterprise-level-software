@@ -35,15 +35,15 @@ class StocksETFClient(EODHDClientBase):
         return self._make_request(endpoint, params)
 
     def get_intraday_data(
-        self, symbol: str, exchange: str, interval: str, date_from: int, date_to: int
+        self, symbol: str, exchange: str, date_from: int, date_to: int
     ) -> list:
         """
         Retrieves intraday historical data for a specific symbol.
+        The interval is strictly limited to 1-minute ('1m').
 
         Args:
             symbol (str): The ticker symbol.
             exchange (str): The exchange code.
-            interval (str): Time interval (e.g., '1m', '5m', '1h').
             date_from (int): Start timestamp (Unix time).
             date_to (int): End timestamp (Unix time).
 
@@ -52,7 +52,7 @@ class StocksETFClient(EODHDClientBase):
         """
         endpoint = f"intraday/{symbol}.{exchange}"
         params = {
-            "interval": interval,
+            "interval": "1m",
             "from": date_from,
             "to": date_to,
         }
