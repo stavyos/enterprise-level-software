@@ -98,9 +98,9 @@ class Settings(BaseSettings):
             val = f_val if f_val is not None else e_val
 
             if val is not None:
-                if field.annotation == int:
+                if field.annotation is int:
                     val = int(val)
-                elif field.annotation == bool:
+                elif field.annotation is bool:
                     val = str(val).lower() in ("true", "1")
                 setattr(self, field_name, val)
 
