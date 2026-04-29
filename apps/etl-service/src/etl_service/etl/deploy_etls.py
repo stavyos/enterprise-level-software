@@ -7,6 +7,7 @@ from etl_service.etl.deployments_settings.enums import (
     PrefectDeployment,
     PrefectDeploymentType,
 )
+from etl_service.etl.deployments_settings.settings import settings
 
 
 async def deploy(
@@ -108,8 +109,6 @@ async def deploy(
 
 if __name__ == "__main__":
     import sys
-
-    from etl_service.etl.deployments_settings.settings import settings
 
     # Determine env file from environment or defaults
     env_file = None
