@@ -45,18 +45,31 @@ graph TD
 1.  **Orchestration**: A unified **Prefect 3.x** cluster manages all scheduled and manual runs.
 2.  **Environment Isolation**: Development and Production environments are isolated through:
     -   **Isolated Databases**: Separate TimescaleDB instances (`dev` on 5434, `prod` on 5435).
+<<<<<<< Updated upstream
     -   **Isolated Data Directories**: Environment-specific volumes for Parquet storage.
     -   **Deployment Prefixing**: Deployments are prefixed with `dev-` or `prod-` for logical separation.
 3.  **Data Acquisition**: The `etl-service` interacts with the **EODHD API** to fetch historical and real-time market data.
 4.  **Hybrid Persistence**:
     -   **TimescaleDB**: Stores metadata, EOD prices, and news, optimized using hypertables.
     -   **Parquet**: Stores high-volume 1-minute intraday data, partitioned by symbol and date.
+=======
+    -   **Data Isolation**: Environment-specific Parquet storage (`data/dev` vs `data/prd`).
+    -   **Deployment Prefixing**: Deployments are prefixed with `dev-` or `prod-` for logical separation.
+3.  **Data Acquisition**: The `etl-service` interacts with the **EODHD API** to fetch historical and real-time market data.
+4.  **Persistence (Hybrid Strategy)**:
+    -   **TimescaleDB**: Metadata, EOD, and News data are stored in SQL for relational integrity.
+    -   **Parquet**: High-volume 1-minute intraday data is stored in partitioned Parquet files for performance and compression.
+>>>>>>> Stashed changes
 
 ## Core Documentation
 
 ### 🏛️ Architecture & Decisions
 - [**ADR-001: Unified Cluster**](./architecture/adr-001-single-prefect-cluster.md): The decision to use a single Prefect server for multiple environments.
+<<<<<<< Updated upstream
 - [**ADR-002: Hybrid Storage Strategy**](./architecture/adr-002-hybrid-storage-strategy.md): Why we use Parquet for intraday data.
+=======
+- [**ADR-002: Hybrid Storage Strategy**](./architecture/adr-002-hybrid-storage-strategy.md): The move to partitioned Parquet for high-volume intraday data.
+>>>>>>> Stashed changes
 - [**Multi-Tenancy**](./infrastructure/multi-tenancy.md): Our strategy for environment isolation within shared infrastructure.
 
 ### 🛠️ Tooling & Config
@@ -73,6 +86,7 @@ graph TD
 
 ### 📊 Database & Data
 - [**TimescaleDB**](./database/timescaledb.md): Our time-series database strategy and models.
+- [**Parquet Storage**](./database/parquet.md): Our strategy for high-volume intraday data persistence.
 - [**EODHD Client**](./api/eodhd-client.md): Documentation for our custom API client.
 
 ### 🧪 Quality & Standards

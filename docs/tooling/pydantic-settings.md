@@ -30,19 +30,32 @@ class Settings(BaseSettings):
     # Database Settings
     db_host: str = Field(default="host.docker.internal", validation_alias="DB_HOST")
     db_port: int = Field(default=5432, validation_alias="DB_PORT")
+<<<<<<< Updated upstream
 
     # App Settings
     data_dir: str = Field(default="data", validation_alias="DATA_DIR")
     is_local: bool = Field(default=False, validation_alias="IS_LOCAL")
 ```
+=======
+    db_user: str = Field(default="", validation_alias="DB_USER")
+    db_password: str = Field(default="", validation_alias="DB_PASSWORD")
+    db_name: str = Field(default="", validation_alias="DB_NAME")
+>>>>>>> Stashed changes
 
-### Key Features (Pydantic V2)
-- **`validation_alias`**: Replaces the old `env` parameter to map environment variables to class attributes.
-- **`extra="ignore"`**: Prevents Pydantic from failing if the environment contains variables it doesn't recognize.
+    # App Settings
+    job_pythonpath: str = Field(
+        default="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/libs/storage-client/src:/app/apps/etl-service/src",
+        validation_alias="JOB_PYTHONPATH",
+    )
+    env_prefix: str = Field(default="", validation_alias="ENV_PREFIX")
+    data_dir: str = Field(default="/data", validation_alias="DATA_DIR")
+    is_local: bool = Field(default=False, validation_alias="IS_LOCAL")
+```
 
 ## Advanced Logic & Parity
 To ensure seamless transitions between local development (host) and Dockerized execution (container), we use dynamic properties:
 
+### Host-to-Container Bridging
 ```python
 @property
 def effective_db_host(self) -> str:
@@ -50,22 +63,20 @@ def effective_db_host(self) -> str:
     if self.db_host in ("localhost", "127.0.0.1") and not self.is_local:
         return "host.docker.internal"
     return self.db_host
-
-@property
-def effective_prefect_api_url(self) -> str:
-    """Returns the effective Prefect API URL."""
-    if ("localhost" in self.prefect_api_url or "127.0.0.1" in self.prefect_api_url) and not self.is_local:
-        return self.prefect_api_url.replace("localhost", "host.docker.internal").replace("127.0.0.1", "host.docker.internal")
-    return self.prefect_api_url
 ```
 
+### Hybrid Storage Resolution
+The `data_dir` setting defaults to `/data` (container path). During local host execution, it is overridden by `DATA_DIR` in `dev.env` (e.g., `G:/My Drive/...`). The Prefect worker handles mounting this host path to the container's `/data` directory automatically via `JobVariables`.
+
 ## Robust Reloading
-Because Prefect and Nx often involve nested directory structures and complex environment variable merging, we implemented a custom `reload()` method. This method searches for `.env`, `dev.env`, and `prod.env` in the current and parent directories, ensuring that the correct configuration is always prioritized during deployment and runtime.
+Because Prefect and Nx often involve nested directory structures and complex environment variable merging, we implemented a custom `reload()` method. This method searches for `.env`, `dev.env`, and `prod.env` in the current and parent directories, ensuring that the correct configuration is always prioritized.
 
 ```python
-def reload(self) -> None:
+def reload(self, env_file: str | None = None) -> None:
     """Reload settings with multi-directory .env search and priority logic."""
-    # ... search and load logic ...
+    # 1. Search for .env, dev.env, prod.env in '.', '..', '../..'
+    # 2. Prioritize values in .env files over process environment variables.
+    # 3. Manually refresh fields to ensure Pydantic validation is bypassed for initial instantiation.
 ```
 
 ## Benefits of This Approach

@@ -401,6 +401,7 @@ dependencies = [
     { name = "eodhd-client" },
     { name = "loguru" },
     { name = "prefect" },
+    { name = "prefect-docker" },
     { name = "pydantic-settings" },
     { name = "python-dotenv", extra = ["cli"] },
     { name = "storage-client" },
@@ -419,6 +420,7 @@ requires-dist = [
     { name = "eodhd-client", editable = "../../libs/eodhd-client" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "prefect", specifier = "==3.6.25" },
+    { name = "prefect-docker", specifier = ">=0.7.1" },
     { name = "pydantic-settings", specifier = ">=2.8.1" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.12.0" },
@@ -1041,6 +1043,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d4/f0/6ea725f17107b26391da9df4dd566cd00ccec0435ae47f59aa3ff30d7143/prefect-3.6.25.tar.gz", hash = "sha256:592473f43401ed36b5ffa1c1fa3edd46caf494a795d9a97eb7c308bff8b00d0c", size = 11031424, upload-time = "2026-04-03T18:12:34.796Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/db/36/53881852ca5ce4587ce1e966dd43ca7488e03a48ea55aaf50d81d152558a/prefect-3.6.25-py3-none-any.whl", hash = "sha256:3a2645afd0275d6ba3971750be6a3cbdd72f04363a1f955721cc1155667ee4f7", size = 11861649, upload-time = "2026-04-03T18:12:31.508Z" },
+]
+
+[[package]]
+name = "prefect-docker"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "docker" },
+    { name = "exceptiongroup" },
+    { name = "prefect" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/77/76/477cb000395452edbd641734aa1d2b41680b35e9172c11ace685a74b2e54/prefect_docker-0.7.1.tar.gz", hash = "sha256:7d5053bcc049d56b5498ca4629c9b08b31d96f5387e1eb34f510ec322d5aad89", size = 41684, upload-time = "2026-01-15T22:53:06.477Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bc/5c/20f573c6f800ad784603c7bd5787770ef648758289af2970d12c39072534/prefect_docker-0.7.1-py3-none-any.whl", hash = "sha256:b4fe1760c12206d3eaec2826d63acb1235bd41756921eb0c6b5feeb20b157e37", size = 28254, upload-time = "2026-01-15T22:53:04.998Z" },
 ]
 
 [[package]]

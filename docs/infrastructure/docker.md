@@ -40,12 +40,19 @@ We use **Docker Compose** to run two independent **TimescaleDB** instances on di
 docker-compose up -d
 ```
 
-### 2. ETL Service Isolation
+### 2. High-Volume Data (Parquet)
+High-volume analytical data is stored as Parquet files on the host machine (e.g., Google Drive) and mounted into the ETL containers at runtime.
+
+-   **Host Path**: Defined by `DATA_DIR` in `.env` files.
+-   **Container Path**: `/data`.
+-   **Isolation**: Environment-specific subfolders (`data/dev` vs `data/prd`).
+
+### 3. ETL Service Isolation
 We build environment-specific images using the same `Dockerfile.etl`. By using build arguments, we bake the configuration directly into the image.
 
 **Key Arguments**:
 - `DB_PORT`: `5434` (Dev) vs `5435` (Prod).
-- `ENV_PREFIX`: `dev` vs `prod`.
+- `ENV_PREFIX`: `dev` vs `prd`.
 
 **Build Commands**:
 - **Dev**: `npx nx run etl-service:docker-build:dev`
@@ -57,7 +64,10 @@ We build environment-specific images using the same `Dockerfile.etl`. By using b
 A dedicated Docker network, `enterprise-network`, facilitates secure communication between services:
 - **Jenkins**: Performs builds and triggers deployments on this network.
 - **Prefect Server**: Accessible at `http://prefect-server:4200/api` within the network.
-- **Agent Containers**: Dynamic build agents (custom Node/Python images) join this network to register flows.
+- **Flow Run Containers**: Join this network to resolve `host.docker.internal` (DB) and `prefect-server`.
+
+### Path Parity (Windows to Linux)
+To ensure compatibility between Windows-based development hosts and Linux-based Docker containers, our orchestration logic automatically translates Windows drive letters (e.g., `G:/`) into Docker-compatible paths (e.g., `//g/`) during volume mounting.
 
 ### Advanced: Docker-in-Docker
 The Jenkins container has access to the host's Docker engine via a socket mount (`/var/run/docker.sock`). This allows it to build, tag, and run the ETL images as part of the automated pipeline.

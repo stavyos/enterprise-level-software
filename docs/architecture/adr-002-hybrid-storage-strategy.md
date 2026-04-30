@@ -3,6 +3,7 @@
 ## Status
 Accepted
 
+<<<<<<< Updated upstream
 ## Date
 2026-04-27
 
@@ -35,3 +36,32 @@ We will implement a **Hybrid Storage Strategy**:
 ### Negative
 - **Data Fragmentation**: Developers must now interact with two different storage layers (SQL for metadata/EOD, Files for Intraday).
 - **Manual Downsampling**: Users needing 5-minute or 1-hour data must implement their own aggregation logic.
+=======
+## Context
+As the volume of intraday market data (1-minute intervals) increases, storing billions of rows in a traditional relational database—even one optimized for time-series like TimescaleDB—can lead to significant overhead in terms of storage costs, indexing performance, and backup complexity.
+
+Intraday data is typically "write-once, read-many" and often processed in bulk for analytical purposes (e.g., backtesting, feature engineering).
+
+## Decision
+We will adopt a hybrid storage strategy to optimize for both transactional metadata and high-volume analytical data:
+
+1.  **Metadata and EOD Data (TimescaleDB)**:
+    -   Exchanges, Tickers, and End-of-Day (EOD) prices will remain in **TimescaleDB**.
+    -   These datasets are relatively small and benefit from SQL's relational integrity and complex join capabilities.
+2.  **Intraday Data (Parquet)**:
+    -   1-minute intraday data will be stored as **partitioned Parquet files**.
+    -   Storage will be organized by `symbol` and `bus_date` (e.g., `data/intraday/symbol=AAPL/bus_date=2026-04-24/data.parquet`).
+    -   Parquet provides superior compression (Snappy) and column-oriented performance for analytical queries.
+
+## Infrastructure & Portability
+To ensure the system remains portable and cloud-ready:
+-   **Local Storage**: Data is stored on a host-mounted path (e.g., Google Drive for local development).
+-   **Docker Isolation**: Containers mount the host's `DATA_DIR` to an internal `/data` path.
+-   **Environment Separation**: Strict isolation between `data/dev` and `data/prd`.
+
+## Consequences
+-   **Positive**: Significant reduction in database storage requirements and improved performance for bulk data reads.
+-   **Positive**: Lower cost for long-term data archival.
+-   **Negative**: Reading intraday data now requires a Parquet-aware client (e.g., `pandas`, `polars`, or `duckdb`) instead of a simple SQL query.
+-   **Negative**: Managing file-based consistency (ensuring no partial writes) becomes the responsibility of the application layer (`storage-client`).
+>>>>>>> Stashed changes

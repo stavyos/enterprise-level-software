@@ -12,7 +12,8 @@ dependencies = [
     "prefect==3.6.25",
     "pydantic-settings>=2.8.1",
     "python-dotenv[cli]>=1.0.1",
-    "asyncpg>=0.29.0"
+    "asyncpg>=0.29.0",
+    "prefect-docker>=0.7.1",
 ]
 
 [project.optional-dependencies]

@@ -45,3 +45,4 @@ Our services are self-contained and export themselves via port binding.
 - **Prefect**: Runs on port 4200.
 - **TimescaleDB (Dev)**: Runs on port 5434.
 - **TimescaleDB (Prod)**: Runs on port 5435.
+- **Parquet Storage**: Dev data is mapped to `/data/dev` while Prod uses `/data/prd`.
