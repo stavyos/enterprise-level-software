@@ -21,22 +21,22 @@ class Settings(BaseSettings):
     )
 
     # EODHD Settings
-    eodhd_api_key: str = Field(..., validation_alias="EODHD_API_KEY")
+    eodhd_api_key: str = Field(default="", validation_alias="EODHD_API_KEY")
 
     # Database Settings
     db_host: str = Field(default="host.docker.internal", validation_alias="DB_HOST")
     db_port: int = Field(default=5432, validation_alias="DB_PORT")
-    db_user: str = Field(..., validation_alias="DB_USER")
-    db_password: str = Field(..., validation_alias="DB_PASSWORD")
-    db_name: str = Field(..., validation_alias="DB_NAME")
+    db_user: str = Field(default="", validation_alias="DB_USER")
+    db_password: str = Field(default="", validation_alias="DB_PASSWORD")
+    db_name: str = Field(default="", validation_alias="DB_NAME")
 
     # App Settings
     job_pythonpath: str = Field(
         default="/app/libs/db-client/src:/app/libs/eodhd-client/src:/app/libs/storage-client/src:/app/apps/etl-service/src",
         validation_alias="JOB_PYTHONPATH",
     )
+    data_dir: str = Field(default="/data", validation_alias="DATA_DIR")
     env_prefix: str = Field(default="", validation_alias="ENV_PREFIX")
-    data_dir: str = Field(default="data", validation_alias="DATA_DIR")
     is_local: bool = Field(default=False, validation_alias="IS_LOCAL")
 
     def __init__(self, **kwargs):
