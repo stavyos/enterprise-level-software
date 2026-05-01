@@ -16,12 +16,7 @@ ETL flows in `apps/etl-service` are tested to ensure the **Dispatcher/Saver** pa
 - We test that the Dispatcher correctly chunks ticker lists.
 - We test that the Saver correctly calls the DB client methods.
 
-## 3. Storage Testing
-For our Parquet storage layer, we test that data is correctly partitioned and compressed.
-- **Verification**: We verify that the folder structure follows the `symbol=.../bus_date=...` pattern.
-- **Integrity**: We use `pyarrow` to read back the generated files and compare them against the input DataFrames.
-
-## 4. Running Tests with Nx
+## 3. Running Tests with Nx
 Instead of navigating into each folder, we use Nx to run tests globally or per project.
 
 **Run specific project tests:**
@@ -34,15 +29,10 @@ npx nx run eodhd-client:test
 npx nx run-many -t test
 ```
 
-## 4. Code Quality & Linting
-In addition to functional tests, we enforce strict styling and linting standards using **Ruff**:
-- **Linting**: Comprehensive rule set (Pycodestyle, Pyflakes, Bugbear, etc.).
-- **Formatting**: Modern code formatter (replaces Black).
-- **Import Sorting**: Built-in import sorter (replaces isort).
+## 5. Flow Integrity & Error Handling
 
-These tools are integrated into the Nx `lint` and `format` targets:
-```bash
-npx nx run-many -t lint
-npx nx run-many -t format
-```
-Additionally, these checks are enforced by **pre-commit** hooks.
+To ensure orchestration accuracy, all ETL flows follow a **Fail-Fast** policy:
+
+- **Explicit Failures**: If a critical operation (API call, DB upsert, Parquet persistence) fails for any item in a batch, the script will log the error and **raise a RuntimeError** at the end of the run.
+- **Prefect Observability**: By raising exceptions instead of silently logging errors, we ensure that Prefect correctly marks flow runs as `Failed`. This prevents "ghost successes" where a flow appears completed but data is missing.
+- **Verification**: Before merging any storage or acquisition logic, you must verify that invalid inputs (e.g., non-existent tickers or invalid date ranges) correctly result in a `Failed` state in the Prefect dashboard.

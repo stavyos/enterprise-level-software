@@ -1,54 +1,50 @@
 # Storage Client
 
-The `storage-client` library provides an abstract and generic layer for file-based data persistence, specifically optimized for Parquet datasets.
+The `storage-client` is a internal library designed to handle high-volume financial data persistence using the Parquet format. It complements TimescaleDB by providing a cost-effective and performant way to store intraday historical data.
 
-## Purpose
-In our [Hybrid Storage Strategy](../../architecture/adr-002-hybrid-storage-strategy.md), we use this library to handle high-volume data (like 1-minute intraday prices) that is not suitable for traditional relational databases.
+## Overview
 
-## Key Features
+- **Format**: Apache Parquet
+- **Compression**: Snappy
+- **Library**: `pyarrow` and `pandas`
+- **Goal**: Offload high-cardinality intraday data from the relational database to partitioned files.
 
-### 1. Abstract Parquet Storage
-The `LocalParquetStorage` class abstracts away the complexities of `pyarrow` and `pandas` to provide a simple interface for saving DataFrames.
+## Storage Strategy: Hybrid Approach
 
-### 2. Dataset Partitioning
-The client supports native Parquet partitioning. By default, our intraday data is partitioned by `symbol` and `bus_date`:
-```
+We use a hybrid storage model to balance query flexibility and storage efficiency:
+
+1.  **TimescaleDB**: Stores metadata (exchanges, tickers) and End-of-Day (EOD) data. This allows for fast SQL queries on daily trends and portfolio metadata.
+2.  **Parquet**: Stores 1-minute intraday data. This data is partitioned by `symbol` and `bus_date` to allow for efficient "needle-in-a-haystack" retrieval without bloating the database.
+
+## Partitioning Scheme
+
+Files are stored on the host filesystem (configured via `DATA_DIR`) using Hive-style partitioning:
+
+```text
 data/
-├── dev/
-│   └── intraday/
-│       └── symbol=AAPL/
-│           └── bus_date=2026-04-27/
-└── prd/
+└── dev/
     └── intraday/
-        └── symbol=AAPL/
-            └── bus_date=2026-04-27/
+        ├── symbol=AAPL.US/
+        │   └── bus_date=2026-04-30/
+        │       └── <uuid>-0.parquet
+        └── symbol=TSLA.US/
+            └── bus_date=2026-04-29/
+                └── <uuid>-0.parquet
 ```
-This structure allows for extremely fast data skipping during analytical queries.
 
-### 3. Snappy Compression
-All data is automatically compressed using the Snappy algorithm, providing an excellent balance between compression ratio and CPU overhead.
-
-## Usage Example
+## Usage
 
 ```python
-from storage_client import LocalParquetStorage
-import pandas as pd
+from storage_client.parquet import LocalParquetStorage
 
-# Initialize storage at a specific base path
-storage = LocalParquetStorage(base_path="data")
-
-# Create some data
-df = pd.DataFrame([
-    {"timestamp": 1714200000, "price": 150.0, "symbol": "AAPL", "bus_date": "2026-04-27"}
-])
-
-# Save as a partitioned dataset
+storage = LocalParquetStorage(base_path="/data")
 storage.save_partitioned(
-    df=df,
-    dataset_name="intraday",
+    df=my_dataframe,
+    category="intraday",
     partition_cols=["symbol", "bus_date"]
 )
 ```
 
 ## Configuration
-The storage path is managed via the `DATA_DIR` environment variable, which is exposed through our central [Pydantic Settings](../../tooling/pydantic-settings.md).
+
+The storage location is determined by the `DATA_DIR` environment variable. On Windows development machines using Docker, this path is automatically translated from `C:/path` to `//c/path` to ensure compatibility with Docker bind mounts.

@@ -1,11 +1,6 @@
 # Database Architecture
 
-Our system uses **TimescaleDB**, an open-source extension of PostgreSQL, optimized for storing and querying financial time-series data.
-
-## Hybrid Storage Strategy
-As of ADR-002, we have transitioned to a hybrid storage model:
--   **TimescaleDB**: Retained for metadata (Exchanges, Tickers), End-of-Day (EOD) prices, and News data. These datasets benefit from SQL's relational capabilities and integrity.
--   **Parquet Storage**: Used for high-volume 1-minute intraday data. See [Parquet Storage](./parquet.md) for details.
+Our system uses **TimescaleDB**, an open-source extension of PostgreSQL, optimized for storing and querying financial time-series data at scale.
 
 ## Environment Separation
 We maintain strict isolation between **Development** and **Production** data using separate containerized instances.
@@ -27,16 +22,14 @@ docker-compose up -d
 docker-compose down
 ```
 
-## Optimization Features
+## Hybrid Storage Strategy
 
-### Hypertables
-<<<<<<< Updated upstream
-We use Hypertables to automatically partition our `stock_eod` data by time. This ensures that as our history grows into millions of records, query performance remains high and predictable.
-=======
-We use Hypertables to automatically partition our SQL-based time-series data (e.g., `stock_eod`) by time. This ensures that as our history grows, query performance remains high and predictable.
->>>>>>> Stashed changes
+As the volume of intraday data grows, we transition from a pure relational model to a **Hybrid Storage Strategy**:
 
-**Note on Intraday Data**: As of [ADR-002](../architecture/adr-002-hybrid-storage-strategy.md), 1-minute intraday data is no longer stored in TimescaleDB. Instead, it is persisted as partitioned Parquet files for better scalability and analytical performance.
+- **Metadata & EOD**: Remains in TimescaleDB for fast relational queries and trend analysis.
+- **Intraday Data**: Persisted as partitioned **Parquet files** in host storage (e.g., Google Drive or local SSD).
+
+This approach prevents database "bloat," reduces backup times, and leverages the performance of columnar storage for high-resolution 1-minute data. See [Storage Client](../python/packages/storage-client.md) for implementation details.
 
 ## Schema Creation
-The `DBClient` automatically handles schema generation for SQL tables. If a table or hypertable does not exist upon initialization, the client will create it using the SQLAlchemy models defined in `libs/db-client`.
+The `DBClient` automatically handles schema generation. If a table or hypertable does not exist upon initialization, the client will create it using the SQLAlchemy models defined in `libs/db-client`.
