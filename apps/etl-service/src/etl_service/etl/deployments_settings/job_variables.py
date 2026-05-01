@@ -276,12 +276,15 @@ class JobVariables:
         """
         from etl_service.etl.deployments_settings.settings import settings
 
-        # Handle Windows drive letters for Docker volumes by converting G: to /g
+        # Docker on Windows absolute path mapping.
+        # We use //c/path format to avoid Pydantic split errors with colons (C:).
         data_dir = settings.data_dir
-        if ":" in data_dir and data_dir[1:3] == ":/":
+        if ":" in data_dir and data_dir[1:3] in (":/", ":\\"):
             drive = data_dir[0].lower()
-            path = data_dir[2:]
+            path = data_dir[2:].replace("\\", "/")
             data_dir = f"//{drive}{path}"
+
+        volumes = [f"{data_dir}:/data:rw"]
 
         return {
             "active_deadline_seconds": int(self.job_ttl_sec),
@@ -289,7 +292,7 @@ class JobVariables:
             "app_label": self.app_label,
             "job_resources": self.job_resources.to_dict(),
             "network_mode": "enterprise-network",
-            "volumes": [f"{data_dir}:/data:rw"],
+            "volumes": volumes,
             "env": {
                 "PREFECT_API_URL": settings.effective_prefect_api_url,
                 "EODHD_API_KEY": settings.eodhd_api_key,

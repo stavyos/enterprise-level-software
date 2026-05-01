@@ -58,7 +58,10 @@ def news_saver(
                 f"Successfully inserted {len(objects_to_upsert)}/{total_articles} news articles."
             )
         else:
-            logger.error("Failed to bulk upsert news articles")
+            error_msg = "Failed to bulk upsert news articles"
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
     except Exception as e:
         logger.error(f"Error saving news: {e}")
+        raise

@@ -52,7 +52,10 @@ def exchanges_saver(bus_date: datetime.date) -> None:
                 f"Successfully inserted {len(objects_to_upsert)}/{len(exchanges)} exchanges into the database."
             )
         else:
-            logger.error("Failed to bulk upsert exchanges data")
+            error_msg = "Failed to bulk upsert exchanges data"
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
     except Exception as e:
         logger.error(f"Error processing Exchanges: {e}")
+        raise

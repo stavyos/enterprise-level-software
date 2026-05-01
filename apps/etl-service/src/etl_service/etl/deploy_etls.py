@@ -81,6 +81,14 @@ async def deploy(
 
                 flow = load_flow_from_entrypoint(entrypoint)
 
+                # Override job_variables to ensure host volumes are correctly mapped on Windows
+                # We do this here because settings.reload() in the worker might not pick up the right .env file
+                # The //g/ format is handled in JobVariables.to_dict() but we ensure settings.data_dir is correct here.
+
+                # Re-calculate job variables with fresh settings
+                job_vars_obj = dep_settings.get_job_variables(deployment_type=dep_type)
+                job_variables = job_vars_obj.to_dict()
+
                 print(f"Registering flow: {flow_name} -> {dep_name}")
                 deployment_id = await flow.deploy(
                     name=dep_name,

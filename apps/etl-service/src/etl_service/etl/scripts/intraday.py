@@ -33,6 +33,7 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
     timestamp_to = int(dt_end.timestamp())
 
     total_inserted_count = 0
+    failed_tickers = []
     for ticker_symbol in tickers:
         try:
             parts = ticker_symbol.split(".")
@@ -61,11 +62,18 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
 
                 if success:
                     total_inserted_count += len(df)
+                    target_path = (
+                        parquet_storage.base_path
+                        / "intraday"
+                        / f"symbol={ticker_symbol}"
+                        / f"bus_date={bus_date}"
+                    )
                     logger.info(
-                        f"Saved {len(df)} records for {ticker_symbol} at {bus_date} to Parquet"
+                        f"Saved {len(df)} records for {ticker_symbol} at {bus_date} to Parquet at: {target_path}"
                     )
                 else:
                     logger.error(f"Failed to save Parquet data for {ticker_symbol}")
+                    failed_tickers.append(ticker_symbol)
             else:
                 logger.warning(
                     f"No intraday data found for {ticker_symbol} at {bus_date}"
@@ -73,5 +81,11 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
 
         except Exception as e:
             logger.error(f"Error processing Intraday for {ticker_symbol}: {e}")
+            failed_tickers.append(ticker_symbol)
+
+    if failed_tickers:
+        error_msg = f"Failed to process intraday data for tickers: {failed_tickers}"
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
     logger.info(f"Successfully saved {total_inserted_count} intraday rows to Parquet.")
