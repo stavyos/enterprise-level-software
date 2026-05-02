@@ -1,5 +1,4 @@
 __all__ = [
-    "StockIntraday",
     "StockSplits",
     "StockDividends",
     "StockAdjusted",
@@ -17,6 +16,5 @@ from .stocks import (
     StockAdjusted,
     StockDividends,
     StockEOD,
-    StockIntraday,
     StockSplits,
 )
