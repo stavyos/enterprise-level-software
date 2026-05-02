@@ -20,12 +20,16 @@ Deployment registration is handled in `apps/etl-service/src/etl_service/etl/depl
 Our `JobVariables` logic ensures that infrastructure-specific configuration (like Docker volumes) is correctly applied:
 - **Volume Translation**: Automatically converts Windows drive paths (e.g., `C:/path`) to Docker-compatible forward-slash paths (`//c/path`).
 - **Network Isolation**: Forces all ETL containers onto the `enterprise-network` to allow resolution of `host.docker.internal` for database access.
-## Key Benefits
-- **Zero Configuration Leakage**: Dev workers cannot accidentally connect to the Prod database because the connection logic is isolated within the image.
-- **Unified Observability**: View all environment runs in a single dashboard while keeping them logically separated.
-- **Path Portability**: The manual `RunnerDeployment` fix ensures that our Windows-based development environment can successfully trigger flows in Linux-based containers.
+### Backfill & Date Range Strategy
 
-## Automated Deployments (CI/CD)
+The Intraday Dispatcher supports orchestrated backfills via the `end_date` parameter:
+
+1.  **Calendar-Day Chunking**: To maximize API efficiency, the dispatcher automatically splits date ranges into **120-calendar-day chunks** (the maximum allowed by EODHD for 1-minute data).
+2.  **Optimized Dispatching**: Instead of one sub-flow per day, the system dispatches one sub-flow per 120-day chunk per ticker. This reduces Prefect overhead by ~98% for long-range backfills.
+3.  **Dynamic Partitioning**: The `intraday_saver` dynamically extracts the `bus_date` from the retrieved records, ensuring that a single multi-day API response is correctly partitioned into daily Parquet files in the storage layer.
+
+**Example**: A 6-year backfill (2020–2026) triggers approximately 20 sub-flows instead of 1,500+, while maintaining full observability and retry-ability for each chunk.
+
 The entire registration process is automated via **Jenkins**:
 - **Branch Detection**: PRs automatically register flows with the `dev` prefix.
 - **Production Lifecycle**: Merges to `master` trigger the build and registration of `prod` deployments.

@@ -10,12 +10,19 @@ from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
 
-def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
+def intraday_saver(
+    tickers: list[str],
+    bus_date: datetime.date | None = None,
+    start_timestamp: int | None = None,
+    end_timestamp: int | None = None,
+) -> None:
     """Core logic for saving Intraday data.
 
     Args:
-        bus_date (datetime.date): The business date.
         tickers (list[str]): List of stock tickers.
+        bus_date (datetime.date | None): Single date fetch (legacy support).
+        start_timestamp (int | None): Start Unix timestamp for range fetch.
+        end_timestamp (int | None): End Unix timestamp for range fetch.
     """
     client = EODHDClientBase(settings.eodhd_api_key).stocks_etf
 
@@ -25,12 +32,16 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
         else LocalParquetStorage(base_path="data")
     )
 
-    # Convert bus_date to timestamps for EODHD API
-    dt_start = datetime.datetime.combine(bus_date, datetime.time.min)
-    dt_end = datetime.datetime.combine(bus_date, datetime.time.max)
-
-    timestamp_from = int(dt_start.timestamp())
-    timestamp_to = int(dt_end.timestamp())
+    # Determine range
+    if start_timestamp and end_timestamp:
+        ts_from, ts_to = start_timestamp, end_timestamp
+    elif bus_date:
+        dt_start = datetime.datetime.combine(bus_date, datetime.time.min)
+        dt_end = datetime.datetime.combine(bus_date, datetime.time.max)
+        ts_from = int(dt_start.timestamp())
+        ts_to = int(dt_end.timestamp())
+    else:
+        raise ValueError("Either bus_date or start/end timestamps must be provided.")
 
     total_inserted_count = 0
     failed_tickers = []
@@ -43,17 +54,18 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
             data = client.get_intraday_data(
                 symbol=symbol,
                 exchange=exchange,
-                date_from=timestamp_from,
-                date_to=timestamp_to,
+                date_from=ts_from,
+                date_to=ts_to,
             )
 
             if data and isinstance(data, list):
-                # Add symbol and bus_date to data for partitioning
-                for item in data:
-                    item["symbol"] = ticker_symbol
-                    item["bus_date"] = str(bus_date)
-
                 df = pd.DataFrame(data)
+
+                # Dynamic bus_date extraction from 'datetime' column (e.g. '2026-04-30 15:59:00')
+                # This ensures multi-day chunks are partitioned correctly.
+                df["symbol"] = ticker_symbol
+                df["bus_date"] = pd.to_datetime(df["datetime"]).dt.date.astype(str)
+
                 success = parquet_storage.save_partitioned(
                     df=df,
                     dataset_name="intraday",
@@ -62,21 +74,16 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
 
                 if success:
                     total_inserted_count += len(df)
-                    target_path = (
-                        parquet_storage.base_path
-                        / "intraday"
-                        / f"symbol={ticker_symbol}"
-                        / f"bus_date={bus_date}"
-                    )
+                    unique_days = df["bus_date"].nunique()
                     logger.info(
-                        f"Saved {len(df)} records for {ticker_symbol} at {bus_date} to Parquet at: {target_path}"
+                        f"Saved {len(df)} records for {ticker_symbol} spanning {unique_days} days to Parquet."
                     )
                 else:
                     logger.error(f"Failed to save Parquet data for {ticker_symbol}")
                     failed_tickers.append(ticker_symbol)
             else:
                 logger.warning(
-                    f"No intraday data found for {ticker_symbol} at {bus_date}"
+                    f"No intraday data found for {ticker_symbol} in requested range."
                 )
 
         except Exception as e:
@@ -88,4 +95,6 @@ def intraday_saver(bus_date: datetime.date, tickers: list[str]) -> None:
         logger.error(error_msg)
         raise RuntimeError(error_msg)
 
-    logger.info(f"Successfully saved {total_inserted_count} intraday rows to Parquet.")
+    logger.info(
+        f"Successfully saved {total_inserted_count} total intraday rows to Parquet."
+    )
