@@ -71,8 +71,7 @@ services:
 
 networks:
   enterprise-network:
-    name: enterprise-network
-    driver: bridge
+    external: true
 
 volumes:
   timescaledb_data_dev:
