@@ -27,13 +27,15 @@ Each environment targets a dedicated database instance:
 - **Dev**: `timescaledb-dev` on port 5434
 - **Prod**: `timescaledb-prod` on port 5435
 
-### 4. File Storage Isolation (Parquet)
-For high-volume intraday data, we isolate storage directories via the `DATA_DIR` setting:
-- **Dev**: `data/dev`
-- **Prod**: `data/prd`
-
-### 5. Kubernetes Resources
+### 4. Kubernetes Resources
 By leveraging Prefect's `job_variables`, we can define different resource limits per environment (e.g., production savers get more CPU/Memory than development ones).
+
+### 5. Physical Data Isolation (Parquet)
+Intraday data stored on the host filesystem is strictly isolated by environment-specific root directories:
+- **Development**: `C:/enterprise-level-software/data/dev/intraday`
+- **Production**: `C:/enterprise-level-software/data/prod/intraday`
+
+This ensures that development backfills or experimental runs never pollute production datasets. On Windows host machines, these paths are automatically translated to Docker-compatible formats (e.g., `//c/path`) within the `JobVariables` layer.
 
 ## The Work Pool Job Template Guard
 A critical discovery during our implementation was that Prefect **Work Pools** (specifically Docker/K8s types) come with a "Base Job Template."
