@@ -9,8 +9,6 @@ services:
       - "5434:5432"
     volumes:
       - timescaledb_data_dev:/var/lib/postgresql/data
-    networks:
-      - enterprise-network
     restart: always
 
   timescaledb-prod:
@@ -23,30 +21,8 @@ services:
       - "5435:5432"
     volumes:
       - timescaledb_data_prod:/var/lib/postgresql/data
-    networks:
-      - enterprise-network
     restart: always
-
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
-    user: root
-    ports:
-      - "8080:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - enterprise-network
-    restart: always
-
-networks:
-  enterprise-network:
-    name: enterprise-network
-    driver: bridge
 
 volumes:
   timescaledb_data_dev:
   timescaledb_data_prod:
-  jenkins_home:

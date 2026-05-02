@@ -99,7 +99,6 @@ uv run prefect deployment run "dev-Main-Saver Dispatcher/dev-main-saver dispatch
 
 ### CI/CD
 This project uses **Jenkins** for continuous integration and deployment:
-- **Multibranch Pipelines**: Automatically discovers and creates a dedicated build job for every branch and Pull Request, ensuring isolated history.
 - **Automated Pipelines**: Scripted `Jenkinsfile` handles Setup, Tests, Build, and Deploy.
 - **GitHub Integration**: Real-time build triggers via Webhooks (Ngrok tunnel) and **Automated PR Checks** (Success/Failure reporting).
 - **Environment Isolation**: Automatic branch detection (using regex `^(.*/)?master$`) maps to `dev` or `prod` environments.
