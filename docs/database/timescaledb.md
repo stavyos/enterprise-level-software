@@ -13,25 +13,26 @@ We maintain strict isolation between **Development** and **Production** data usi
 | **Production** | `5435` | `timescaledb-prod` | `prod_user` | `timescaledb_data_prod` |
 
 ## UI Management (CloudBeaver)
-We provide a modern web interface for managing each database environment using **CloudBeaver**.
+We provide a modern web interface for managing both database environments using a single **CloudBeaver** instance.
 
 ### Access Details
 
-| Environment | URL |
+| Service | URL |
 | :--- | :--- |
-| **Development** | [http://localhost:8978](http://localhost:8978) |
-| **Production** | [http://localhost:8979](http://localhost:8979) |
+| **Database UI** | [http://localhost:8978](http://localhost:8978) |
 
-### Connecting to a Server in CloudBeaver
-CloudBeaver is a sleek, zero-config web UI. To see your data:
-1. Open the relevant URL above.
-2. Click **Connection** > **Manual**.
-3. Choose **PostgreSQL**.
-4. **Host**: `timescaledb-dev` (for Dev UI) or `timescaledb-prod` (for Prod UI).
-5. **Port**: `5432`.
-6. **Database**: `postgres`.
-7. **User/Password**: Use the credentials from the [Environment Separation](#environment-separation) table.
-8. Click **Connect**.
+### Connecting to Servers in CloudBeaver
+CloudBeaver allows you to manage both Dev and Prod from one dashboard:
+1. Open [http://localhost:8978](http://localhost:8978).
+2. Click **Connection** > **Manual** > **PostgreSQL**.
+3. Create two separate connections using these details:
+
+| Connection Name | Host | Port | User |
+| :--- | :--- | :--- | :--- |
+| **Enterprise-Dev** | `timescaledb-dev` | `5432` | `dev_user` |
+| **Enterprise-Prod** | `timescaledb-prod` | `5432` | `prod_user` |
+
+4. Use the passwords defined in the [Environment Separation](#environment-separation) table.
 
 ## Infrastructure Management
 The databases are managed through Docker Compose from the project root:
