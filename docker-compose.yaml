@@ -27,28 +27,26 @@ services:
       - enterprise-network
     restart: always
 
-  pgadmin-dev:
-    image: dpage/pgadmin4
-    container_name: pgadmin-dev
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@enterprise.dev
-      - PGADMIN_DEFAULT_PASSWORD=admin_pass
+  cloudbeaver-dev:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver-dev
     ports:
-      - "5050:80"
+      - "8978:8978"
+    volumes:
+      - cloudbeaver_dev_data:/opt/cloudbeaver/workspace
     networks:
       - enterprise-network
     depends_on:
       - timescaledb-dev
     restart: always
 
-  pgadmin-prd:
-    image: dpage/pgadmin4
-    container_name: pgadmin-prd
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@enterprise.prd
-      - PGADMIN_DEFAULT_PASSWORD=admin_pass
+  cloudbeaver-prd:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver-prd
     ports:
-      - "5051:80"
+      - "8979:8978"
+    volumes:
+      - cloudbeaver_prd_data:/opt/cloudbeaver/workspace
     networks:
       - enterprise-network
     depends_on:
@@ -76,4 +74,6 @@ networks:
 volumes:
   timescaledb_data_dev:
   timescaledb_data_prod:
+  cloudbeaver_dev_data:
+  cloudbeaver_prd_data:
   jenkins_home:

@@ -12,26 +12,26 @@ We maintain strict isolation between **Development** and **Production** data usi
 | **Development** | `5434` | `timescaledb-dev` | `dev_user` | `timescaledb_data_dev` |
 | **Production** | `5435` | `timescaledb-prod` | `prod_user` | `timescaledb_data_prod` |
 
-## UI Management (pgAdmin)
-We provide dedicated web interfaces for managing each database environment.
+## UI Management (CloudBeaver)
+We provide a modern web interface for managing each database environment using **CloudBeaver**.
 
 ### Access Details
 
-| Environment | URL | Admin Email | Password |
-| :--- | :--- | :--- | :--- |
-| **Development** | [http://localhost:5050](http://localhost:5050) | `admin@enterprise.dev` | `admin_pass` |
-| **Production** | [http://localhost:5051](http://localhost:5051) | `admin@enterprise.prd` | `admin_pass` |
+| Environment | URL |
+| :--- | :--- |
+| **Development** | [http://localhost:8978](http://localhost:8978) |
+| **Production** | [http://localhost:8979](http://localhost:8979) |
 
-### Connecting to a Server in pgAdmin
-Once logged into the UI, follow these steps to register the database:
-1. Right-click **Servers** > **Register** > **Server...**
-2. **General Tab**: Name it (e.g., "Enterprise Dev")
-3. **Connection Tab**:
-   - **Host name/address**: `timescaledb-dev` (for Dev UI) or `timescaledb-prod` (for Prod UI)
-   - **Port**: `5432` (Note: Use internal port 5432 inside the network)
-   - **Maintenance database**: `postgres`
-   - **Username**: `dev_user` or `prod_user`
-   - **Password**: `dev_pass` or `prod_pass`
+### Connecting to a Server in CloudBeaver
+CloudBeaver is a sleek, zero-config web UI. To see your data:
+1. Open the relevant URL above.
+2. Click **Connection** > **Manual**.
+3. Choose **PostgreSQL**.
+4. **Host**: `timescaledb-dev` (for Dev UI) or `timescaledb-prod` (for Prod UI).
+5. **Port**: `5432`.
+6. **Database**: `postgres`.
+7. **User/Password**: Use the credentials from the [Environment Separation](#environment-separation) table.
+8. Click **Connect**.
 
 ## Infrastructure Management
 The databases are managed through Docker Compose from the project root:
