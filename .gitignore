@@ -29,4 +29,3 @@ GEMINI.local.md
 # Data
 apps/etl-service/data/
 *.parquet
-*.lock
