@@ -45,7 +45,8 @@ graph TD
     -   **Isolated Databases**: Separate TimescaleDB instances (`dev` on 5434, `prod` on 5435).
     -   **Deployment Prefixing**: Deployments are prefixed with `dev-` or `prod-` for logical separation.
 3.  **Data Acquisition**: The `etl-service` interacts with the **EODHD API** to fetch historical and real-time market data.
-4.  **Persistence**: Data is stored in **TimescaleDB**, optimized using hypertables for time-series performance.
+4.  **Persistence**: Data is stored in **TimescaleDB**, optimized using hypertables for time-series performance. High-volume intraday data is offloaded to **Parquet** files via a hybrid storage model.
+5.  **UI Management**: Web-based database management is provided via dedicated **pgAdmin** instances for each environment.
 
 ## Core Documentation
 
