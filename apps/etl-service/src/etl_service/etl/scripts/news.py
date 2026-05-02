@@ -30,16 +30,51 @@ def news_saver(
     )
 
     try:
-        articles = client.get_news(
-            symbols=symbols,
-            tags=tags,
-            from_date=from_date.isoformat() if from_date else None,
-            to_date=to_date.isoformat() if to_date else None,
-            limit=limit,
+        # EODHD hard limit per request is 1000.
+        # We paginate using 'offset' to get "as much as possible".
+        request_limit = 1000
+        current_offset = 0
+        all_articles = []
+
+        logger.info(
+            f"Starting paginated news fetch for {symbols or tags} (Target: {limit})"
         )
-        total_articles = len(articles)
+
+        while len(all_articles) < limit:
+            # Calculate how many to fetch in this batch
+            remaining = limit - len(all_articles)
+            batch_limit = min(remaining, request_limit)
+
+            batch = client.get_news(
+                symbols=symbols,
+                tags=tags,
+                from_date=from_date.isoformat() if from_date else None,
+                to_date=to_date.isoformat() if to_date else None,
+                limit=batch_limit,
+                offset=current_offset,
+            )
+
+            if not batch:
+                break
+
+            all_articles.extend(batch)
+            current_offset += len(batch)
+
+            logger.info(
+                f"Fetched batch of {len(batch)} articles (Total: {len(all_articles)})"
+            )
+
+            # If the API returned less than we asked for, we've hit the end of history
+            if len(batch) < batch_limit:
+                break
+
+        total_articles = len(all_articles)
+        if total_articles == 0:
+            logger.warning(f"No news articles found for symbols={symbols}, tags={tags}")
+            return
+
         objects_to_upsert = []
-        for article in articles:
+        for article in all_articles:
             news = MarketNews(
                 date=datetime.fromisoformat(article.get("date").replace("Z", "+00:00"))
                 if article.get("date")

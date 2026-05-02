@@ -38,11 +38,13 @@ async def market_news_saver_dispatcher(
     tags: str | None = None,
     from_date: datetime.date | None = None,
     to_date: datetime.date | None = None,
-    limit: int = 50,
+    limit: int = 1000,
 ) -> None:
     """Orchestrates market news saving.
 
-    The EODHD API only allows one ticker per request, so we split symbols and dispatch.
+    The dispatcher splits symbols into individual requests to comply with EODHD's
+    single-ticker-per-request rule. Each sub-flow automatically paginates to
+    fetch up to the requested limit.
     """
     run_id = str(uuid.uuid4())
 
