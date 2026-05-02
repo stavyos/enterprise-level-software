@@ -59,4 +59,11 @@ npx nx run etl-service:deploy:prod
 ## 5. Running Flows
 1. Open the [Prefect Dashboard](http://localhost:4200/deployments).
 2. You will see deployments like `dev-EOD-Saver` and `prod-EOD-Saver`.
-3. Triggering a `dev-` deployment will run the `:dev` image in the `dev-k8s-pool`, which is hardcoded to use the `dev` database.
+Triggering a `dev-` deployment will run the `:dev` image in the `dev-k8s-pool`, which is hardcoded to use the `dev` database.
+
+## 6. Database Management
+Access the web-based UIs to manage your data:
+- **Dev UI**: [http://localhost:5050](http://localhost:5050)
+- **Prod UI**: [http://localhost:5051](http://localhost:5051)
+
+Login credentials can be found in the [Database Architecture](../database/timescaledb.md) guide.
