@@ -34,7 +34,7 @@ storage.save_partitioned(
 ### Environment Isolation
 Data is physically isolated by environment prefixes:
 -   **Development**: `C:/enterprise-level-software/data/dev/intraday`
--   **Production**: `C:/enterprise-level-software/data/prod/intraday`
+-   **Production**: `C:/enterprise-level-software/data/prd/intraday`
 
 ### Docker Mounting
 In our Prefect orchestration, the host path defined in `DATA_DIR` is automatically mounted to the container's `/data` directory. This allows the ETL code to use a consistent path (`/data`) regardless of whether it is running on a developer's Windows machine or a production Linux server.

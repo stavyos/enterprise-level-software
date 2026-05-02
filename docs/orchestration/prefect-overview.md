@@ -9,7 +9,7 @@ To optimize local resources, we maintain a **single unified Prefect cluster** bu
 ### Isolation Pillars
 1.  **Deployment Naming**: Every deployment is registered with an environment suffix (e.g., `EOD-Saver/dev`).
 2.  **Isolated Databases**: Workers connect to different TimescaleDB instances (`5434` for dev, `5435` for prod).
-3.  **Isolated Data Directories**: Parquet files are stored in environment-specific volumes (e.g., `data/dev` vs `data/prod`).
+3.  **Isolated Data Directories**: Parquet files are stored in environment-specific volumes (e.g., `data/dev` vs `data/prd`).
 4.  **Baked Docker Images**: Environment variables are baked into the Docker images at build time, ensuring that an image tagged `:prod` can only talk to the production database and data volume.
 
 | Feature | Development (Dev) | Production (Prod) |
