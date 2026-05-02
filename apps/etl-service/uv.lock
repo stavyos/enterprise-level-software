@@ -401,8 +401,10 @@ dependencies = [
     { name = "eodhd-client" },
     { name = "loguru" },
     { name = "prefect" },
+    { name = "prefect-docker" },
     { name = "pydantic-settings" },
     { name = "python-dotenv", extra = ["cli"] },
+    { name = "storage-client" },
 ]
 
 [package.optional-dependencies]
@@ -418,10 +420,12 @@ requires-dist = [
     { name = "eodhd-client", editable = "../../libs/eodhd-client" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "prefect", specifier = "==3.6.25" },
+    { name = "prefect-docker", specifier = ">=0.7.1" },
     { name = "pydantic-settings", specifier = ">=2.8.1" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.12.0" },
     { name = "python-dotenv", extras = ["cli"], specifier = ">=1.0.1" },
+    { name = "storage-client", editable = "../../libs/storage-client" },
 ]
 provides-extras = ["dev"]
 
@@ -1042,6 +1046,20 @@ wheels = [
 ]
 
 [[package]]
+name = "prefect-docker"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "docker" },
+    { name = "exceptiongroup" },
+    { name = "prefect" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/77/76/477cb000395452edbd641734aa1d2b41680b35e9172c11ace685a74b2e54/prefect_docker-0.7.1.tar.gz", hash = "sha256:7d5053bcc049d56b5498ca4629c9b08b31d96f5387e1eb34f510ec322d5aad89", size = 41684, upload-time = "2026-01-15T22:53:06.477Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bc/5c/20f573c6f800ad784603c7bd5787770ef648758289af2970d12c39072534/prefect_docker-0.7.1-py3-none-any.whl", hash = "sha256:b4fe1760c12206d3eaec2826d63acb1235bd41756921eb0c6b5feeb20b157e37", size = 28254, upload-time = "2026-01-15T22:53:04.998Z" },
+]
+
+[[package]]
 name = "prometheus-client"
 version = "0.24.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1621,6 +1639,26 @@ sdist = { url = "https://files.pythonhosted.org/packages/81/69/17425771797c36cde
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/c9/584bc9651441b4ba60cc4d557d8a547b5aff901af35bda3a4ee30c819b82/starlette-1.0.0-py3-none-any.whl", hash = "sha256:d3ec55e0bb321692d275455ddfd3df75fff145d009685eb40dc91fc66b03d38b", size = 72651, upload-time = "2026-03-22T18:29:45.111Z" },
 ]
+
+[[package]]
+name = "storage-client"
+version = "0.1.0"
+source = { editable = "../../libs/storage-client" }
+dependencies = [
+    { name = "loguru" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "loguru", specifier = ">=0.7.3" },
+    { name = "pandas", specifier = ">=2.2.0" },
+    { name = "pyarrow", specifier = ">=15.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
+    { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.12.0" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "text-unidecode"

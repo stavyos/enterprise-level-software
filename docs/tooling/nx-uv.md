@@ -43,6 +43,13 @@ The Jenkins pipeline leverages these tools to ensure consistency between develop
 - **`nx run-many -t test`**: Validates all projects before any deployment is attempted.
 - **`uv run`**: Executes flow registration and Python scripts in a reproducible manner across all environments.
 
+## Usage in CI/CD (Jenkins)
+
+The Jenkins pipeline leverages these tools to ensure consistency between developer machines and production:
+- **`npm run install:all`**: Used in the `Setup` stage to prepare the entire workspace.
+- **`nx run-many -t test`**: Used in the `Tests` stage to validate all projects before deployment.
+- **`uv run`**: Used during the `Deploy` stage to execute the flow registration scripts within containerized environments.
+
 ## Ruff: Fast & Unified Linting
 
 We use [Ruff](https://github.com/astral-sh/ruff) as our single tool for both linting and formatting — it replaces Flake8, isort, and Black.

@@ -181,7 +181,7 @@ The pipeline uses **Dockerized Stages** and **Automated Status Reporting**:
 3.  **Setup & Tests (Dockerized)**: These stages run inside a custom agent image (`jenkins-agent-python`).
     *   Ensures that Node.js, npm, Nx, and `uv` commands run in a Linux environment.
 4.  **Build**: Builds the environment-specific application image on the host.
-5.  **Deploy**: Runs flow registration **inside** the newly built application image to ensure 100% dependency parity.
+5.  **Deploy**: Runs flow registration **inside** the newly built application image. It uses a specialized deployment script that strips environment-specific metadata (like local paths) to ensure the registered flows are portable across any Docker host.
 6.  **Final Status**: Reports the final Success/Failure to GitHub.
 ## Environment Isolation
 Isolation between `dev` and `prod` is maintained through:

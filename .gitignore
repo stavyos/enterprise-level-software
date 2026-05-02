@@ -25,3 +25,7 @@ todos
 .env.prod
 
 GEMINI.local.md
+
+# Data
+apps/etl-service/data/
+*.parquet

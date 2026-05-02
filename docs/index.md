@@ -45,7 +45,8 @@ graph TD
     -   **Isolated Databases**: Separate TimescaleDB instances (`dev` on 5434, `prod` on 5435).
     -   **Deployment Prefixing**: Deployments are prefixed with `dev-` or `prod-` for logical separation.
 3.  **Data Acquisition**: The `etl-service` interacts with the **EODHD API** to fetch historical and real-time market data.
-4.  **Persistence**: Data is stored in **TimescaleDB**, optimized using hypertables for time-series performance.
+4.  **Persistence**: Data is stored in **TimescaleDB**, optimized using hypertables for time-series performance. High-volume intraday data is offloaded to **Parquet** files via a hybrid storage model.
+5.  **UI Management**: Web-based database management is provided via dedicated **CloudBeaver** instances for each environment.
 
 ## Core Documentation
 
@@ -65,9 +66,11 @@ graph TD
 - [**Setup Guide**](./orchestration/setup-guide.md): How to get the system running locally.
 - [**Deployment Pattern**](./orchestration/prefect.md): Deep dive into the Dispatcher/Saver architecture.
 
-### 📊 Database & Data
+### ðŸ“Š Database & Data
 - [**TimescaleDB**](./database/timescaledb.md): Our time-series database strategy and models.
+- [**Storage Client**](./python/packages/storage-client.md): Hybrid storage implementation using Parquet for high-volume intraday data.
 - [**EODHD Client**](./api/eodhd-client.md): Documentation for our custom API client.
+
 
 ### 🧪 Quality & Standards
 - [**Environment Parity**](./quality/environment-parity.md): Twelve-Factor App compliance and host-to-container bridging.

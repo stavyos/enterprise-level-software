@@ -1,0 +1,13 @@
+{
+  "name": "storage-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/storage-client/src",
+  "projectType": "library",
+  "targets": {
+    "install": {},
+    "test": {},
+    "lint": {},
+    "format": {},
+    "build": {}
+  }
+}

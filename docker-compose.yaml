@@ -27,6 +27,20 @@ services:
       - enterprise-network
     restart: always
 
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver
+    ports:
+      - "8978:8978"
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    networks:
+      - enterprise-network
+    depends_on:
+      - timescaledb-dev
+      - timescaledb-prod
+    restart: always
+
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
@@ -43,10 +57,10 @@ services:
 
 networks:
   enterprise-network:
-    name: enterprise-network
-    driver: bridge
+    external: true
 
 volumes:
   timescaledb_data_dev:
   timescaledb_data_prod:
+  cloudbeaver_data:
   jenkins_home:

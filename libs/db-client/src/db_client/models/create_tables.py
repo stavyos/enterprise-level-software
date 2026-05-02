@@ -9,7 +9,6 @@ from db_client.models.stocks import (
     StockAdjusted,
     StockDividends,
     StockEOD,
-    StockIntraday,
     StockSplits,
 )
 
@@ -57,10 +56,6 @@ def generate_all_tables_sql(base: Any) -> str:
         ]:
             tables_sql.append(
                 f"SELECT create_hypertable('{table.name}', 'bus_date', if_not_exists => TRUE);"
-            )
-        elif table.name == StockIntraday.__tablename__:
-            tables_sql.append(
-                f"SELECT create_hypertable('{table.name}', 'timestamp', if_not_exists => TRUE);"
             )
         elif table.name == MarketNews.__tablename__:
             tables_sql.append(

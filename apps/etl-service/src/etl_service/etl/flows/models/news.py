@@ -12,5 +12,5 @@ class NewsSaveRequest(BaseModel):
     tags: str | None = None
     from_date: date | None = None
     to_date: date | None = None
-    limit: int = 50
+    limit: int = 1000
     run_id: str

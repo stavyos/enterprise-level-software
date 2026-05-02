@@ -10,30 +10,26 @@ We use Docker build arguments (`--build-arg`) to inject environment-specific dat
 - `etl-service:dev`: Baked with Port 5434.
 - `etl-service:prod`: Baked with Port 5435.
 
-### 2. Registration Phase
-Deployment registration is handled in `apps/etl-service/src/etl_service/etl/deploy_etls.py`.
+### 2. Registration Phase (Portable Strategy)
+Deployment registration is handled in `apps/etl-service/src/etl_service/etl/deploy_etls.py`. We use a **Portable Deployment Strategy** to ensure flows registered from a development machine (Windows) work perfectly in production environments (Linux).
 
-> **Crucial Implementation Note**: To ensure compatibility between a Windows host and a Linux Docker container, we use the `RunnerDeployment` constructor directly rather than `from_entrypoint()`. This allows us to manually specify the `entrypoint` and set `path="/app"`. Failure to do this causes Prefect to capture absolute Windows host paths, which leads to `FileNotFoundError` inside the container.
+1.  **`flow.deploy(build=False)`**: We use the modern Prefect `flow.deploy` API. By setting `build=False`, we prevent Prefect from attempting to rebuild the image or pull code from the local filesystem.
+2.  **Post-Registration Update**: After the deployment is registered, we explicitly clear the `path` and `pull_steps` attributes using the Prefect Client. This forces the worker to use the code **already baked into the container image** at the `PYTHONPATH` location, effectively making the deployment environment-agnostic.
 
-### 3. Execution Phase
-When a flow is triggered, the Prefect worker pulls the specific image. Because the database configuration is already inside the container (baked into environment variables), the worker automatically connects to the correct database instance.
+### Job Variables & Infrastructure Hardening
+Our `JobVariables` logic ensures that infrastructure-specific configuration (like Docker volumes) is correctly applied:
+- **Volume Translation**: Automatically converts Windows drive paths (e.g., `C:/path`) to Docker-compatible forward-slash paths (`//c/path`).
+- **Network Isolation**: Forces all ETL containers onto the `enterprise-network` to allow resolution of `host.docker.internal` for database access.
+### Backfill & Date Range Strategy
 
-## Deployment Partitioning
-We use the `ENV_PREFIX` variable to logically and physically separate our environments:
-- **Naming**: Both flow names and deployment names are prefixed with `{prefix}-` (e.g., `prod-Exchanges-Saver`).
-- **Work Pools**:
-    - `dev-k8s-pool`: Processes all flows with the `dev-` prefix.
-    - `prod-k8s-pool`: Processes all flows with the `prod-` prefix.
+The Intraday Dispatcher supports orchestrated backfills via the `end_date` parameter:
 
-## Job Variables & Environment Hardening
-To prevent stale metadata from overriding container settings, our `JobVariables` logic explicitly retrieves values from our Pydantic `Settings`. We call `settings.reload()` during the deployment entry point to ensure that the variables stored on the Prefect server (and subsequently passed to the worker) match the current environment (dev vs. prod).
+1.  **Calendar-Day Chunking**: To maximize API efficiency, the dispatcher automatically splits date ranges into **120-calendar-day chunks** (the maximum allowed by EODHD for 1-minute data).
+2.  **Optimized Dispatching**: Instead of one sub-flow per day, the system dispatches one sub-flow per 120-day chunk per ticker. This reduces Prefect overhead by ~98% for long-range backfills.
+3.  **Dynamic Partitioning**: The `intraday_saver` dynamically extracts the `bus_date` from the retrieved records, ensuring that a single multi-day API response is correctly partitioned into daily Parquet files in the storage layer.
 
-## Key Benefits
-- **Zero Configuration Leakage**: Dev workers cannot accidentally connect to the Prod database because the connection logic is isolated within the image.
-- **Unified Observability**: View all environment runs in a single dashboard while keeping them logically separated.
-- **Path Portability**: The manual `RunnerDeployment` fix ensures that our Windows-based development environment can successfully trigger flows in Linux-based containers.
+**Example**: A 6-year backfill (2020–2026) triggers approximately 20 sub-flows instead of 1,500+, while maintaining full observability and retry-ability for each chunk.
 
-## Automated Deployments (CI/CD)
 The entire registration process is automated via **Jenkins**:
 - **Branch Detection**: PRs automatically register flows with the `dev` prefix.
 - **Production Lifecycle**: Merges to `master` trigger the build and registration of `prod` deployments.

@@ -18,16 +18,15 @@ We use **Docker Compose** to run two independent **TimescaleDB** instances on di
 docker-compose up -d
 ```
 
-### 2. ETL Service Isolation
-We build environment-specific images using the same `Dockerfile.etl`. By using build arguments, we bake the configuration directly into the image.
+### Windows Volume Mapping Fix
 
-**Key Arguments**:
-- `DB_PORT`: `5434` (Dev) vs `5435` (Prod).
-- `ENV_PREFIX`: `dev` vs `prod`.
+On Windows machines, absolute paths like `C:\path` trigger validation errors in Pydantic when used in Docker volumes because the colon is misinterpreted as a volume option separator.
 
-**Build Commands**:
-- **Dev**: `npx nx run etl-service:docker-build:dev`
-- **Prod**: `npx nx run etl-service:docker-build:prod`
+We resolve this by automatically translating Windows paths in our `JobVariables` logic:
+- **Input**: `C:\data`
+- **Output**: `//c/data` (Docker Desktop compatible format)
+
+This ensures that our Prefect worker can reliably bind host directories to the `/data` mount inside our ETL containers.
 
 ## CI/CD Orchestration & Networking
 

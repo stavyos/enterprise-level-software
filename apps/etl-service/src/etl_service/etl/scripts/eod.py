@@ -30,6 +30,7 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
 
     objects_to_upsert = []
     total_tickers = len(tickers)
+    failed_tickers = []
     for i, ticker_symbol in enumerate(tickers):
         try:
             # Tickers are expected in 'SYMBOL.EXCHANGE' format
@@ -68,6 +69,12 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
 
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
+            failed_tickers.append(ticker_symbol)
+
+    if failed_tickers:
+        error_msg = f"Failed to process EOD data for tickers: {failed_tickers}"
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
     if objects_to_upsert:
         success = db_client.bulk_upsert(objects_to_upsert)
@@ -76,6 +83,8 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
                 f"Successfully inserted {len(objects_to_upsert)}/{total_tickers} rows into the database."
             )
         else:
-            logger.error("Failed to perform bulk upsert for EOD data.")
+            error_msg = "Failed to perform bulk upsert for EOD data."
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
     else:
         logger.warning("No data collected for bulk upsert.")

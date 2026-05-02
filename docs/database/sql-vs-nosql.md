@@ -23,7 +23,9 @@ SQL databases are best for projects where:
 - The data structure is consistent and predictable.
 - You need to perform complex queries involving many table "joins."
 
-**Our Choice**: We use **PostgreSQL** (via TimescaleDB) because financial stock data is highly structured and requires strict consistency.
+**Our Choice**: We use a **Polyglot Persistence** approach:
+1. **TimescaleDB (SQL)**: For most data (EOD, News, Dividends) where strict consistency and relational analysis are required.
+2. **Parquet Files (NoSQL/File-based)**: For high-volume 1-minute intraday data, where horizontal scalability and analytical compression are paramount.
 
 ## Popular SQL Commands & Queries
 SQL uses a standard set of commands to interact with data. Here are the ones you will see most often:

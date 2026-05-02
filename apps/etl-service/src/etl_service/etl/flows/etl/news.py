@@ -38,26 +38,54 @@ async def market_news_saver_dispatcher(
     tags: str | None = None,
     from_date: datetime.date | None = None,
     to_date: datetime.date | None = None,
-    limit: int = 50,
+    limit: int = 1000,
 ) -> None:
-    """Orchestrates market news saving."""
+    """Orchestrates market news saving.
+
+    The dispatcher splits symbols into individual requests to comply with EODHD's
+    single-ticker-per-request rule. Each sub-flow automatically paginates to
+    fetch up to the requested limit.
+    """
     run_id = str(uuid.uuid4())
 
     if not symbols and not tags:
-        raise ValueError("Symbols or Tags must be supplied for market_news_saver_dispatcher.")
+        raise ValueError(
+            "Symbols or Tags must be supplied for market_news_saver_dispatcher."
+        )
 
-    # Simple dispatch for now
-    params_list = [
-        {
-            "save_request": NewsSaveRequest(
-                symbols=symbols,
-                tags=tags,
-                from_date=from_date,
-                to_date=to_date,
-                limit=limit,
-                run_id=run_id,
+    params_list = []
+
+    if symbols:
+        # Support both "AAPL,MSFT" and "[AAPL,MSFT]" formats
+        clean_symbols = symbols.strip("[]").replace(" ", "")
+        symbol_list = [s for s in clean_symbols.split(",") if s]
+
+        for symbol in symbol_list:
+            params_list.append(
+                {
+                    "save_request": NewsSaveRequest(
+                        symbols=symbol,
+                        tags=tags,
+                        from_date=from_date,
+                        to_date=to_date,
+                        limit=limit,
+                        run_id=run_id,
+                    )
+                }
             )
-        }
-    ]
+    else:
+        # Only tags provided
+        params_list.append(
+            {
+                "save_request": NewsSaveRequest(
+                    symbols=None,
+                    tags=tags,
+                    from_date=from_date,
+                    to_date=to_date,
+                    limit=limit,
+                    run_id=run_id,
+                )
+            }
+        )
 
     await DEPLOYMENT_NEWS.dispatch_sub_flows(params=params_list)

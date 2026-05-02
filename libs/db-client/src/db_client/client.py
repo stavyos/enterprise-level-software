@@ -12,7 +12,6 @@ from .models import (
     StockAdjusted,
     StockDividends,
     StockEOD,
-    StockIntraday,
     StockSplits,
 )
 
@@ -281,87 +280,6 @@ class DBClient:
             except Exception as e:
                 session.rollback()
                 logger.error(f"Error querying dividends stock data for {symbol}: {e}")
-                return None
-
-    def insert_stock_intraday_data(
-        self,
-        timestamp: int,
-        symbol: str,
-        bus_date: date,
-        gmt_offset: int,
-        open_price: float,
-        high_price: float,
-        low_price: float,
-        close_price: float,
-        volume: int,
-    ) -> bool:
-        """
-        Inserts or updates intraday stock data.
-
-        Args:
-            timestamp (int): Unix timestamp.
-            symbol (str): The ticker symbol.
-            bus_date (date): The business date.
-            gmt_offset (int): GMT offset in seconds.
-            open_price (float): Opening price.
-            high_price (float): Highest price.
-            low_price (float): Lowest price.
-            close_price (float): Closing price.
-            volume (int): Trading volume.
-        """
-        with self._session() as session:
-            try:
-                stock_intraday = StockIntraday(
-                    timestamp=timestamp,
-                    symbol=symbol,
-                    bus_date=bus_date,
-                    gmt_offset=gmt_offset,
-                    open=open_price,
-                    high=high_price,
-                    low=low_price,
-                    close=close_price,
-                    volume=volume,
-                )
-                session.merge(stock_intraday)
-                session.commit()
-                logger.debug(
-                    f"Inserted/Updated intraday data for {symbol} at {bus_date}."
-                )
-                return True
-            except Exception as e:
-                session.rollback()
-                logger.error(
-                    f"Error inserting intraday stock data for {symbol} at {bus_date}: {e}"
-                )
-                return False
-
-    def get_stock_intraday_data(
-        self, symbol: str, limit: int = 2
-    ) -> list[StockIntraday] | None:
-        """
-        Retrieves intraday stock data for a specific symbol.
-
-        Args:
-            symbol (str): The ticker symbol.
-            limit (int, optional): Maximum number of rows to return. Defaults to 2.
-
-        Returns:
-            list[StockIntraday] | None: A list of StockIntraday objects or None if an error occurs.
-        """
-        with self._session() as session:
-            try:
-                results = (
-                    session.query(StockIntraday)
-                    .filter_by(symbol=symbol)
-                    .order_by(StockIntraday.timestamp.desc())
-                    .limit(limit)
-                    .all()
-                )
-                logger.debug(f"Query for {symbol} returned {len(results)} rows.")
-                return results
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Error querying intraday stock data for {symbol}: {e}")
                 return None
 
     def insert_stock_splits_data(

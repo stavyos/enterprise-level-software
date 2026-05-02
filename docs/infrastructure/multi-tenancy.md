@@ -30,6 +30,13 @@ Each environment targets a dedicated database instance:
 ### 4. Kubernetes Resources
 By leveraging Prefect's `job_variables`, we can define different resource limits per environment (e.g., production savers get more CPU/Memory than development ones).
 
+### 5. Physical Data Isolation (Parquet)
+Intraday data stored on the host filesystem is strictly isolated by environment-specific root directories:
+- **Development**: `C:/enterprise-level-software/data/dev/intraday`
+- **Production**: `C:/enterprise-level-software/data/prd/intraday`
+
+This ensures that development backfills or experimental runs never pollute production datasets. On Windows host machines, these paths are automatically translated to Docker-compatible formats (e.g., `//c/path`) within the `JobVariables` layer.
+
 ## The Work Pool Job Template Guard
 A critical discovery during our implementation was that Prefect **Work Pools** (specifically Docker/K8s types) come with a "Base Job Template."
 

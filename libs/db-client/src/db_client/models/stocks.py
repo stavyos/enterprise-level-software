@@ -56,24 +56,6 @@ class StockDividends(Base):
     currency = Column(Text)
 
 
-class StockIntraday(Base):
-    """
-    Model representing intraday historical stock data.
-    """
-
-    __tablename__ = "stock_intraday"
-
-    timestamp = Column(Integer, primary_key=True)
-    symbol = Column(Text, primary_key=True)
-    bus_date = Column(Date)
-    gmt_offset = Column(Integer)
-    open = Column(Float)
-    high = Column(Float)
-    low = Column(Float)
-    close = Column(Float)
-    volume = Column(Integer)
-
-
 class StockSplits(Base):
     """
     Model representing stock split history.

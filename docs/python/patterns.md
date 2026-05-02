@@ -53,7 +53,15 @@ To minimize database round-trips during high-volume ETL runs (e.g., Intraday dat
 2. **Script**: Fetches data from API, instantiates SQLAlchemy models, and stores them in a list.
 3. **Execution**: A single `session.commit()` is performed after all records in the batch are processed.
 
-**Benefits:**
+**Benefits**:
 - **Performance**: Up to 100x faster than row-by-row commits.
 - **Atomicity**: Either the entire batch succeeds, or it's rolled back.
 - **Reduced Log Noise**: Summarizes thousands of insertions into a single `INFO` log entry.
+
+## 7. Abstract Storage Pattern
+For high-volume data not suitable for SQL, we use an abstract storage layer. This decouples the ETL logic from the underlying file system or cloud storage implementation.
+
+**Implementation (`LocalParquetStorage`)**:
+- Uses **PyArrow** and **Pandas** for efficient partitioning and compression.
+- Enforces strict 1-minute intervals for intraday data to prevent redundancy.
+- Supports native partitioning (e.g., `symbol=.../bus_date=...`) for high-speed data skipping during analysis.
