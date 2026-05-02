@@ -8,6 +8,7 @@ class EOD(BaseModel):
 
 
 class EODSaveRequest(BaseModel):
-    bus_date: datetime.date
+    from_date: datetime.date
+    to_date: datetime.date
     tickers: list[EOD] = Field(default_factory=list)
     run_id: str
