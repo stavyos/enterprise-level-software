@@ -66,7 +66,7 @@ def effective_db_host(self) -> str:
 ```
 
 ### Hybrid Storage Resolution
-The `data_dir` setting defaults to `/data` (container path). During local host execution, it is overridden by `DATA_DIR` in `dev.env` (e.g., `G:/My Drive/...`). The Prefect worker handles mounting this host path to the container's `/data` directory automatically via `JobVariables`.
+The `data_dir` setting defaults to `/data` (container path). During local host execution, it is overridden by `DATA_DIR` in `dev.env` (e.g., `C:/enterprise-level-software/data`). The Prefect worker handles mounting this host path to the container's `/data` directory automatically via `JobVariables`.
 
 ## Robust Reloading
 Because Prefect and Nx often involve nested directory structures and complex environment variable merging, we implemented a custom `reload()` method. This method searches for `.env`, `dev.env`, and `prod.env` in the current and parent directories, ensuring that the correct configuration is always prioritized.
