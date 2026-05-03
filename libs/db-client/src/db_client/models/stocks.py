@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, Float, Integer, Text
+from sqlalchemy import BigInteger, Column, Date, Float, Text
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -18,7 +18,7 @@ class StockEOD(Base):
     low = Column(Float)
     close = Column(Float)
     adjusted_close = Column(Float)
-    volume = Column(Integer)
+    volume = Column(BigInteger)
 
 
 class StockAdjusted(Base):
@@ -35,7 +35,7 @@ class StockAdjusted(Base):
     low = Column(Float)
     close = Column(Float)
     adjusted_close = Column(Float)
-    volume = Column(Integer)
+    volume = Column(BigInteger)
 
 
 class StockDividends(Base):
