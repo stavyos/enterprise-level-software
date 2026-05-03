@@ -85,12 +85,12 @@ async def eod_saver_dispatcher(
     """Orchestrates EOD data saving by dispatching multiple parallel saver flows.
 
     Args:
-        from_date (datetime.date | None, optional): Start date. Defaults to 1800-01-01.
-        to_date (datetime.date | None, optional): End date. Defaults to today.
+        from_date (datetime.date | None, optional): Start date. Defaults to 1900-01-01.
+        to_date (datetime.date | None, optional): End date. Defaults to today + 1.
         tickers (list[str]): List of tickers to process.
     """
     if not from_date:
-        from_date = datetime.date(1800, 1, 1)
+        from_date = datetime.date(1900, 1, 1)
 
     if not to_date:
         to_date = datetime.date.today() + datetime.timedelta(days=1)
