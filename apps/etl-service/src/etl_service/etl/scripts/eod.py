@@ -10,11 +10,14 @@ from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
 
-def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
+def eod_saver(
+    from_date: datetime.date, to_date: datetime.date, tickers: list[str], run_id: str
+) -> None:
     """Core logic for saving End-Of-Day data.
 
     Args:
-        bus_date (datetime.date): The business date.
+        from_date (datetime.date): Start date.
+        to_date (datetime.date): End date.
         tickers (list[str]): List of stock tickers (e.g. ['AAPL.US', 'MSFT.US']).
         run_id (str): Unique identifier for the run.
     """
@@ -30,7 +33,6 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
 
     objects_to_upsert = []
     total_tickers = len(tickers)
-    failed_tickers = []
     for i, ticker_symbol in enumerate(tickers):
         try:
             # Tickers are expected in 'SYMBOL.EXCHANGE' format
@@ -41,26 +43,31 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
             data = client.get_eod_data(
                 symbol=symbol,
                 exchange=exchange,
-                date_from=bus_date.isoformat(),
-                date_to=bus_date.isoformat(),
+                date_from=from_date.isoformat(),
+                date_to=to_date.isoformat(),
             )
 
             if data and isinstance(data, list) and len(data) > 0:
-                item = data[0]
-                obj = StockEOD(
-                    bus_date=bus_date,
-                    symbol=ticker_symbol,
-                    open=item["open"],
-                    high=item["high"],
-                    low=item["low"],
-                    close=item["close"],
-                    adjusted_close=item["adjusted_close"],
-                    volume=item["volume"],
+                for item in data:
+                    bus_date = datetime.date.fromisoformat(item["date"])
+                    obj = StockEOD(
+                        bus_date=bus_date,
+                        symbol=ticker_symbol,
+                        open=item["open"],
+                        high=item["high"],
+                        low=item["low"],
+                        close=item["close"],
+                        adjusted_close=item["adjusted_close"],
+                        volume=item["volume"],
+                    )
+                    objects_to_upsert.append(obj)
+                logger.debug(
+                    f"Collected EOD data for {ticker_symbol} from {from_date} to {to_date}"
                 )
-                objects_to_upsert.append(obj)
-                logger.debug(f"Collected EOD data for {ticker_symbol} at {bus_date}")
             else:
-                logger.warning(f"No EOD data found for {ticker_symbol} at {bus_date}")
+                logger.warning(
+                    f"No EOD data found for {ticker_symbol} in range {from_date} to {to_date}"
+                )
 
             if (i + 1) % 10 == 0:
                 logger.info(
@@ -69,22 +76,17 @@ def eod_saver(bus_date: datetime.date, tickers: list[str], run_id: str) -> None:
 
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
-            failed_tickers.append(ticker_symbol)
-
-    if failed_tickers:
-        error_msg = f"Failed to process EOD data for tickers: {failed_tickers}"
-        logger.error(error_msg)
-        raise RuntimeError(error_msg)
+            raise RuntimeError(
+                f"Critical error saving EOD for {ticker_symbol}: {e}"
+            ) from e
 
     if objects_to_upsert:
         success = db_client.bulk_upsert(objects_to_upsert)
         if success:
             logger.info(
-                f"Successfully inserted {len(objects_to_upsert)}/{total_tickers} rows into the database."
+                f"Successfully inserted {len(objects_to_upsert)} rows for {total_tickers} tickers."
             )
         else:
-            error_msg = "Failed to perform bulk upsert for EOD data."
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
+            raise RuntimeError("Failed to perform bulk upsert for EOD data.")
     else:
         logger.warning("No data collected for bulk upsert.")
