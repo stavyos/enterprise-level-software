@@ -65,7 +65,22 @@ node {
 
         stage('Build') {
             echo "Building Application Docker Image for ${env.DEPLOY_ENV}..."
-            appImage = docker.build("etl-service:${env.DEPLOY_ENV}", "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} -f Dockerfile.etl .")
+
+            def dbPassId = (env.DEPLOY_ENV == 'prod') ? 'DB_PASSWORD_PROD' : 'DB_PASSWORD_DEV'
+            def dbUser = (env.DEPLOY_ENV == 'prod') ? 'prod_user' : 'dev_user'
+
+            withCredentials([
+                string(credentialsId: 'EODHD_API_KEY', variable: 'EODHD_KEY'),
+                string(credentialsId: dbPassId, variable: 'DB_PASS')
+            ]) {
+                appImage = docker.build("etl-service:${env.DEPLOY_ENV}",
+                    "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} " +
+                    "--build-arg EODHD_API_KEY=${EODHD_KEY} " +
+                    "--build-arg DB_USER=${dbUser} " +
+                    "--build-arg DB_PASSWORD=${DB_PASS} " +
+                    "-f Dockerfile.etl ."
+                )
+            }
         }
 
         stage('Deploy') {
