@@ -1,7 +1,5 @@
 """Script for saving Exchanges data."""
 
-import datetime
-
 from loguru import logger
 
 from db_client.client import DBClient
@@ -10,12 +8,8 @@ from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
 
-def exchanges_saver(bus_date: datetime.date) -> None:
-    """Core logic for saving Exchanges data.
-
-    Args:
-        bus_date (datetime.date): The business date.
-    """
+def exchanges_saver() -> None:
+    """Core logic for saving Exchanges data."""
     client = EODHDClientBase(settings.eodhd_api_key).exchanges
 
     db_client = DBClient(
