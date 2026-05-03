@@ -2,6 +2,30 @@
 
 Our system uses **TimescaleDB**, an open-source extension of PostgreSQL, optimized for storing and querying financial time-series data at scale.
 
+## Schema Architecture
+Our schema is designed for high-performance time-series analysis while maintaining relational integrity for metadata.
+
+### Core Tables
+
+| Table Name | Primary Key | Type | Purpose |
+| :--- | :--- | :--- | :--- |
+| `stock_eod` | `symbol`, `bus_date` | Hypertable | Daily historical prices. |
+| `stock_adjusted` | `symbol`, `bus_date` | Hypertable | Dividend/Split adjusted daily data. |
+| `stock_dividends` | `symbol`, `bus_date` | Hypertable | Historical dividend payouts. |
+| `stock_splits` | `symbol`, `bus_date` | Hypertable | Stock split history. |
+| `market_news` | `id`, `date` | Hypertable | Financial news sentiment analysis. |
+| `exchanges` | `code` | Relational | Metadata for global exchanges. |
+| `tickers` | `code`, `exchange_code` | Relational | Master symbol list for discovery. |
+
+## Schema Management
+The database schema is managed programmatically via the `create_tables.py` script in `libs/db-client`.
+
+- **Automatic Table Generation**: The script iterates through all SQLAlchemy models and generates the corresponding `CREATE TABLE` and `SELECT create_hypertable()` commands.
+- **SQL Source of Truth**: The `stocks.sql` file in `libs/db-client` is the verified export of the current schema, used for container initialization and migrations.
+
+## High-Efficiency Persistence
+To handle large metadata sets (e.g., 51K+ tickers), we use PostgreSQL's **`ON CONFLICT`** logic. This ensures that symbol discovery flows remain idempotent and performant, updating metadata if it exists or inserting it if new.
+
 ## Environment Separation
 We maintain strict isolation between **Development** and **Production** data using separate containerized instances.
 
@@ -43,19 +67,6 @@ docker-compose up -d
 # Stop instances
 docker-compose down
 ```
-
-## Schema Integrity
-
-To maintain data robustness across high-volume assets and historical backfills, we adhere to the following standards:
-
-### 1. Numeric Precision (BigInteger)
-Standard `Integer` columns (max 2.1B) are insufficient for the `volume` column of high-activity stocks like AAPL, which can reach 7.4B+ in daily volume.
-- **Mandate**: All `volume` columns in EOD and Adjusted EOD tables MUST use `BigInteger` (SQL `BIGINT`).
-
-### 2. Reference Data Policy
-Reference data tables (like `exchanges`) store the current global state of metadata.
-- **Tracking**: These tables should NOT include a `bus_date` in the primary key unless the source API supports point-in-time historical snapshots.
-- **Workflow**: Redundant date parameters should be removed from the flow signatures to prevent implying historical tracking where none exists.
 
 ## Hybrid Storage Strategy
 

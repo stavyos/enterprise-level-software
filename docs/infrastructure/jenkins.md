@@ -183,37 +183,6 @@ The pipeline uses **Dockerized Stages** and **Automated Status Reporting**:
 4.  **Build**: Builds the environment-specific application image on the host.
 5.  **Deploy**: Runs flow registration **inside** the newly built application image. It uses a specialized deployment script that strips environment-specific metadata (like local paths) to ensure the registered flows are portable across any Docker host.
 6.  **Final Status**: Reports the final Success/Failure to GitHub.
-
-## Secret Management & Injection
-
-This project handles sensitive credentials (API keys, DB passwords) through a multi-stage injection process within the CI/CD pipeline.
-
-### 1. Jenkins Credentials
-Secrets are stored in the Jenkins Global Credentials Store as **Secret Text**:
-- `EODHD_API_KEY`: Global API key for financial data.
-- `DB_PASSWORD_DEV`: Password for the `dev_user` in TimescaleDB (Port 5434).
-- `DB_PASSWORD_PROD`: Password for the `prod_user` in TimescaleDB (Port 5435).
-
-### 2. Build-Time Injection (Image Baking)
-During the `Build` stage, secrets are passed as `--build-arg` to ensure the resulting Docker image is self-contained:
-```groovy
-stage('Build') {
-    appImage = docker.build("etl-service:${env.DEPLOY_ENV}",
-        "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} " +
-        "--build-arg EODHD_API_KEY=${EODHD_KEY} " +
-        "--build-arg DB_PASSWORD=${DB_PASS} " +
-        "-f Dockerfile.etl ."
-    )
-}
-```
-
-### 3. Deployment-Time Injection (Registration)
-To ensure Prefect correctly infers deployment parameters and database settings during registration, secrets are injected into the container environment using `withEnv`:
-- **DB Configuration**: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` are explicitly mapped based on the target `DEPLOY_ENV`.
-- **API Access**: `EODHD_API_KEY` is provided to allow the registration script to validate connections.
-
-This dual-injection ensures that flows have access to the credentials they need both at **build-time** (for configuration baking) and **runtime** (for operational use).
-
 ## Environment Isolation
 Isolation between `dev` and `prod` is maintained through:
 *   **Docker Tags**: Environment-specific images (`etl-service:dev`, `etl-service:prod`).
