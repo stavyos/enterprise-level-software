@@ -1,7 +1,8 @@
 from datetime import date, datetime
 
 from loguru import logger
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.engine import URL as PG_URL
 from sqlalchemy.orm import sessionmaker
 
@@ -418,7 +419,8 @@ class DBClient:
 
     def bulk_upsert(self, objects: list[Base]) -> bool:
         """
-        Performs a bulk upsert (merge) of multiple objects in a single session.
+        Performs a high-performance bulk upsert of multiple objects using
+        PostgreSQL's INSERT ... ON CONFLICT DO UPDATE syntax.
 
         Args:
             objects (list[Base]): List of SQLAlchemy model instances.
@@ -426,13 +428,49 @@ class DBClient:
         if not objects:
             return True
 
-        with self._session() as session:
+        # Assume all objects in the list are of the same type (same table)
+        model_class = type(objects[0])
+
+        # Extract data from objects into a list of dictionaries
+        data = []
+        for obj in objects:
+            # Use inspector to get column names and current values
+            mapper = inspect(model_class)
+            data.append(
+                {
+                    col.key: getattr(obj, col.key)
+                    for col in mapper.attrs
+                    if hasattr(obj, col.key)
+                }
+            )
+
+        with self.engine.connect() as conn:
             try:
-                for obj in objects:
-                    session.merge(obj)
-                session.commit()
+                # 1. Create the base INSERT statement
+                stmt = pg_insert(model_class).values(data)
+
+                # 2. Identify Primary Key columns for the index_elements
+                pk_columns = [col.name for col in inspect(model_class).primary_key]
+
+                # 3. Identify columns to update (all non-PK columns)
+                update_columns = {
+                    col.name: stmt.excluded[col.name]
+                    for col in inspect(model_class).columns
+                    if not col.primary_key
+                }
+
+                # 4. Construct the UPSERT statement
+                upsert_stmt = stmt.on_conflict_do_update(
+                    index_elements=pk_columns, set_=update_columns
+                )
+
+                # 5. Execute and commit
+                conn.execute(upsert_stmt)
+                conn.commit()
                 return True
             except Exception as e:
-                session.rollback()
-                logger.error(f"Error during bulk upsert: {e}")
+                conn.rollback()
+                logger.error(
+                    f"Error during optimized bulk upsert for {model_class.__tablename__}: {e}"
+                )
                 return False
