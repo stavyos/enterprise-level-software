@@ -44,6 +44,19 @@ docker-compose up -d
 docker-compose down
 ```
 
+## Schema Integrity
+
+To maintain data robustness across high-volume assets and historical backfills, we adhere to the following standards:
+
+### 1. Numeric Precision (BigInteger)
+Standard `Integer` columns (max 2.1B) are insufficient for the `volume` column of high-activity stocks like AAPL, which can reach 7.4B+ in daily volume.
+- **Mandate**: All `volume` columns in EOD and Adjusted EOD tables MUST use `BigInteger` (SQL `BIGINT`).
+
+### 2. Reference Data Policy
+Reference data tables (like `exchanges`) store the current global state of metadata.
+- **Tracking**: These tables should NOT include a `bus_date` in the primary key unless the source API supports point-in-time historical snapshots.
+- **Workflow**: Redundant date parameters should be removed from the flow signatures to prevent implying historical tracking where none exists.
+
 ## Hybrid Storage Strategy
 
 As the volume of intraday data grows, we transition from a pure relational model to a **Hybrid Storage Strategy**:

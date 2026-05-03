@@ -22,8 +22,12 @@
     - **Intraday**: 1-minute requests MUST NOT exceed **120 calendar days**. Dispatchers must automatically chunk larger ranges.
     - **News**: Implement **pagination** (1000 items per batch) using `offset` to fetch deep history.
 - **Type Safety**: Mandatory Python type hints (PEP 585/604). Postgres `ARRAY` type is preferred over `JSON` for performance in news symbols/tags.
+- **Database Schema Integrity**:
+    - The `volume` column in EOD and Adjusted tables MUST use `BigInteger` (SQL `BIGINT`) to prevent overflow for high-volume assets (e.g., AAPL).
+    - Reference data flows (like `Exchanges`) should NOT include a `bus_date` parameter in the flow signature if the source API does not provide historical snapshots, as it implies non-existent historical tracking.
 
 ## Prefect Orchestration
 - **Deployment Suffixing**: Register deployments with `ENV_PREFIX` (e.g., `Flow-Name/dev`).
 - **Worker Configuration**: Start workers with `--type docker` using `uv run prefect worker start --pool dev-k8s-pool --type docker`.
 - **Registration**: Use `RunnerDeployment.from_entrypoint` to ensure schema inference for CLI parameters.
+- **CI/CD Secret Injection**: Secrets (API Keys, DB Passwords) must be managed via Jenkins credentials and injected during both the Docker build phase (`--build-arg`) and the deployment registration phase (`withEnv`). This ensures flows have access to credentials both at build-time and runtime.

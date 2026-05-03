@@ -28,7 +28,15 @@ The Intraday Dispatcher supports orchestrated backfills via the `end_date` param
 2.  **Optimized Dispatching**: Instead of one sub-flow per day, the system dispatches one sub-flow per 120-day chunk per ticker. This reduces Prefect overhead by ~98% for long-range backfills.
 3.  **Dynamic Partitioning**: The `intraday_saver` dynamically extracts the `bus_date` from the retrieved records, ensuring that a single multi-day API response is correctly partitioned into daily Parquet files in the storage layer.
 
-**Example**: A 6-year backfill (2020–2026) triggers approximately 20 sub-flows instead of 1,500+, while maintaining full observability and retry-ability for each chunk.
+### Historical Persistence (EOD)
+For daily stock data (EOD), the system is optimized for full historical retrieval:
+- **Default Start Date**: Dispatchers for EOD and News default to `1900-01-01` to ensure comprehensive backfills for all symbols.
+- **Volume Handling**: The storage layer uses `BigInteger` for EOD data to accommodate the massive lifetime volume of high-cap tickers (e.g., AAPL).
+
+### Reference Flow Policy
+Reference data flows (Metadata, Exchanges, Symbols) follow a "Current State" pattern:
+- **Parameter Minimalization**: These flows do not accept date parameters (e.g., `bus_date`) because the source APIs provide only the current global state.
+- **Consistency**: Removing these parameters prevents misleading UI options and ensures that a manual run always fetches the latest truth from the API.
 
 The entire registration process is automated via **Jenkins**:
 - **Branch Detection**: PRs automatically register flows with the `dev` prefix.

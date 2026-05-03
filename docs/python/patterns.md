@@ -65,3 +65,10 @@ For high-volume data not suitable for SQL, we use an abstract storage layer. Thi
 - Uses **PyArrow** and **Pandas** for efficient partitioning and compression.
 - Enforces strict 1-minute intervals for intraday data to prevent redundancy.
 - Supports native partitioning (e.g., `symbol=.../bus_date=...`) for high-speed data skipping during analysis.
+
+## 8. Fail-Fast Policy
+To ensure full observability in our orchestration layers (Prefect & Jenkins), we strictly enforce a **Fail-Fast** policy across all ETL scripts and library clients.
+
+- **Mandate**: Critical errors (API 4xx/5xx, Database connection failures, Disk I/O errors) MUST NOT be silenced with a simple `log.error()`.
+- **Implementation**: After logging the specific error details, the code must raise a `RuntimeError` (or a more specific custom exception).
+- **Benefit**: This triggers an immediate "Failed" state in Prefect and notifies CI/CD pipelines, preventing silent data gaps and ensuring that on-call engineers are alerted to systemic issues.
