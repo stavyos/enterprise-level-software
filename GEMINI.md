@@ -48,3 +48,4 @@
 - **Network Connectivity**: Flow runs inside Docker containers must use `host.docker.internal` to reach the TimescaleDB instances running on the host machine.
 - **CLI Parameter Syntax**: When passing arrays via CLI (e.g., `tickers`), use the format `--param 'tickers=["AAPL","MSFT"]'`. If parsing fails, use a JSON file with `--params file.json`.
 - **CLI Context**: Execute Prefect commands from the specific application directory where dependencies reside.
+- **Prefect API Interaction**: When interacting with the Prefect REST API via CLI on Windows, use `curl.exe` instead of `curl` to avoid conflicts with PowerShell's `Invoke-WebRequest` alias.
