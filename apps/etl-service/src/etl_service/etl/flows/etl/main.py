@@ -1,7 +1,6 @@
 """Main ETL flow orchestration module."""
 
 import asyncio
-import datetime
 
 from loguru import logger
 from prefect import flow
@@ -37,16 +36,13 @@ async def main_saver_dispatcher() -> None:
     Runs each tier of deployments (Exchanges → Tickers → EOD) in order.
     Uses today's date as the business date and always fetches from virgin tickers.
     """
-    bus_date = datetime.date.today()
 
     for i, tier in enumerate(TIERS):
         logger.info(f"Started running tier number {i} :: {tier=}")
 
         results: list[FlowRun | Exception] = await asyncio.gather(
             *(
-                deployment.dispatch_deployment_saver_dispatcher(
-                    parameters={"bus_date": bus_date}
-                )
+                deployment.dispatch_deployment_saver_dispatcher(parameters={})
                 if isinstance(deployment, DeploymentExchanges)
                 else deployment.dispatch_deployment_saver_dispatcher(
                     parameters={"exchange_codes": None}
@@ -54,7 +50,6 @@ async def main_saver_dispatcher() -> None:
                 if isinstance(deployment, DeploymentTickers)
                 else deployment.dispatch_deployment_saver_dispatcher(
                     parameters={
-                        "bus_date": bus_date,
                         "tickers": None,
                         "get_from_virgin": True,
                     }
