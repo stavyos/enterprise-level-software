@@ -48,3 +48,8 @@ class DeploymentExchanges(AbstractDeploymentSettings):
             cpu_request=1,
             mem_request=2,
         )
+
+    @property
+    def saver_concurrency_limit(self) -> int | None:
+        """Concurrency limit for the saver deployment."""
+        return 10
