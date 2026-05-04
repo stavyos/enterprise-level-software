@@ -35,11 +35,11 @@
 - **Content**: Include Purpose, Reviewer Reading Guide, Key Changes, and an Architecture Diagram if applicable.
 
 ## Operational Rules
-- **Prefect Server**: Always run the Prefect server in the background to ensure availability for workers and deployments.
-- **Prefect Worker**:
-    - Use environment-specific work pools: `dev-k8s-pool` and `prod-k8s-pool`.
-    - Workers MUST be started with the `docker` type (requires `prefect-docker` package).
-    - Example: `uv run prefect worker start --pool dev-k8s-pool --type docker`.
+- **Prefect Server**: The Prefect server runs automatically via Docker Compose on port `4200` alongside the other infrastructure services. Its state is persisted in the `prefect_data` volume.
+- **Prefect Init**: A one-shot `prefect-init` container automatically creates the `dev-k8s-pool` and `prod-k8s-pool` work pools (type: `docker`) on startup using `--if-not-exists` for idempotency.
+- **Prefect Workers**: Workers for both environments run as Docker Compose services (`prefect-worker-dev` and `prefect-worker-prod`). They mount the Docker socket and install `prefect-docker` at startup.
+    - Workers poll their respective work pools: `dev-k8s-pool` and `prod-k8s-pool`.
+    - No manual worker startup is needed; `docker-compose up -d` brings everything online.
 - **Flow Execution**: Prefer triggering `Dispatcher` deployments over `Saver` deployments for manual runs, as they handle default parameters (like `bus_date`) and orchestration.
 - **Deployment Registration**:
     - Use `RunnerDeployment.from_entrypoint` in `deploy_etls.py` to ensure Prefect correctly infers and populates the `parameter_openapi_schema`.
@@ -48,3 +48,4 @@
 - **Network Connectivity**: Flow runs inside Docker containers must use `host.docker.internal` to reach the TimescaleDB instances running on the host machine.
 - **CLI Parameter Syntax**: When passing arrays via CLI (e.g., `tickers`), use the format `--param 'tickers=["AAPL","MSFT"]'`. If parsing fails, use a JSON file with `--params file.json`.
 - **CLI Context**: Execute Prefect commands from the specific application directory where dependencies reside.
+- **Prefect API Interaction**: When interacting with the Prefect REST API via CLI on Windows, use `curl.exe` instead of `curl` to avoid conflicts with PowerShell's `Invoke-WebRequest` alias.
