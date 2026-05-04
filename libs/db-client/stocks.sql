@@ -30,7 +30,7 @@ CREATE TABLE stock_adjusted (
 	low FLOAT,
 	close FLOAT,
 	adjusted_close FLOAT,
-	volume INTEGER,
+	volume BIGINT,
 	PRIMARY KEY (bus_date, symbol)
 );
 SELECT create_hypertable('stock_adjusted', 'bus_date', if_not_exists => TRUE);
@@ -57,7 +57,7 @@ CREATE TABLE stock_eod (
 	low FLOAT,
 	close FLOAT,
 	adjusted_close FLOAT,
-	volume INTEGER,
+	volume BIGINT,
 	PRIMARY KEY (bus_date, symbol)
 );
 SELECT create_hypertable('stock_eod', 'bus_date', if_not_exists => TRUE);

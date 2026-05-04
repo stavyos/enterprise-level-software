@@ -132,7 +132,7 @@ async def eod_saver_dispatcher(
 
     chunks = _get_tickers_chunks(
         tickers=tickers,
-        chunk_size=2,
+        chunk_size=1,
         from_date=from_date,
         to_date=to_date,
         run_id=run_id,
