@@ -71,6 +71,33 @@ services:
     networks:
       - enterprise-network
     restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4200/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  prefect-init:
+    image: prefecthq/prefect:3.6.25-python3.12
+    container_name: prefect-init
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for Prefect server..."
+        until prefect work-pool ls > /dev/null 2>&1; do sleep 2; done
+        echo "Creating work pools..."
+        prefect work-pool create dev-k8s-pool --type docker --if-not-exists
+        prefect work-pool create prod-k8s-pool --type docker --if-not-exists
+        echo "Work pools ready!"
+    networks:
+      - enterprise-network
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+    restart: "no"
 
 networks:
   enterprise-network:
