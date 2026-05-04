@@ -80,3 +80,10 @@ CREATE TABLE tickers (
 	isin TEXT,
 	PRIMARY KEY (code, exchange_code)
 );
+DROP TABLE IF EXISTS virgin_tickers;
+CREATE TABLE virgin_tickers (
+	ticker TEXT NOT NULL,
+	exchange TEXT NOT NULL,
+	first_eod_bus_date DATE,
+	PRIMARY KEY (ticker, exchange)
+);
