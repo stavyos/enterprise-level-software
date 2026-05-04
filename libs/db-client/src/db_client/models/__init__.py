@@ -6,6 +6,8 @@ __all__ = [
     "Base",
     "MarketNews",
     "Exchange",
+    "Ticker",
+    "VirginTicker",
 ]
 
 
@@ -17,4 +19,6 @@ from .stocks import (
     StockDividends,
     StockEOD,
     StockSplits,
+    Ticker,
+    VirginTicker,
 )

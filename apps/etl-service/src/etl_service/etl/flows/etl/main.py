@@ -2,12 +2,10 @@
 
 import asyncio
 import datetime
-from typing import Annotated
 
 from loguru import logger
 from prefect import flow
 from prefect.client.schemas import FlowRun, StateType
-from pydantic import Field
 
 from etl_service.etl.deployments_settings.deployments.base import (
     AbstractDeploymentSettings,
@@ -16,34 +14,33 @@ from etl_service.etl.deployments_settings.deployments.stocks.eod import Deployme
 from etl_service.etl.deployments_settings.deployments.stocks.exchanges import (
     DeploymentExchanges,
 )
-from etl_service.etl.deployments_settings.deployments.stocks.intraday import (
-    DeploymentIntraday,
-)
 from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
+from etl_service.etl.deployments_settings.deployments.stocks.tickers import (
+    DeploymentTickers,
+)
 from etl_service.etl.flows.utils import enable_loguru_support
 
 DEPLOYMENT_MAIN = DeploymentMain()
 
 TIERS: list[list[AbstractDeploymentSettings]] = [
     [DeploymentExchanges()],
-    [DeploymentEOD(), DeploymentIntraday()],
+    [DeploymentTickers()],
+    [DeploymentEOD()],
 ]
 
 
 @flow(**DEPLOYMENT_MAIN.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def main_saver_dispatcher(
-    tickers: Annotated[list[str], Field(min_length=1)],
+    tickers: list[str] | None = None,
     bus_date: datetime.date | None = None,
 ) -> None:
     """Orchestrates the main ETL pipeline by running tiers of sub-flows sequentially.
 
     Args:
-        tickers (list[str]): List of tickers to process (must not be empty).
+        tickers (list[str] | None, optional): List of tickers to process. If None, EOD will fetch virgin tickers.
         bus_date (datetime.date | None, optional): The business date for which the ETL is running.
     """
-    if not tickers:
-        raise ValueError("Tickers list cannot be empty or None")
 
     if not bus_date:
         bus_date = datetime.date.today()
@@ -54,11 +51,19 @@ async def main_saver_dispatcher(
         results: list[FlowRun | Exception] = await asyncio.gather(
             *(
                 deployment.dispatch_deployment_saver_dispatcher(
-                    parameters={"bus_date": bus_date, "tickers": tickers}
-                )
-                if not isinstance(deployment, DeploymentExchanges)
-                else deployment.dispatch_deployment_saver_dispatcher(
                     parameters={"bus_date": bus_date}
+                )
+                if isinstance(deployment, DeploymentExchanges)
+                else deployment.dispatch_deployment_saver_dispatcher(
+                    parameters={"exchange_codes": None}
+                )
+                if isinstance(deployment, DeploymentTickers)
+                else deployment.dispatch_deployment_saver_dispatcher(
+                    parameters={
+                        "bus_date": bus_date,
+                        "tickers": tickers,
+                        "get_from_virgin": not tickers,
+                    }
                 )
                 for deployment in tier
             ),

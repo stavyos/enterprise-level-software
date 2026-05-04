@@ -82,3 +82,31 @@ class Exchange(Base):
     operating_mic = Column(Text)
     country_iso2 = Column(Text)
     country_iso3 = Column(Text)
+
+
+class Ticker(Base):
+    """
+    Model representing a stock ticker.
+    """
+
+    __tablename__ = "tickers"
+
+    code = Column(Text, primary_key=True)
+    exchange_code = Column(Text, primary_key=True)
+    name = Column(Text)
+    country = Column(Text)
+    currency = Column(Text)
+    type = Column(Text)
+    isin = Column(Text)
+
+
+class VirginTicker(Base):
+    """
+    Model representing a newly discovered ticker that requires historical EOD data backfill.
+    """
+
+    __tablename__ = "virgin_tickers"
+
+    ticker = Column(Text, primary_key=True)
+    exchange = Column(Text, primary_key=True)
+    first_eod_bus_date = Column(Date, nullable=True)

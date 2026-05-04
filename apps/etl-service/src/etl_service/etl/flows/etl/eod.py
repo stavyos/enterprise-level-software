@@ -6,7 +6,10 @@ import uuid
 from loguru import logger
 from prefect import flow
 
+from db_client.client import DBClient
+from db_client.models import VirginTicker
 from etl_service.etl.deployments_settings.deployments.stocks.eod import DeploymentEOD
+from etl_service.etl.deployments_settings.settings import settings
 from etl_service.etl.flows.models.eod import EOD, EODSaveRequest
 from etl_service.etl.flows.utils import enable_loguru_support
 from etl_service.etl.scripts.eod import eod_saver as _eod_saver
@@ -71,15 +74,40 @@ def eod_saver(save_request: EODSaveRequest) -> None:
 @flow(**DEPLOYMENT_EOD.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def eod_saver_dispatcher(
-    bus_date: datetime.date | None = None, tickers: list[str] = None
+    bus_date: datetime.date | None = None,
+    tickers: list[str] | None = None,
+    get_from_virgin: bool = False,
 ) -> None:
     """Orchestrates EOD data saving by dispatching multiple parallel saver flows.
 
     Args:
         bus_date (datetime.date | None, optional): The business date. Defaults to None.
-        tickers (list[str]): List of tickers to process.
+        tickers (list[str] | None, optional): List of tickers to process. Defaults to None.
+        get_from_virgin (bool, optional): Whether to fetch virgin tickers. Defaults to False.
     """
-    if not bus_date:
+    if get_from_virgin:
+        db_client = DBClient(
+            dbname=settings.db_name,
+            user=settings.db_user,
+            password=settings.db_password,
+            host=settings.effective_db_host,
+            port=settings.db_port,
+        )
+        with db_client._session() as session:
+            virgin_records = (
+                session.query(VirginTicker)
+                .filter(VirginTicker.first_eod_bus_date.is_(None))
+                .limit(800)
+                .all()
+            )
+            tickers = [f"{vt.ticker}.{vt.exchange}" for vt in virgin_records]
+
+        if not tickers:
+            logger.info("No virgin tickers found needing backfill.")
+            return
+
+        bus_date = None
+    elif not bus_date:
         bus_date = datetime.date.today()
 
     logger.info(f"Running EOD dispatcher saver for bus_date={bus_date}")
