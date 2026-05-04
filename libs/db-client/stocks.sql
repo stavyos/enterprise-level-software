@@ -12,12 +12,12 @@ CREATE TABLE exchanges (
 );
 DROP TABLE IF EXISTS market_news;
 CREATE TABLE market_news (
-	date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+	date TIMESTAMP WITH TIME ZONE NOT NULL,
 	title TEXT NOT NULL,
 	content TEXT,
 	link TEXT,
-	symbols JSON,
-	tags JSON,
+	symbols TEXT[],
+	tags TEXT[],
 	PRIMARY KEY (date, title)
 );
 SELECT create_hypertable('market_news', 'date', if_not_exists => TRUE);
@@ -69,3 +69,14 @@ CREATE TABLE stock_splits (
 	PRIMARY KEY (bus_date, symbol)
 );
 SELECT create_hypertable('stock_splits', 'bus_date', if_not_exists => TRUE);
+DROP TABLE IF EXISTS tickers;
+CREATE TABLE tickers (
+	code TEXT NOT NULL,
+	exchange_code TEXT NOT NULL,
+	name TEXT,
+	country TEXT,
+	currency TEXT,
+	type TEXT,
+	isin TEXT,
+	PRIMARY KEY (code, exchange_code)
+);

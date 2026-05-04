@@ -121,9 +121,8 @@ if __name__ == "__main__":
     # Determine env file from environment or defaults
     env_file = None
     # Priority: 1. ENV_PREFIX from process env, 2. "prod" in arguments (excluding script path)
-    is_prod = os.environ.get("ENV_PREFIX") == "prod" or any(
-        "prod" in arg for arg in sys.argv[1:]
-    )
+    env_prefix = os.environ.get("ENV_PREFIX")
+    is_prod = env_prefix == "prod" or any("prod" in arg for arg in sys.argv[1:])
 
     if is_prod:
         if os.path.exists("../../prod.env"):
@@ -140,6 +139,11 @@ if __name__ == "__main__":
     # (especially ENV_PREFIX from .env files or process env)
     settings.reload(env_file=env_file)
 
+    # Final check: if we have ENV_PREFIX in process env but it was not in a file,
+    # ensure it's set in settings
+    if env_prefix and not settings.env_prefix:
+        settings.env_prefix = env_prefix
+
     default_img = (
         f"etl-service:{settings.env_prefix}"
         if settings.env_prefix
@@ -147,5 +151,7 @@ if __name__ == "__main__":
     )
     img = sys.argv[1] if len(sys.argv) > 1 else default_img
 
-    print(f"Deploying using image: {img} and env_file: {env_file}")
+    print(
+        f"Deploying using image: {img}, env_file: {env_file}, env_prefix: {settings.env_prefix}"
+    )
     asyncio.run(deploy(image=img, env_file=env_file))

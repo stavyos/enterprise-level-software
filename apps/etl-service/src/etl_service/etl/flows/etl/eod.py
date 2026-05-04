@@ -15,14 +15,19 @@ DEPLOYMENT_EOD = DeploymentEOD()
 
 
 def _get_tickers_chunks(
-    tickers: list[str], chunk_size: int, bus_date: datetime.date, run_id: str
+    tickers: list[str],
+    chunk_size: int,
+    from_date: datetime.date,
+    to_date: datetime.date,
+    run_id: str,
 ) -> list[EODSaveRequest]:
     """Splits the list of tickers into smaller chunks of specified size.
 
     Args:
         tickers (list[str]): List of stock tickers.
         chunk_size (int): The number of tickers per chunk.
-        bus_date (datetime.date): The business date.
+        from_date (datetime.date): Start date.
+        to_date (datetime.date): End date.
         run_id (str): Unique identifier for the run.
 
     Returns:
@@ -33,7 +38,8 @@ def _get_tickers_chunks(
         chunk = tickers[i : i + chunk_size]
         chunks.append(
             EODSaveRequest(
-                bus_date=bus_date,
+                from_date=from_date,
+                to_date=to_date,
                 tickers=[EOD(ticker=ticker) for ticker in chunk],
                 run_id=run_id,
             )
@@ -47,42 +53,49 @@ def eod_saver(save_request: EODSaveRequest) -> None:
     """Flow task to save End-Of-Day data for a chunk of tickers.
 
     Args:
-        save_request (EODSaveRequest): The request containing date, tickers, and run ID.
+        save_request (EODSaveRequest): The request containing dates, tickers, and run ID.
 
     Raises:
         ValueError: If more than 5 tickers are provided in a single request.
     """
-    bus_date = save_request.bus_date
+    from_date = save_request.from_date
+    to_date = save_request.to_date
     run_id = save_request.run_id
     tickers = [eod.ticker for eod in save_request.tickers]
 
     logger.info(
-        f"Running EOD saver for bus_date={bus_date}, run_id={run_id}, tickers count={len(tickers)}"
+        f"Running EOD saver from {from_date} to {to_date}, run_id={run_id}, tickers count={len(tickers)}"
     )
 
     if len(tickers) > 5:
         raise ValueError(f"Too many tickers provided: {len(tickers)}, max allowed is 5")
 
-    _eod_saver(bus_date=bus_date, tickers=tickers, run_id=run_id)
+    _eod_saver(from_date=from_date, to_date=to_date, tickers=tickers, run_id=run_id)
 
-    logger.info(f"EOD saver completed for bus_date={bus_date}, run_id={run_id}")
+    logger.info(f"EOD saver completed from {from_date} to {to_date}, run_id={run_id}")
 
 
 @flow(**DEPLOYMENT_EOD.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
 async def eod_saver_dispatcher(
-    bus_date: datetime.date | None = None, tickers: list[str] = None
+    from_date: datetime.date | None = None,
+    to_date: datetime.date | None = None,
+    tickers: list[str] = None,
 ) -> None:
     """Orchestrates EOD data saving by dispatching multiple parallel saver flows.
 
     Args:
-        bus_date (datetime.date | None, optional): The business date. Defaults to None.
+        from_date (datetime.date | None, optional): Start date. Defaults to 1900-01-01.
+        to_date (datetime.date | None, optional): End date. Defaults to today + 1.
         tickers (list[str]): List of tickers to process.
     """
-    if not bus_date:
-        bus_date = datetime.date.today()
+    if not from_date:
+        from_date = datetime.date(1900, 1, 1)
 
-    logger.info(f"Running EOD dispatcher saver for bus_date={bus_date}")
+    if not to_date:
+        to_date = datetime.date.today() + datetime.timedelta(days=1)
+
+    logger.info(f"Running EOD dispatcher saver from {from_date} to {to_date}")
 
     if not tickers:
         raise ValueError("Tickers must be supplied for eod_saver_dispatcher.")
@@ -92,7 +105,8 @@ async def eod_saver_dispatcher(
     chunks = _get_tickers_chunks(
         tickers=tickers,
         chunk_size=2,
-        bus_date=bus_date,
+        from_date=from_date,
+        to_date=to_date,
         run_id=run_id,
     )
     params_list = [
@@ -110,5 +124,5 @@ async def eod_saver_dispatcher(
     # TODO (syosef): Add new function update_latest_run
 
     logger.info(
-        f"EOD dispatcher saver completed for bus_date={bus_date} for run_id={run_id}"
+        f"EOD dispatcher saver completed from {from_date} to {to_date} for run_id={run_id}"
     )

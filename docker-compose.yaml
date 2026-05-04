@@ -49,7 +49,7 @@ services:
       - "8080:8080"
       - "50000:50000"
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - ./jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - enterprise-network
@@ -63,4 +63,3 @@ volumes:
   timescaledb_data_dev:
   timescaledb_data_prod:
   cloudbeaver_data:
-  jenkins_home:

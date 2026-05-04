@@ -82,3 +82,19 @@ class Exchange(Base):
     operating_mic = Column(Text)
     country_iso2 = Column(Text)
     country_iso3 = Column(Text)
+
+
+class Ticker(Base):
+    """
+    Model representing a stock ticker symbol.
+    """
+
+    __tablename__ = "tickers"
+
+    code = Column(Text, primary_key=True)
+    exchange_code = Column(Text, primary_key=True)
+    name = Column(Text)
+    country = Column(Text)
+    currency = Column(Text)
+    type = Column(Text)
+    isin = Column(Text)

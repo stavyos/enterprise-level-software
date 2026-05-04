@@ -65,18 +65,50 @@ node {
 
         stage('Build') {
             echo "Building Application Docker Image for ${env.DEPLOY_ENV}..."
-            appImage = docker.build("etl-service:${env.DEPLOY_ENV}", "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} -f Dockerfile.etl .")
+
+            def dbPassId = (env.DEPLOY_ENV == 'prod') ? 'DB_PASSWORD_PROD' : 'DB_PASSWORD_DEV'
+            def dbUser = (env.DEPLOY_ENV == 'prod') ? 'prod_user' : 'dev_user'
+
+            withCredentials([
+                string(credentialsId: 'EODHD_API_KEY', variable: 'EODHD_KEY'),
+                string(credentialsId: dbPassId, variable: 'DB_PASS')
+            ]) {
+                appImage = docker.build("etl-service:${env.DEPLOY_ENV}",
+                    "--build-arg ENV_PREFIX=${env.DEPLOY_ENV} " +
+                    "--build-arg EODHD_API_KEY=${EODHD_KEY} " +
+                    "--build-arg DB_USER=${dbUser} " +
+                    "--build-arg DB_PASSWORD=${DB_PASS} " +
+                    "-f Dockerfile.etl ."
+                )
+            }
         }
 
         stage('Deploy') {
             echo "Deploying Prefect Flows to ${env.DEPLOY_ENV}..."
+
+            def dbPort = (env.DEPLOY_ENV == 'prod') ? '5435' : '5434'
+            def dbUser = (env.DEPLOY_ENV == 'prod') ? 'prod_user' : 'dev_user'
+            def dbPassId = (env.DEPLOY_ENV == 'prod') ? 'DB_PASSWORD_PROD' : 'DB_PASSWORD_DEV'
+            def dbHost = 'host.docker.internal'
+
             appImage.inside("-u root --network enterprise-network") {
                 dir('apps/etl-service') {
-                    withEnv([
-                        "ENV_PREFIX=${env.DEPLOY_ENV}",
-                        "PREFECT_API_URL=http://prefect-server:4200/api"
+                    withCredentials([
+                        string(credentialsId: 'EODHD_API_KEY', variable: 'EODHD_KEY'),
+                        string(credentialsId: dbPassId, variable: 'DB_PASS')
                     ]) {
-                        sh "uv run python -c \"import asyncio; from etl_service.etl.deploy_etls import deploy; asyncio.run(deploy(image='etl-service:${env.DEPLOY_ENV}'))\""
+                        withEnv([
+                            "ENV_PREFIX=${env.DEPLOY_ENV}",
+                            "EODHD_API_KEY=${EODHD_KEY}",
+                            "DB_HOST=${dbHost}",
+                            "DB_PORT=${dbPort}",
+                            "DB_USER=${dbUser}",
+                            "DB_PASSWORD=${DB_PASS}",
+                            "DB_NAME=postgres",
+                            "PREFECT_API_URL=http://prefect-server:4200/api"
+                        ]) {
+                            sh "uv run python -c \"import asyncio; from etl_service.etl.deploy_etls import deploy; asyncio.run(deploy(image='etl-service:${env.DEPLOY_ENV}'))\""
+                        }
                     }
                 }
             }
