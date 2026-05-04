@@ -35,7 +35,7 @@ class DeploymentExchanges(AbstractDeploymentSettings):
         """Kubernetes job variables for the saver."""
         return self._get_job_variables(
             deployment_type=PrefectDeploymentType.SAVER,
-            cpu_request=1,
+            cpu_request=0.25,
             mem_request="300Mi",
             mem_limit="1Gi",
         )
