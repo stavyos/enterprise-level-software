@@ -87,3 +87,14 @@ CREATE TABLE virgin_tickers (
 	first_eod_bus_date DATE,
 	PRIMARY KEY (ticker, exchange)
 );
+
+CREATE TABLE IF NOT EXISTS flow_resource_metrics (
+	id SERIAL PRIMARY KEY,
+	flow_name TEXT NOT NULL,
+	flow_run_id TEXT,
+	recorded_at DATE NOT NULL,
+	peak_memory_mb FLOAT NOT NULL,
+	cpu_time_seconds FLOAT NOT NULL,
+	wall_time_seconds FLOAT NOT NULL,
+	env_prefix TEXT
+);

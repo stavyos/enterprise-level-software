@@ -17,7 +17,7 @@ from etl_service.etl.deployments_settings.deployments.stocks.main import Deploym
 from etl_service.etl.deployments_settings.deployments.stocks.tickers import (
     DeploymentTickers,
 )
-from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 
 DEPLOYMENT_MAIN = DeploymentMain()
 
@@ -30,6 +30,7 @@ TIERS: list[list[AbstractDeploymentSettings]] = [
 
 @flow(**DEPLOYMENT_MAIN.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 async def main_saver_dispatcher() -> None:
     """Orchestrates the main ETL pipeline by running tiers of sub-flows sequentially.
 

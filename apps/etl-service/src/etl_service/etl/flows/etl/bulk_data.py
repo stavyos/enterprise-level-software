@@ -8,7 +8,7 @@ from prefect import flow
 
 from etl_service.etl.deployments_settings.deployments.stocks.bulk import DeploymentBulk
 from etl_service.etl.flows.models.bulk import BulkDataSaveRequest
-from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 from etl_service.etl.scripts.bulk import bulk_data_saver as _bulk_data_saver
 
 DEPLOYMENT_BULK = DeploymentBulk()
@@ -16,6 +16,7 @@ DEPLOYMENT_BULK = DeploymentBulk()
 
 @flow(**DEPLOYMENT_BULK.saver_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 def bulk_data_saver(save_request: BulkDataSaveRequest) -> None:
     """Flow task to save bulk data."""
     logger.info(
@@ -31,6 +32,7 @@ def bulk_data_saver(save_request: BulkDataSaveRequest) -> None:
 
 @flow(**DEPLOYMENT_BULK.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 async def bulk_data_saver_dispatcher(
     countries: list[str],
     bus_date: datetime.date | None = None,

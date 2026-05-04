@@ -8,7 +8,7 @@ from prefect import flow
 from etl_service.etl.deployments_settings.deployments.stocks.intraday import (
     DeploymentIntraday,
 )
-from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 from etl_service.etl.scripts.intraday import intraday_saver as _intraday_saver
 
 DEPLOYMENT_INTRADAY = DeploymentIntraday()
@@ -16,6 +16,7 @@ DEPLOYMENT_INTRADAY = DeploymentIntraday()
 
 @flow(**DEPLOYMENT_INTRADAY.saver_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 def intraday_saver(
     tickers: list[str],
     bus_date: datetime.date | None = None,
@@ -47,6 +48,7 @@ def intraday_saver(
 
 @flow(**DEPLOYMENT_INTRADAY.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 async def intraday_saver_dispatcher(
     bus_date: datetime.date | None = None,
     end_date: datetime.date | None = None,

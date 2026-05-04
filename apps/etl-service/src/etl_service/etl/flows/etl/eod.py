@@ -11,7 +11,7 @@ from db_client.models import VirginTicker
 from etl_service.etl.deployments_settings.deployments.stocks.eod import DeploymentEOD
 from etl_service.etl.deployments_settings.settings import settings
 from etl_service.etl.flows.models.eod import EOD, EODSaveRequest
-from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 from etl_service.etl.scripts.eod import eod_saver as _eod_saver
 
 DEPLOYMENT_EOD = DeploymentEOD()
@@ -52,6 +52,7 @@ def _get_tickers_chunks(
 
 @flow(**DEPLOYMENT_EOD.saver_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 def eod_saver(save_request: EODSaveRequest) -> None:
     """Flow task to save End-Of-Day data for a chunk of tickers.
 
@@ -80,6 +81,7 @@ def eod_saver(save_request: EODSaveRequest) -> None:
 
 @flow(**DEPLOYMENT_EOD.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 async def eod_saver_dispatcher(
     from_date: datetime.date | None = None,
     to_date: datetime.date | None = None,
