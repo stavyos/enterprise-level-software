@@ -113,15 +113,12 @@ async def eod_saver_dispatcher(
             )
             tickers = [f"{vt.ticker}.{vt.exchange}" for vt in virgin_records]
 
-        if not tickers:
-            logger.info("No virgin tickers found needing backfill.")
-            return
+    if not tickers:
+        logger.info("No tickers found to process.")
+        return
 
-        from_date = None
-        to_date = None
-    else:
-        if not from_date:
-            from_date = datetime.date(1900, 1, 1)
+    if not from_date:
+        from_date = datetime.date(1900, 1, 1)
 
     if not to_date:
         to_date = datetime.date.today() + datetime.timedelta(days=1)
