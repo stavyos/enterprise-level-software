@@ -58,6 +58,20 @@ services:
       - enterprise-network
     restart: always
 
+  prefect:
+    image: prefecthq/prefect:3.6.25-python3.12
+    container_name: prefect
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_API_URL=http://127.0.0.1:4200/api
+    volumes:
+      - prefect_data:/root/.prefect
+    networks:
+      - enterprise-network
+    restart: always
+
 networks:
   enterprise-network:
     external: true
@@ -66,3 +80,4 @@ volumes:
   timescaledb_data_dev:
   timescaledb_data_prod:
   cloudbeaver_data:
+  prefect_data:
