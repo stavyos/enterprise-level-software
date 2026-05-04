@@ -86,7 +86,7 @@ class Exchange(Base):
 
 class Ticker(Base):
     """
-    Model representing a stock ticker.
+    Model representing a stock ticker symbol.
     """
 
     __tablename__ = "tickers"

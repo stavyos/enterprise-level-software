@@ -11,11 +11,17 @@ from eodhd_client.client import EODHDClientBase
 from etl_service.etl.deployments_settings.settings import settings
 
 
-def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -> None:
+def eod_saver(
+    from_date: datetime.date | None,
+    to_date: datetime.date | None,
+    tickers: list[str],
+    run_id: str,
+) -> None:
     """Core logic for saving End-Of-Day data.
 
     Args:
-        bus_date (datetime.date): The business date.
+        from_date (datetime.date): Start date.
+        to_date (datetime.date): End date.
         tickers (list[str]): List of stock tickers (e.g. ['AAPL.US', 'MSFT.US']).
         run_id (str): Unique identifier for the run.
     """
@@ -31,7 +37,6 @@ def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -
 
     objects_to_upsert = []
     total_tickers = len(tickers)
-    failed_tickers = []
     virgin_updates = []
     for i, ticker_symbol in enumerate(tickers):
         try:
@@ -40,8 +45,8 @@ def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -
             symbol = parts[0]
             exchange = parts[1] if len(parts) > 1 else "US"
 
-            date_from_str = bus_date.isoformat() if bus_date else None
-            date_to_str = bus_date.isoformat() if bus_date else None
+            date_from_str = from_date.isoformat() if from_date else None
+            date_to_str = to_date.isoformat() if to_date else None
 
             data = client.get_eod_data(
                 symbol=symbol,
@@ -54,8 +59,8 @@ def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -
                 min_date_str = None
                 for item in data:
                     item_date_str = item.get("date")
-                    if not item_date_str and bus_date:
-                        item_date_str = bus_date.isoformat()
+                    if not item_date_str and from_date:
+                        item_date_str = from_date.isoformat()
 
                     if item_date_str:
                         if not min_date_str or item_date_str < min_date_str:
@@ -73,7 +78,7 @@ def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -
                         )
                         objects_to_upsert.append(obj)
 
-                if bus_date is None:
+                if from_date is None:
                     first_eod = (
                         datetime.date.fromisoformat(min_date_str)
                         if min_date_str
@@ -89,7 +94,7 @@ def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -
                 logger.debug(f"Collected EOD data for {ticker_symbol}")
             else:
                 logger.warning(f"No EOD data found for {ticker_symbol}")
-                if bus_date is None:
+                if from_date is None:
                     virgin_updates.append(
                         {
                             "ticker": symbol,
@@ -105,21 +110,18 @@ def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -
 
         except Exception as e:
             logger.error(f"Error processing EOD for {ticker_symbol}: {e}")
-            failed_tickers.append(ticker_symbol)
-
-    if failed_tickers:
-        error_msg = f"Failed to process EOD data for tickers: {failed_tickers}"
-        logger.error(error_msg)
-        raise RuntimeError(error_msg)
+            raise RuntimeError(
+                f"Critical error saving EOD for {ticker_symbol}: {e}"
+            ) from e
 
     if objects_to_upsert:
         success = db_client.bulk_upsert(objects_to_upsert)
         if success:
             logger.info(
-                f"Successfully inserted {len(objects_to_upsert)} rows into the database."
+                f"Successfully inserted {len(objects_to_upsert)} rows for {total_tickers} tickers."
             )
 
-            if bus_date is None and virgin_updates:
+            if from_date is None and virgin_updates:
                 with db_client._session() as session:
                     try:
                         for vu in virgin_updates:
@@ -142,12 +144,10 @@ def eod_saver(bus_date: datetime.date | None, tickers: list[str], run_id: str) -
                         ) from e
 
         else:
-            error_msg = "Failed to perform bulk upsert for EOD data."
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
+            raise RuntimeError("Failed to perform bulk upsert for EOD data.")
     else:
         logger.warning("No data collected for bulk upsert.")
-        if bus_date is None and virgin_updates:
+        if from_date is None and virgin_updates:
             with db_client._session() as session:
                 try:
                     for vu in virgin_updates:

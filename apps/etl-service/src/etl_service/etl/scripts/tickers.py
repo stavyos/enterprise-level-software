@@ -61,7 +61,6 @@ def tickers_saver(exchange_code: str) -> None:
             logger.info(
                 f"Successfully inserted {len(objects_to_upsert)}/{len(tickers)} tickers for {exchange_code}."
             )
-
             if virgin_tickers_data:
                 with db_client._session() as session:
                     try:

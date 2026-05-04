@@ -46,6 +46,12 @@ async def market_news_saver_dispatcher(
     single-ticker-per-request rule. Each sub-flow automatically paginates to
     fetch up to the requested limit.
     """
+    if not from_date:
+        from_date = datetime.date(1900, 1, 1)
+
+    if not to_date:
+        to_date = datetime.date.today() + datetime.timedelta(days=1)
+
     run_id = str(uuid.uuid4())
 
     if not symbols and not tags:

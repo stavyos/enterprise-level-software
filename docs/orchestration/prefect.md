@@ -30,6 +30,19 @@ The Intraday Dispatcher supports orchestrated backfills via the `end_date` param
 
 **Example**: A 6-year backfill (2020–2026) triggers approximately 20 sub-flows instead of 1,500+, while maintaining full observability and retry-ability for each chunk.
 
+## Reference Data & Discovery Flows
+Our system includes dedicated flows for managing the global asset universe.
+
+### 1. Exchange Metadata
+The **Exchanges** flow fetches supported global exchanges from EODHD and persists their codes, names, and currencies. This acts as the foundation for all other discovery tasks.
+
+### 2. Ticker Discovery
+The **Tickers** flow utilizes a Dispatcher/Saver pattern to discover symbols for specific exchange codes:
+- **Dispatcher**: Takes a list of exchange codes (e.g., `["US", "LSE"]`).
+- **Saver**: Fetches every traded ticker for a single exchange and performs a high-performance bulk upsert into the `tickers` table.
+
+This automated discovery ensures that new IPOs and exchange listings are automatically integrated into the system without manual intervention.
+
 The entire registration process is automated via **Jenkins**:
 - **Branch Detection**: PRs automatically register flows with the `dev` prefix.
 - **Production Lifecycle**: Merges to `master` trigger the build and registration of `prod` deployments.

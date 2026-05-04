@@ -18,3 +18,4 @@ class PrefectDeployment(StrEnum):
     EXCHANGES = "Exchanges"
     MARKET_NEWS = "Market News"
     BULK_DATA = "Bulk Data"
+    TICKERS = "Tickers"

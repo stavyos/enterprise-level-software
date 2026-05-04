@@ -28,6 +28,9 @@ def map_deployment_to_settings(
     from etl_service.etl.deployments_settings.deployments.stocks.news import (
         DeploymentNews,
     )
+    from etl_service.etl.deployments_settings.deployments.stocks.tickers import (
+        DeploymentTickers,
+    )
 
     match deployment:
         case PrefectDeployment.MAIN:
@@ -44,6 +47,8 @@ def map_deployment_to_settings(
             return DeploymentNews()
         case PrefectDeployment.BULK_DATA:
             return DeploymentBulk()
+        case PrefectDeployment.TICKERS:
+            return DeploymentTickers()
         case _:
             raise NotImplementedError(
                 f"Mapping for deployment {deployment} is not implemented."

@@ -45,18 +45,28 @@ We use **Loguru** across all libraries and apps. It provides:
 - Pre-formatted, color-coded CLI output.
 - Easy integration with external monitoring tools.
 
-## 6. High-Efficiency Bulk Upserts
-To minimize database round-trips during high-volume ETL runs (e.g., Intraday data), we avoid row-by-row insertions. Instead, we collect records into a list and perform a single batch operation.
+## 6. High-Efficiency Bulk Upserts (PostgreSQL ON CONFLICT)
+To handle enterprise-scale datasets (e.g., 51K symbols or multi-decade backfills), we utilize PostgreSQL's native `INSERT ... ON CONFLICT DO UPDATE` (UPSERT) syntax via SQLAlchemy.
 
 **Implementation Pattern:**
-1. **DB Client**: Implements a `bulk_upsert(objects: list[Base])` method.
-2. **Script**: Fetches data from API, instantiates SQLAlchemy models, and stores them in a list.
-3. **Execution**: A single `session.commit()` is performed after all records in the batch are processed.
+1. **Model Layer**: Define composite primary keys in models to identify unique records.
+2. **DB Client**: The `bulk_upsert` method uses `sqlalchemy.dialects.postgresql.insert`.
+3. **Execution**: It extracts all data from model instances and sends them to the database in a **single network round-trip**.
+
+**Optimized Logic:**
+```python
+stmt = pg_insert(model_class).values(data)
+upsert_stmt = stmt.on_conflict_do_update(
+    index_elements=pk_columns,
+    set_={col: stmt.excluded[col] for col in non_pk_columns}
+)
+conn.execute(upsert_stmt)
+```
 
 **Benefits**:
-- **Performance**: Up to 100x faster than row-by-row commits.
-- **Atomicity**: Either the entire batch succeeds, or it's rolled back.
-- **Reduced Log Noise**: Summarizes thousands of insertions into a single `INFO` log entry.
+- **Drastic Speedup**: Reduces network overhead by 50,000x for large batches (50K+ rows).
+- **Native Atomicity**: Leverages Postgres's internal conflict resolution for maximum data integrity.
+- **Idempotency**: Safely re-running the same ETL flow will update existing records without creating duplicates.
 
 ## 7. Abstract Storage Pattern
 For high-volume data not suitable for SQL, we use an abstract storage layer. This decouples the ETL logic from the underlying file system or cloud storage implementation.

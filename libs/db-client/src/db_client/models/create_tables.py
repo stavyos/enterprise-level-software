@@ -6,10 +6,12 @@ from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 from db_client.models.news import MarketNews
 from db_client.models.stocks import (
     Base,
+    Exchange,
     StockAdjusted,
     StockDividends,
     StockEOD,
     StockSplits,
+    Ticker,
 )
 
 
@@ -106,3 +108,4 @@ def generate(
 
 if __name__ == "__main__":
     generate(base=Base, file_name="stocks.sql")
+
