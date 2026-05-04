@@ -10,71 +10,60 @@ from db_client.client import DBClient
 from db_client.models import VirginTicker
 from etl_service.etl.deployments_settings.deployments.stocks.eod import DeploymentEOD
 from etl_service.etl.deployments_settings.settings import settings
-from etl_service.etl.flows.models.eod import EOD, EODSaveRequest
+from etl_service.etl.flows.models.eod import EODSaveRequest
 from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 from etl_service.etl.scripts.eod import eod_saver as _eod_saver
 
 DEPLOYMENT_EOD = DeploymentEOD()
 
 
-def _get_tickers_chunks(
+def _create_save_requests(
     tickers: list[str],
-    chunk_size: int,
     from_date: datetime.date,
     to_date: datetime.date,
     run_id: str,
 ) -> list[EODSaveRequest]:
-    """Splits the list of tickers into smaller chunks of specified size.
+    """Creates individual save requests for each ticker.
 
     Args:
         tickers (list[str]): List of stock tickers.
-        chunk_size (int): The number of tickers per chunk.
         from_date (datetime.date): Start date.
         to_date (datetime.date): End date.
         run_id (str): Unique identifier for the run.
 
     Returns:
-        list[EODSaveRequest]: A list of save request objects for each chunk.
+        list[EODSaveRequest]: A list of save request objects.
     """
-    chunks = []
-    for i in range(0, len(tickers), chunk_size):
-        chunk = tickers[i : i + chunk_size]
-        chunks.append(
-            EODSaveRequest(
-                from_date=from_date,
-                to_date=to_date,
-                tickers=[EOD(ticker=ticker) for ticker in chunk],
-                run_id=run_id,
-            )
+    return [
+        EODSaveRequest(
+            from_date=from_date,
+            to_date=to_date,
+            ticker=ticker,
+            run_id=run_id,
         )
-    return chunks
+        for ticker in tickers
+    ]
 
 
 @flow(**DEPLOYMENT_EOD.saver_flow_decorator_args)
 @enable_loguru_support
 @track_resources
 def eod_saver(save_request: EODSaveRequest) -> None:
-    """Flow task to save End-Of-Day data for a chunk of tickers.
+    """Flow task to save End-Of-Day data for a single ticker.
 
     Args:
-        save_request (EODSaveRequest): The request containing dates, tickers, and run ID.
-
-    Raises:
-        ValueError: If more than 5 tickers are provided in a single request.
+        save_request (EODSaveRequest): The request containing dates, ticker, and run ID.
     """
     from_date = save_request.from_date
     to_date = save_request.to_date
     run_id = save_request.run_id
-    tickers = [eod.ticker for eod in save_request.tickers]
+    ticker = save_request.ticker
 
     logger.info(
-        f"Running EOD saver from {from_date} to {to_date}, run_id={run_id}, tickers count={len(tickers)}"
+        f"Running EOD saver from {from_date} to {to_date}, run_id={run_id}, ticker={ticker}"
     )
 
-    if len(tickers) > 5:
-        raise ValueError(f"Too many tickers provided: {len(tickers)}, max allowed is 5")
-
-    _eod_saver(from_date=from_date, to_date=to_date, tickers=tickers, run_id=run_id)
+    _eod_saver(from_date=from_date, to_date=to_date, tickers=[ticker], run_id=run_id)
 
     logger.info(f"EOD saver completed from {from_date} to {to_date}, run_id={run_id}")
 
@@ -130,18 +119,17 @@ async def eod_saver_dispatcher(
 
     run_id = str(uuid.uuid4())
 
-    chunks = _get_tickers_chunks(
+    save_requests = _create_save_requests(
         tickers=tickers,
-        chunk_size=1,
         from_date=from_date,
         to_date=to_date,
         run_id=run_id,
     )
     params_list = [
         {
-            "save_request": chunk,
+            "save_request": req,
         }
-        for chunk in chunks
+        for req in save_requests
     ]
 
     results = await DEPLOYMENT_EOD.dispatch_sub_flows(params=params_list)
