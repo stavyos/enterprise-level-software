@@ -99,6 +99,24 @@ services:
         condition: service_healthy
     restart: "no"
 
+  prefect-worker-dev:
+    image: prefecthq/prefect:3.6.25-python3.12
+    container_name: prefect-worker-dev
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        pip install prefect-docker && prefect worker start --pool dev-k8s-pool --type docker
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - enterprise-network
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+    restart: always
+
 networks:
   enterprise-network:
     external: true
