@@ -520,7 +520,7 @@ class AbstractDeploymentSettings(ABC):
     @property
     def saver_concurrency_limit(self) -> int | None:
         """Concurrency limit for the saver deployment."""
-        return 2
+        return 3
 
     @property
     def saver_dispatcher_concurrency_limit(self) -> int | None:
