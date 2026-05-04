@@ -15,18 +15,19 @@ We use **Docker Compose** to run two independent **TimescaleDB** instances on di
 
 **Startup Command**:
 ```bash
-docker-compose up -d
+docker-compose --env-file dev.env up -d
 ```
 
-### Windows Volume Mapping Fix
+### 2. ETL Service Isolation
+We build environment-specific images using the same `Dockerfile.etl`. By using build arguments, we bake the configuration directly into the image.
 
-On Windows machines, absolute paths like `C:\path` trigger validation errors in Pydantic when used in Docker volumes because the colon is misinterpreted as a volume option separator.
+**Key Arguments**:
+- `DB_PORT`: `5434` (Dev) vs `5435` (Prod).
+- `ENV_PREFIX`: `dev` vs `prod`.
 
-We resolve this by automatically translating Windows paths in our `JobVariables` logic:
-- **Input**: `C:\data`
-- **Output**: `//c/data` (Docker Desktop compatible format)
-
-This ensures that our Prefect worker can reliably bind host directories to the `/data` mount inside our ETL containers.
+**Build Commands**:
+- **Dev**: `npx nx run etl-service:docker-build:dev`
+- **Prod**: `npx nx run etl-service:docker-build:prod`
 
 ## CI/CD Orchestration & Networking
 
@@ -38,3 +39,16 @@ A dedicated Docker network, `enterprise-network`, facilitates secure communicati
 
 ### Advanced: Docker-in-Docker
 The Jenkins container has access to the host's Docker engine via a socket mount (`/var/run/docker.sock`). This allows it to build, tag, and run the ETL images as part of the automated pipeline.
+
+## 3. Prefect Orchestration Stack
+
+The entire Prefect stack is containerized and managed via Docker Compose:
+
+| Service | Container Name | Purpose |
+| :--- | :--- | :--- |
+| **Server** | `prefect-server` | Runs the Prefect API and UI on port `4200`. Persisted via `prefect_data` volume. |
+| **Init** | `prefect-init` | One-shot container that creates `dev-k8s-pool` and `prod-k8s-pool` work pools idempotently. |
+| **Dev Worker** | `prefect-worker-dev` | Polls `dev-k8s-pool` and executes dev flows via Docker. |
+| **Prod Worker** | `prefect-worker-prod` | Polls `prod-k8s-pool` and executes prod flows via Docker. |
+
+The server includes a healthcheck so that the init container and workers wait until the API is fully ready before starting.

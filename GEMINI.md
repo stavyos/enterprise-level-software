@@ -36,10 +36,10 @@
 
 ## Operational Rules
 - **Prefect Server**: The Prefect server runs automatically via Docker Compose on port `4200` alongside the other infrastructure services. Its state is persisted in the `prefect_data` volume.
-- **Prefect Worker**:
-    - Use environment-specific work pools: `dev-k8s-pool` and `prod-k8s-pool`.
-    - Workers MUST be started with the `docker` type (requires `prefect-docker` package).
-    - Example: `uv run prefect worker start --pool dev-k8s-pool --type docker`.
+- **Prefect Init**: A one-shot `prefect-init` container automatically creates the `dev-k8s-pool` and `prod-k8s-pool` work pools (type: `docker`) on startup using `--if-not-exists` for idempotency.
+- **Prefect Workers**: Workers for both environments run as Docker Compose services (`prefect-worker-dev` and `prefect-worker-prod`). They mount the Docker socket and install `prefect-docker` at startup.
+    - Workers poll their respective work pools: `dev-k8s-pool` and `prod-k8s-pool`.
+    - No manual worker startup is needed; `docker-compose up -d` brings everything online.
 - **Flow Execution**: Prefer triggering `Dispatcher` deployments over `Saver` deployments for manual runs, as they handle default parameters (like `bus_date`) and orchestration.
 - **Deployment Registration**:
     - Use `RunnerDeployment.from_entrypoint` in `deploy_etls.py` to ensure Prefect correctly infers and populates the `parameter_openapi_schema`.
