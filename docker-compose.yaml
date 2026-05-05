@@ -136,8 +136,8 @@ services:
         echo "Waiting for Prefect server..."
         until prefect work-pool ls > /dev/null 2>&1; do sleep 2; done
         echo "Creating work pools..."
-        prefect work-pool create dev-k8s-pool --type docker --if-not-exists
-        prefect work-pool create prod-k8s-pool --type docker --if-not-exists
+        prefect work-pool create dev-k8s-pool --type kubernetes --if-not-exists
+        prefect work-pool create prod-k8s-pool --type kubernetes --if-not-exists
         echo "Work pools ready!"
     networks:
       - enterprise-network
@@ -154,11 +154,12 @@ services:
     entrypoint: ["/bin/bash", "-c"]
     command:
       - |
-        pip install prefect-docker && prefect worker start --pool dev-k8s-pool --type docker
+        pip install prefect-kubernetes && prefect worker start --pool dev-k8s-pool --type kubernetes
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - C:\Users\stav3\.kube:/root/.kube:ro
     networks:
       - enterprise-network
     depends_on:
@@ -174,11 +175,12 @@ services:
     entrypoint: ["/bin/bash", "-c"]
     command:
       - |
-        pip install prefect-docker && prefect worker start --pool prod-k8s-pool --type docker
+        pip install prefect-kubernetes && prefect worker start --pool prod-k8s-pool --type kubernetes
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - C:\Users\stav3\.kube:/root/.kube:ro
     networks:
       - enterprise-network
     depends_on:
