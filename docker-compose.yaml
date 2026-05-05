@@ -1,7 +1,41 @@
 services:
+  docker-cleaner:
+    image: docker:cli
+    container_name: docker-cleaner
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # This command runs the loop, checks for the image prefix + time, and updates a health file
+    command: >
+      sh -c "while true; do
+        echo 'Scanning for dead etl-service containers...' > /tmp/healthy;
+        docker ps -a --filter 'status=exited' --format '{{.ID}} {{.Image}} {{.Status}}' | while read -r ID IMG STATUS; do
+          case \"$$IMG\" in
+            etl-service*)
+              if echo \"$$STATUS\" | grep -qE '([5-9]|[1-9][0-9]) minutes ago|hours ago|days ago'; then
+                echo \"Deleting $$ID ($$IMG)\";
+                docker rm \"$$ID\";
+              fi
+              ;;
+          esac
+        done;
+        sleep 60;
+      done"
+    healthcheck:
+      test: ["CMD", "cat", "/tmp/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - enterprise-network
+
   timescaledb-dev:
     image: timescale/timescaledb:latest-pg16
     container_name: timescaledb-dev
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
     environment:
       - POSTGRES_USER=dev_user
       - POSTGRES_PASSWORD=dev_pass
@@ -16,6 +50,9 @@ services:
   timescaledb-prod:
     image: timescale/timescaledb:latest-pg16
     container_name: timescaledb-prod
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
     environment:
       - POSTGRES_USER=prod_user
       - POSTGRES_PASSWORD=prod_pass
@@ -40,13 +77,20 @@ services:
     networks:
       - enterprise-network
     depends_on:
-      - timescaledb-dev
-      - timescaledb-prod
+      docker-cleaner:
+        condition: service_healthy
+      timescaledb-dev:
+        condition: service_started
+      timescaledb-prod:
+        condition: service_started
     restart: always
 
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
     user: root
     ports:
       - "8080:8080"
@@ -61,6 +105,9 @@ services:
   prefect-server:
     image: prefecthq/prefect:3.6.25-python3.12
     container_name: prefect-server
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
     command: prefect server start --host 0.0.0.0
     ports:
       - "4200:4200"
@@ -95,6 +142,8 @@ services:
     networks:
       - enterprise-network
     depends_on:
+      docker-cleaner:
+        condition: service_healthy
       prefect-server:
         condition: service_healthy
     restart: "no"
@@ -113,6 +162,8 @@ services:
     networks:
       - enterprise-network
     depends_on:
+      docker-cleaner:
+        condition: service_healthy
       prefect-server:
         condition: service_healthy
     restart: always
@@ -131,6 +182,8 @@ services:
     networks:
       - enterprise-network
     depends_on:
+      docker-cleaner:
+        condition: service_healthy
       prefect-server:
         condition: service_healthy
     restart: always
