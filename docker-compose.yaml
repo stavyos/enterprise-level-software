@@ -86,7 +86,9 @@ services:
     restart: always
 
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
     container_name: jenkins
     depends_on:
       docker-cleaner:
