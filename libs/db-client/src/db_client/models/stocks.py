@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, Float, Integer, Text
+from sqlalchemy import BigInteger, Column, Date, Float, Integer, Text
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -18,7 +18,7 @@ class StockEOD(Base):
     low = Column(Float)
     close = Column(Float)
     adjusted_close = Column(Float)
-    volume = Column(Integer)
+    volume = Column(BigInteger)
 
 
 class StockAdjusted(Base):
@@ -35,7 +35,7 @@ class StockAdjusted(Base):
     low = Column(Float)
     close = Column(Float)
     adjusted_close = Column(Float)
-    volume = Column(Integer)
+    volume = Column(BigInteger)
 
 
 class StockDividends(Base):
@@ -98,3 +98,35 @@ class Ticker(Base):
     currency = Column(Text)
     type = Column(Text)
     isin = Column(Text)
+
+
+class VirginTicker(Base):
+    """
+    Model representing a newly discovered ticker that requires historical EOD data backfill.
+    """
+
+    __tablename__ = "virgin_tickers"
+
+    ticker = Column(Text, primary_key=True)
+    exchange = Column(Text, primary_key=True)
+    first_eod_bus_date = Column(Date, nullable=True)
+
+
+class FlowResourceMetric(Base):
+    """
+    Model for tracking resource usage (CPU, memory) per Prefect flow run.
+
+    Stores peak memory, CPU time, and wall clock time for each flow execution
+    to enable right-sizing of deployment resource allocations.
+    """
+
+    __tablename__ = "flow_resource_metrics"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    flow_name = Column(Text, nullable=False)
+    flow_run_id = Column(Text, nullable=True)
+    recorded_at = Column(Date, nullable=False)
+    peak_memory_mb = Column(Float, nullable=False)
+    cpu_time_seconds = Column(Float, nullable=False)
+    wall_time_seconds = Column(Float, nullable=False)
+    env_prefix = Column(Text, nullable=True)

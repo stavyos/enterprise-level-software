@@ -269,30 +269,18 @@ class JobVariables:
         self._job_ttl_sec = value
 
     def to_dict(self) -> dict[str, Any]:
-        """Converts job variables to a dictionary compatible with Prefect worker expectations.
+        """Converts job variables to a dictionary compatible with Prefect Kubernetes worker.
 
         Returns:
-            dict[str, Any]: Configuration dictionary for the worker.
+            dict[str, Any]: Configuration dictionary for the Kubernetes worker.
         """
         from etl_service.etl.deployments_settings.settings import settings
 
-        # Docker on Windows absolute path mapping.
-        # We use //c/path format to avoid Pydantic split errors with colons (C:).
-        data_dir = settings.data_dir
-        if ":" in data_dir and data_dir[1:3] in (":/", ":\\"):
-            drive = data_dir[0].lower()
-            path = data_dir[2:].replace("\\", "/")
-            data_dir = f"//{drive}{path}"
-
-        volumes = [f"{data_dir}:/data:rw"]
-
         return {
-            "active_deadline_seconds": int(self.job_ttl_sec),
+            "image_pull_policy": "IfNotPresent",
+            "namespace": "default",
+            "finished_job_ttl": 300,  # 5 minutes TTL after job completion
             "pod_watch_timeout_seconds": self.pod_watch_timeout_seconds,
-            "app_label": self.app_label,
-            "job_resources": self.job_resources.to_dict(),
-            "network_mode": "enterprise-network",
-            "volumes": volumes,
             "env": {
                 "PREFECT_API_URL": settings.effective_prefect_api_url,
                 "EODHD_API_KEY": settings.eodhd_api_key,
@@ -303,6 +291,5 @@ class JobVariables:
                 "DB_NAME": settings.db_name,
                 "PYTHONPATH": settings.job_pythonpath,
                 "ENV_PREFIX": settings.env_prefix,
-                "DATA_DIR": "/data",
             },
         }

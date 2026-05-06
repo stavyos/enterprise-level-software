@@ -1,7 +1,41 @@
 services:
+  docker-cleaner:
+    image: docker:cli
+    container_name: docker-cleaner
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # This command runs the loop, checks for the image prefix + time, and updates a health file
+    command: >
+      sh -c "while true; do
+        echo 'Scanning for dead etl-service containers...' > /tmp/healthy;
+        docker ps -a --filter 'status=exited' --format '{{.ID}} {{.Image}} {{.Status}}' | while read -r ID IMG STATUS; do
+          case \"$$IMG\" in
+            etl-service*)
+              if echo \"$$STATUS\" | grep -qE '([5-9]|[1-9][0-9]) minutes ago|hours ago|days ago'; then
+                echo \"Deleting $$ID ($$IMG)\";
+                docker rm \"$$ID\";
+              fi
+              ;;
+          esac
+        done;
+        sleep 60;
+      done"
+    healthcheck:
+      test: ["CMD", "cat", "/tmp/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - enterprise-network
+
   timescaledb-dev:
     image: timescale/timescaledb:latest-pg16
     container_name: timescaledb-dev
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
     environment:
       - POSTGRES_USER=dev_user
       - POSTGRES_PASSWORD=dev_pass
@@ -16,6 +50,9 @@ services:
   timescaledb-prod:
     image: timescale/timescaledb:latest-pg16
     container_name: timescaledb-prod
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
     environment:
       - POSTGRES_USER=prod_user
       - POSTGRES_PASSWORD=prod_pass
@@ -32,27 +69,127 @@ services:
     container_name: cloudbeaver
     ports:
       - "8978:8978"
+    environment:
+      - CB_ADMIN_NAME=${CLOUDBEAVER_ADMIN_USER:-cbadmin}
+      - CB_ADMIN_PASSWORD=${CLOUDBEAVER_ADMIN_PASSWORD:-cbadmin}
     volumes:
       - cloudbeaver_data:/opt/cloudbeaver/workspace
     networks:
       - enterprise-network
     depends_on:
-      - timescaledb-dev
-      - timescaledb-prod
+      docker-cleaner:
+        condition: service_healthy
+      timescaledb-dev:
+        condition: service_started
+      timescaledb-prod:
+        condition: service_started
     restart: always
 
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
     container_name: jenkins
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
     user: root
     ports:
       - "8080:8080"
       - "50000:50000"
     volumes:
-      - ./jenkins_home:/var/jenkins_home
+      - ../../jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - enterprise-network
+    restart: always
+
+  prefect-server:
+    image: prefecthq/prefect:3.6.25-python3.12
+    container_name: prefect-server
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_API_URL=http://127.0.0.1:4200/api
+    volumes:
+      - prefect_data:/root/.prefect
+    networks:
+      - enterprise-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4200/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  prefect-init:
+    image: prefecthq/prefect:3.6.25-python3.12
+    container_name: prefect-init
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for Prefect server..."
+        until prefect work-pool ls > /dev/null 2>&1; do sleep 2; done
+        echo "Creating work pools..."
+        prefect work-pool create dev-k8s-pool --type kubernetes
+        prefect work-pool create prod-k8s-pool --type kubernetes
+        echo "Work pools ready!"
+    networks:
+      - enterprise-network
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
+      prefect-server:
+        condition: service_healthy
+    restart: "no"
+
+  prefect-worker-dev:
+    image: prefecthq/prefect:3.6.25-python3.12
+    container_name: prefect-worker-dev
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        pip install prefect-kubernetes && prefect worker start --pool dev-k8s-pool --type kubernetes
+    environment:
+      - PREFECT_API_URL=http://host.docker.internal:4200/api
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - C:\Users\stav3\.kube:/root/.kube:ro
+    networks:
+      - enterprise-network
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
+      prefect-server:
+        condition: service_healthy
+    restart: always
+
+  prefect-worker-prod:
+    image: prefecthq/prefect:3.6.25-python3.12
+    container_name: prefect-worker-prod
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        pip install prefect-kubernetes && prefect worker start --pool prod-k8s-pool --type kubernetes
+    environment:
+      - PREFECT_API_URL=http://host.docker.internal:4200/api
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - C:\Users\stav3\.kube:/root/.kube:ro
+    networks:
+      - enterprise-network
+    depends_on:
+      docker-cleaner:
+        condition: service_healthy
+      prefect-server:
+        condition: service_healthy
     restart: always
 
 networks:
@@ -63,3 +200,4 @@ volumes:
   timescaledb_data_dev:
   timescaledb_data_prod:
   cloudbeaver_data:
+  prefect_data:

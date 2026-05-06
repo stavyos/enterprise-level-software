@@ -30,7 +30,7 @@ CREATE TABLE stock_adjusted (
 	low FLOAT,
 	close FLOAT,
 	adjusted_close FLOAT,
-	volume INTEGER,
+	volume BIGINT,
 	PRIMARY KEY (bus_date, symbol)
 );
 SELECT create_hypertable('stock_adjusted', 'bus_date', if_not_exists => TRUE);
@@ -57,7 +57,7 @@ CREATE TABLE stock_eod (
 	low FLOAT,
 	close FLOAT,
 	adjusted_close FLOAT,
-	volume INTEGER,
+	volume BIGINT,
 	PRIMARY KEY (bus_date, symbol)
 );
 SELECT create_hypertable('stock_eod', 'bus_date', if_not_exists => TRUE);
@@ -79,4 +79,22 @@ CREATE TABLE tickers (
 	type TEXT,
 	isin TEXT,
 	PRIMARY KEY (code, exchange_code)
+);
+DROP TABLE IF EXISTS virgin_tickers;
+CREATE TABLE virgin_tickers (
+	ticker TEXT NOT NULL,
+	exchange TEXT NOT NULL,
+	first_eod_bus_date DATE,
+	PRIMARY KEY (ticker, exchange)
+);
+
+CREATE TABLE IF NOT EXISTS flow_resource_metrics (
+	id SERIAL PRIMARY KEY,
+	flow_name TEXT NOT NULL,
+	flow_run_id TEXT,
+	recorded_at DATE NOT NULL,
+	peak_memory_mb FLOAT NOT NULL,
+	cpu_time_seconds FLOAT NOT NULL,
+	wall_time_seconds FLOAT NOT NULL,
+	env_prefix TEXT
 );

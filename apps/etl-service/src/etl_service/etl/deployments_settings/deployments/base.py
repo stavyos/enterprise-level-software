@@ -520,7 +520,7 @@ class AbstractDeploymentSettings(ABC):
     @property
     def saver_concurrency_limit(self) -> int | None:
         """Concurrency limit for the saver deployment."""
-        return 2
+        return 6
 
     @property
     def saver_dispatcher_concurrency_limit(self) -> int | None:
@@ -599,26 +599,34 @@ class AbstractDeploymentSettings(ABC):
         self,
         params: list[dict],
         deployment_type: PrefectDeploymentType = PrefectDeploymentType.SAVER,
+        max_concurrent_dispatches: int = 10,
     ) -> list[FlowRun]:
         """
-        Asynchronously dispatch multiple sub-flows for parallel processing.
+        Asynchronously dispatch multiple sub-flows with throttled concurrency.
+
+        Uses a semaphore to limit the number of simultaneous API calls to the
+        Prefect server, preventing 503 errors from request overload.
 
         Args:
             params: List of parameter dictionaries for each sub-flow
             deployment_type: Either SAVER or DISPATCHER deployment type
+            max_concurrent_dispatches: Max simultaneous API calls (default 10)
 
         Returns:
             List of FlowRun results from the dispatched sub-flows
         """
-        saver_sub_flows = []
-        for i, param in enumerate(params):
-            sub_flow = self.dispatch_deployment(
-                dep_type=deployment_type, parameters=param
-            )
-            logger.info(f"Started for chunk {i + 1}/{len(params)}")
-            saver_sub_flows.append(sub_flow)
+        semaphore = asyncio.Semaphore(max_concurrent_dispatches)
 
-        results: list[FlowRun] = await asyncio.gather(*saver_sub_flows)
+        async def _throttled_dispatch(param: dict, index: int) -> FlowRun:
+            async with semaphore:
+                logger.info(f"Dispatching chunk {index + 1}/{len(params)}")
+                return await self.dispatch_deployment(
+                    dep_type=deployment_type, parameters=param
+                )
+
+        results: list[FlowRun] = await asyncio.gather(
+            *(_throttled_dispatch(param, i) for i, param in enumerate(params))
+        )
         return results
 
     # endregion

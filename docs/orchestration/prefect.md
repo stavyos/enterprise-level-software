@@ -20,6 +20,25 @@ Deployment registration is handled in `apps/etl-service/src/etl_service/etl/depl
 Our `JobVariables` logic ensures that infrastructure-specific configuration (like Docker volumes) is correctly applied:
 - **Volume Translation**: Automatically converts Windows drive paths (e.g., `C:/path`) to Docker-compatible forward-slash paths (`//c/path`).
 - **Network Isolation**: Forces all ETL containers onto the `enterprise-network` to allow resolution of `host.docker.internal` for database access.
+
+## Concurrency and Resource Management
+
+To prevent resource exhaustion and API rate-limiting, we implement strict concurrency and resource limits at the deployment level.
+
+### 1. Concurrency Limits
+Concurrency is managed through a hierarchy of settings in the `AbstractDeploymentSettings` classes:
+- **Global Default**: Most "Saver" deployments are limited to **6** concurrent runs.
+- **High-Throughput Overrides**: High-priority flows like the **Exchanges Saver** are optimized for **10** concurrent runs.
+- **Resource Dispatching**: Dispatcher flows use an asynchronous semaphore logic to throttle the rate at which sub-flows are sent to the Prefect server, preventing "thundering herd" issues.
+
+### 2. Resource Allocation (Docker/K8s)
+Each deployment defines its own resource requests and limits, which are propagated to the Docker worker:
+- **Exchanges Saver**: Optimized for low overhead (0.25 CPU, 1Gi RAM).
+- **Ticker/EOD Savers**: Higher allocation (1.0 CPU, 2Gi RAM) to handle large bulk upserts.
+- **EOD Saver Granularity**: The EOD saver is refactored to process **one ticker per flow run** to ensure that a single failure doesn't block the entire chunk.
+
+### 3. Data Integrity: The BigInt Upgrade
+To handle high-volume exchanges (e.g., emerging markets or highly liquid stocks like Cresud), all `volume` columns in the database and SQLAlchemy models use **BIGINT**. This prevents integer overflow errors during bulk upserts.
 ### Backfill & Date Range Strategy
 
 The Intraday Dispatcher supports orchestrated backfills via the `end_date` parameter:

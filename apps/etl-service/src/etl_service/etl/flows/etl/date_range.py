@@ -9,7 +9,7 @@ from etl_service.etl.deployments_settings.deployments.stocks.date_range import (
     DeploymentDateRange,
 )
 from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
-from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 
 DEPLOYMENT_DATE_RANGE = DeploymentDateRange()
 DEPLOYMENT_MAIN = DeploymentMain()
@@ -17,6 +17,7 @@ DEPLOYMENT_MAIN = DeploymentMain()
 
 @flow(**DEPLOYMENT_DATE_RANGE.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 async def main_date_range_saver_dispatcher(
     bus_date: datetime.date | None = None,
 ) -> None:

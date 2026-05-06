@@ -1,13 +1,10 @@
 """Main ETL flow orchestration module."""
 
 import asyncio
-import datetime
-from typing import Annotated
 
 from loguru import logger
 from prefect import flow
 from prefect.client.schemas import FlowRun, StateType
-from pydantic import Field
 
 from etl_service.etl.deployments_settings.deployments.base import (
     AbstractDeploymentSettings,
@@ -16,49 +13,47 @@ from etl_service.etl.deployments_settings.deployments.stocks.eod import Deployme
 from etl_service.etl.deployments_settings.deployments.stocks.exchanges import (
     DeploymentExchanges,
 )
-from etl_service.etl.deployments_settings.deployments.stocks.intraday import (
-    DeploymentIntraday,
-)
 from etl_service.etl.deployments_settings.deployments.stocks.main import DeploymentMain
-from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.deployments_settings.deployments.stocks.tickers import (
+    DeploymentTickers,
+)
+from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 
 DEPLOYMENT_MAIN = DeploymentMain()
 
 TIERS: list[list[AbstractDeploymentSettings]] = [
     [DeploymentExchanges()],
-    [DeploymentEOD(), DeploymentIntraday()],
+    [DeploymentTickers()],
+    [DeploymentEOD()],
 ]
 
 
 @flow(**DEPLOYMENT_MAIN.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
-async def main_saver_dispatcher(
-    tickers: Annotated[list[str], Field(min_length=1)],
-    bus_date: datetime.date | None = None,
-) -> None:
+@track_resources
+async def main_saver_dispatcher() -> None:
     """Orchestrates the main ETL pipeline by running tiers of sub-flows sequentially.
 
-    Args:
-        tickers (list[str]): List of tickers to process (must not be empty).
-        bus_date (datetime.date | None, optional): The business date for which the ETL is running.
+    Runs each tier of deployments (Exchanges → Tickers → EOD) in order.
+    Uses today's date as the business date and always fetches from virgin tickers.
     """
-    if not tickers:
-        raise ValueError("Tickers list cannot be empty or None")
-
-    if not bus_date:
-        bus_date = datetime.date.today()
 
     for i, tier in enumerate(TIERS):
         logger.info(f"Started running tier number {i} :: {tier=}")
 
         results: list[FlowRun | Exception] = await asyncio.gather(
             *(
-                deployment.dispatch_deployment_saver_dispatcher(
-                    parameters={"bus_date": bus_date, "tickers": tickers}
-                )
-                if not isinstance(deployment, DeploymentExchanges)
+                deployment.dispatch_deployment_saver_dispatcher(parameters={})
+                if isinstance(deployment, DeploymentExchanges)
                 else deployment.dispatch_deployment_saver_dispatcher(
-                    parameters={"bus_date": bus_date}
+                    parameters={"exchange_codes": None}
+                )
+                if isinstance(deployment, DeploymentTickers)
+                else deployment.dispatch_deployment_saver_dispatcher(
+                    parameters={
+                        "tickers": None,
+                        "get_from_virgin": True,
+                    }
                 )
                 for deployment in tier
             ),

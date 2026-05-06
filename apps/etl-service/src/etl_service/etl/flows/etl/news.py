@@ -8,7 +8,7 @@ from prefect import flow
 
 from etl_service.etl.deployments_settings.deployments.stocks.news import DeploymentNews
 from etl_service.etl.flows.models.news import NewsSaveRequest
-from etl_service.etl.flows.utils import enable_loguru_support
+from etl_service.etl.flows.utils import enable_loguru_support, track_resources
 from etl_service.etl.scripts.news import news_saver as _news_saver
 
 DEPLOYMENT_NEWS = DeploymentNews()
@@ -16,6 +16,7 @@ DEPLOYMENT_NEWS = DeploymentNews()
 
 @flow(**DEPLOYMENT_NEWS.saver_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 def market_news_saver(save_request: NewsSaveRequest) -> None:
     """Flow task to save market news."""
     logger.info(
@@ -33,6 +34,7 @@ def market_news_saver(save_request: NewsSaveRequest) -> None:
 
 @flow(**DEPLOYMENT_NEWS.saver_dispatcher_flow_decorator_args)
 @enable_loguru_support
+@track_resources
 async def market_news_saver_dispatcher(
     symbols: str | None = None,
     tags: str | None = None,

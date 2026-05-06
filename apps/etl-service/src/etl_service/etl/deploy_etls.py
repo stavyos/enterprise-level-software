@@ -96,6 +96,7 @@ async def deploy(
                     image=image,
                     tags=tags,
                     job_variables=job_variables,
+                    concurrency_limit=dep_settings.get_concurrency_limit(dep_type),
                     build=False,
                     push=False,
                 )
