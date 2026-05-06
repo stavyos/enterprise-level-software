@@ -138,8 +138,8 @@ services:
         echo "Waiting for Prefect server..."
         until prefect work-pool ls > /dev/null 2>&1; do sleep 2; done
         echo "Creating work pools..."
-        prefect work-pool create dev-k8s-pool --type kubernetes --if-not-exists
-        prefect work-pool create prod-k8s-pool --type kubernetes --if-not-exists
+        prefect work-pool create dev-k8s-pool --type kubernetes
+        prefect work-pool create prod-k8s-pool --type kubernetes
         echo "Work pools ready!"
     networks:
       - enterprise-network
